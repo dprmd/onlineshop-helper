@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import DialogUbahValue from "../components/DialogUbahValue";
 import { formatNumber, raw, validateNumber } from "../utils/generalFunction";
 
@@ -55,8 +55,8 @@ const PerhitunganProfit = () => {
       Math.round(
         percentFrom(
           adminShopee + adminPromoExtra + adminGratisOngkirExtra,
-          raw(hargaJual)
-        )
+          raw(hargaJual),
+        ),
       ) +
       biayaPerPesanan +
       biayaPengiriman;
@@ -75,7 +75,7 @@ const PerhitunganProfit = () => {
     localStorageIdentifier,
     realValueSetterFunc,
     tempValueSetterFunc,
-    initValue
+    initValue,
   ) => {
     if (localStorage.getItem(localStorageIdentifier)) {
       const value = localStorage.getItem(localStorageIdentifier);
@@ -92,19 +92,19 @@ const PerhitunganProfit = () => {
       "adminShopee",
       setAdminShopee,
       setPerubahanAdminShopee,
-      "8"
+      "8",
     );
     localStorageInit(
       "adminPromoExtra",
       setAdminPromoExtra,
       setPerubahanAdminPromoExtra,
-      "4.5"
+      "4.5",
     );
     localStorageInit(
       "adminGratisOngkirExtra",
       setAdminGratisOngkirExtra,
       setPerubahanAdminGratisOngkirExtra,
-      "5.5"
+      "5.5",
     );
     localStorageInit("komisiAMS", setKomisiAMS, setPerubahanKomisiAMS, "10");
   }, []);
@@ -298,19 +298,19 @@ const PerhitunganProfit = () => {
             <small>
               Biaya Admin Star : Rp{" "}
               {formatNumber(
-                Math.round(percentFrom(adminShopee, raw(hargaJual)))
+                Math.round(percentFrom(adminShopee, raw(hargaJual))),
               )}
             </small>
             <small>
               Biaya Admin Promo Extra : Rp{" "}
               {formatNumber(
-                Math.round(percentFrom(adminPromoExtra, raw(hargaJual)))
+                Math.round(percentFrom(adminPromoExtra, raw(hargaJual))),
               )}
             </small>
             <small>
               Biaya Admin Gratis Ongkir Extra : Rp{" "}
               {formatNumber(
-                Math.round(percentFrom(adminGratisOngkirExtra, raw(hargaJual)))
+                Math.round(percentFrom(adminGratisOngkirExtra, raw(hargaJual))),
               )}
             </small>
             <small>

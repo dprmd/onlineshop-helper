@@ -1,38 +1,27 @@
-import { createBrowserHistory } from "history";
-import { createHashRouter, RouterProvider } from "react-router";
+import { createHashRouter, RouterProvider } from "react-router-dom";
+import { PenghasilanProvider } from "./context/PenghasilanContext";
 import AlokasiPemasukan from "./pages/AlokasiPemasukan";
 import CatatanPenghasilan from "./pages/CatatanPenghasilan";
 import Home from "./pages/Home";
 import PerhitunganProfit from "./pages/PerhitunganProfit";
 import RiwayatPenghasilanShopee from "./pages/RiwayatPenghasilanShopee";
 import RiwayatPenghasilanTikTok from "./pages/RiwayatPenghasilanTikTok";
-import { PenghasilanProvider } from "./context/PenghasilanContext";
-
-// nested route example
-// import PerhitunganKomisiKotor from "./pages/PerhitunganKomisiKotor";
-// import UbahInformasiProduk from "./pages/UbahInformasiProduk";
-
-const history = createBrowserHistory({
-  window,
-  basename: "/adi",
-});
 
 const router = createHashRouter([
   {
     path: "/",
     children: [
-      { index: true, Component: Home },
-      { path: "PerhitunganProfit", Component: PerhitunganProfit },
-      { path: "AlokasiPemasukan", Component: AlokasiPemasukan },
+      { index: true, element: <Home /> },
+      { path: "PerhitunganProfit", element: <PerhitunganProfit /> },
+      { path: "AlokasiPemasukan", element: <AlokasiPemasukan /> },
       {
         path: "CatatanPenghasilan",
         children: [
-          { index: true, Component: CatatanPenghasilan },
-          { path: "Shopee", Component: RiwayatPenghasilanShopee },
-          { path: "TikTok", Component: RiwayatPenghasilanTikTok },
+          { index: true, element: <CatatanPenghasilan /> },
+          { path: "Shopee", element: <RiwayatPenghasilanShopee /> },
+          { path: "TikTok", element: <RiwayatPenghasilanTikTok /> },
         ],
       },
-
       // Contoh nested route
       // {
       //   path: "PerhitunganKomisiKotor",
@@ -43,15 +32,12 @@ const router = createHashRouter([
       // },
     ],
   },
-  { history },
 ]);
 
-const App = () => {
+export default function App() {
   return (
     <PenghasilanProvider>
       <RouterProvider router={router} />
     </PenghasilanProvider>
   );
-};
-
-export default App;
+}

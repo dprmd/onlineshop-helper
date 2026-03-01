@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { formatNumber, validateNumber } from "../utils/generalFunction";
 import MyButton from "./MyButton";
 
