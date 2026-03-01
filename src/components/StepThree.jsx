@@ -12,6 +12,7 @@ import {
 } from "../lib/variables";
 import AddBillModal from "./AddBillModal";
 import { createDocument } from "../services/firebase/docService";
+import { usePenghasilan } from "../context/PenghasilanContext";
 const date = new Date();
 const today = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -35,6 +36,8 @@ const StepThree = ({
   setIsTikTok,
   produkInArray,
 }) => {
+  // hooks
+  const { refetch } = usePenghasilan();
   const [addBill, setAddBill] = useState(false);
   const [sudahHitung, setSudahHitung] = useState(false);
   const [kerja, setKerja] = useState(day === 0 ? false : true);
@@ -161,6 +164,8 @@ const StepThree = ({
             uangInvestasi: uangInvestasi,
             sedekah: uangUntukSedekah,
           },
+          patunganUntukEma,
+          gajiAdi: gajiHarian,
         };
 
         await createDocument(
@@ -175,6 +180,8 @@ const StepThree = ({
         } else {
           localStorage.setItem("shopeeLastSave", today);
         }
+
+        refetch(isTikTok ? "tiktok" : "shopee", 10);
         alert("Berhasil Menyimpan Dokumen");
       }
     };

@@ -23,3 +23,39 @@ export const toCamelCase = (str) => {
     .map((w, i) => (i === 0 ? w : w[0].toUpperCase() + w.slice(1)))
     .join("");
 };
+
+export const formatTanggal = (ms) => {
+  const date = new Date(ms);
+
+  const hari = [
+    "Minggu",
+    "Senin",
+    "Selasa",
+    "Rabu",
+    "Kamis",
+    "Jum'at",
+    "Sabtu",
+  ];
+
+  const bulan = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+
+  const namaHari = hari[date.getDay()];
+  const tanggal = date.getDate();
+  const namaBulan = bulan[date.getMonth()];
+  const tahun = date.getFullYear();
+
+  return `${namaHari} ${tanggal} ${namaBulan} ${tahun}`;
+};

@@ -40,6 +40,7 @@ export function PenghasilanProvider({ children }) {
         setPenghasilanTikTok,
         loading,
         error,
+        refetch: fetchPenghasilan,
       }}
     >
       {children}
