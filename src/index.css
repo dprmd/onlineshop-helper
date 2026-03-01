@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+* {
+  font-family: "Poppins", sans-serif;
+}
+
+.input-components {
+  @apply px-3 py-2;
+}
+
+.input-components input {
+  @apply px-2 py-1 border rounded-md border-gray-500 outline-none max-w-full;
+}
+
+.input-components label {
+  @apply block;
+}
+
+.simplemodetransfer li {
+  @apply flex justify-between items-center;
+}
