@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { formatNumber, raw, validateNumber } from "../utils/generalFunction";
 import WordInBracket from "../components/WordInBracket";
-import MyButton from "./MyButton";
+import { usePenghasilan } from "../context/PenghasilanContext";
 import {
   day,
   dayName,
@@ -10,9 +9,16 @@ import {
   metode,
   patunganUntukEma,
 } from "../lib/variables";
+import {
+  createDocument,
+  getDocument,
+  updateDocument,
+} from "../services/firebase/docService";
+import { formatNumber, raw, validateNumber } from "../utils/generalFunction";
 import AddBillModal from "./AddBillModal";
-import { createDocument } from "../services/firebase/docService";
-import { usePenghasilan } from "../context/PenghasilanContext";
+import MyButton from "./MyButton";
+
+// additional function
 const date = new Date();
 const today = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -136,15 +142,35 @@ const StepThree = ({
     setSudahHitung(true);
   };
 
-  const saveToFirebase = () => {
+  const saveToFirebase = async () => {
+    const tiktokCollectionName = "penghasilanJualanOnlineTikTok";
+    const shopeeCollectionName = "penghasilanJualanOnlineShopee";
+
     const saveNow = async () => {
       const konfirmasi = confirm(
         "Apakah Anda Yakin Menyimpan Dokumen Ke Firebase ?",
       );
 
       if (konfirmasi) {
-        const penghasilan = {
-          typePenghasilan: isTikTok ? "tiktok" : "shopee",
+        // Data Penghasilan TikTok
+        const penghasilanTikTok = {
+          totalPenghasilan: raw(totalPenghasilan),
+          penghasilanHPP: {
+            total: raw(penghasilanHPP),
+            produkTerjual: produkInArray.filter((produk) => produk.terjual > 0),
+          },
+          tagihan: {
+            listTagihan: tagihan,
+            totalTagihan,
+          },
+          uangAdeSiska,
+          komisiAdi: {
+            total: komisiKotor,
+          },
+        };
+
+        // Data Penghasilan Shopee
+        const penghasilanShopee = {
           totalPenghasilan: raw(totalPenghasilan),
           penghasilanHPP: {
             total: raw(penghasilanHPP),
@@ -168,16 +194,35 @@ const StepThree = ({
           gajiAdi: gajiHarian,
         };
 
-        await createDocument(
-          "saveNotePenghasilan",
-          "penghasilanJualanOnline",
-          penghasilan,
-          "Berhasil Menyimpan Note Penghasilan",
-        );
-
         if (isTikTok) {
+          await createDocument(
+            "saveNotePenghasilanTikTok",
+            tiktokCollectionName,
+            penghasilanTikTok,
+            "Berhasil Menyimpan Note Penghasilan",
+          );
+          await updateDocument(
+            "UpdateTikTokLastSave",
+            tiktokCollectionName,
+            "tiktokLastSave",
+            { time: today },
+            "Berhasil Update TikTok Last Save",
+          );
           localStorage.setItem("tiktokLastSave", today);
         } else {
+          await createDocument(
+            "saveNotePenghasilanShopee",
+            "penghasilanJualanOnlineShopee",
+            penghasilanShopee,
+            "Berhasil Menyimpan Note Penghasilan",
+          );
+          await updateDocument(
+            "UpdateShopeeLastSave",
+            shopeeCollectionName,
+            "shopeeLastSave",
+            { time: today },
+            "Berhasil Update Shopee Last Save",
+          );
           localStorage.setItem("shopeeLastSave", today);
         }
 
@@ -193,10 +238,48 @@ const StepThree = ({
       if (lastSave === today) {
         alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
       } else {
-        saveNow();
+        const shopeeLastSave = await getDocument(
+          "Ambil Last Save Shopee",
+          "penghasilanJualanOnlineShopee",
+          "shopeeLastSave",
+        );
+        const tiktokLastSave = await getDocument(
+          "Ambil Last Save TikTok",
+          "penghasilanJualanOnlineTikTok",
+          "tiktokLastSave",
+        );
+        localStorage.setItem("shopeeLastSave", shopeeLastSave.data.time);
+        localStorage.setItem("tiktokLastSave", tiktokLastSave.data.time);
+        const newLastSave = localStorage.getItem(
+          isTikTok ? "tiktokLastSave" : "shopeeLastSave",
+        );
+        if (newLastSave === today) {
+          alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
+        } else {
+          saveNow();
+        }
       }
     } else {
-      saveNow();
+      const shopeeLastSave = await getDocument(
+        "Ambil Last Save Shopee",
+        "penghasilanJualanOnlineShopee",
+        "shopeeLastSave",
+      );
+      const tiktokLastSave = await getDocument(
+        "Ambil Last Save TikTok",
+        "penghasilanJualanOnlineTikTok",
+        "tiktokLastSave",
+      );
+      localStorage.setItem("shopeeLastSave", shopeeLastSave.data.time);
+      localStorage.setItem("tiktokLastSave", tiktokLastSave.data.time);
+      const newLastSave = localStorage.getItem(
+        isTikTok ? "tiktokLastSave" : "shopeeLastSave",
+      );
+      if (newLastSave === today) {
+        alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
+      } else {
+        saveNow();
+      }
     }
   };
 
