@@ -20,7 +20,7 @@ const DialogAddBill = ({
     e.preventDefault();
 
     const cekIfBillNameExist = tagihan.some(
-      (bill) => bill.identifier === toCamelCase(billName)
+      (bill) => bill.identifier === toCamelCase(billName),
     );
 
     if (cekIfBillNameExist) {
@@ -57,7 +57,7 @@ const DialogAddBill = ({
               onChange={(e) => {
                 setBillName(e.target.value);
               }}
-              className="border border-gray-400 rounded-md px-1"
+              className="border border-gray-400 rounded-md px-1 max-w-full"
               placeholder="Isi Di Sini. . ."
             />
           </div>
@@ -71,7 +71,7 @@ const DialogAddBill = ({
                 const number = validateNumber(e);
                 setTotalBill(formatNumber(number));
               }}
-              className="border border-gray-400 rounded-md px-1"
+              className="border border-gray-400 rounded-md px-1 max-w-full"
               placeholder="Isi Di Sini. . ."
             />
           </div>

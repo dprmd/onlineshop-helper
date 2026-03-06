@@ -163,7 +163,6 @@ const StepThree = ({
             listTagihan: tagihan,
             totalTagihan,
           },
-          uangAdeSiska,
           komisiAdi: {
             total: komisiKotor,
           },
@@ -387,6 +386,7 @@ const StepThree = ({
             type="text"
             id="totalPenghasilan"
             value={totalPenghasilan}
+            className="max-w-full"
             required={true}
             onChange={(e) => {
               setSudahHitung(false);
@@ -406,6 +406,7 @@ const StepThree = ({
             type="text"
             id="penghasilanHPP"
             value={penghasilanHPP}
+            className="max-w-full"
             required={true}
             onChange={(e) => {
               setSudahHitung(false);
@@ -436,6 +437,7 @@ const StepThree = ({
             <input
               type="text"
               value={bill.totalBill}
+              className="max-w-full"
               onChange={(e) => {
                 setSudahHitung(false);
                 const number = validateNumber(e);

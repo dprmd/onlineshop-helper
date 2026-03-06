@@ -14,7 +14,7 @@ const DialogUbahValue = ({
           <input
             type="number"
             id={title}
-            className="border border-gray-400 rounded-md px-1"
+            className="border border-gray-400 rounded-md px-1 max-w-full"
             placeholder="Isi Di Sini. . ."
             onChange={(e) => {
               changeValueFunction(e.target.value);

@@ -158,6 +158,7 @@ const Terjual = ({
         type="number"
         id={namaProduk}
         value={state}
+        className="max-w-[150px]"
         onChange={(e) => {
           setShowConclusion(false);
           setSubmitOrder(1);

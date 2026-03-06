@@ -23,6 +23,7 @@ const StepOne = ({ totalPenghasilan, setTotalPenghasilan, setStep }) => {
             type="text"
             id="totalPenarikanDana"
             value={totalPenghasilan}
+            className="max-w-full"
             required={true}
             onChange={(e) => {
               const number = validateNumber(e);

@@ -12,7 +12,7 @@ export default function RiwayatPenghasilanShopee() {
         Hanya Menampilkan List Dalam 10 Hari Terakhir
       </span>
 
-      <div className="flex flex-wrap gap-4 px-3 py-4">
+      <div className="flex flex-wrap gap-4 py-3">
         {penghasilanShopee.map((data) => (
           <PenghasilanShopeeCard data={data} key={data.id} />
         ))}
