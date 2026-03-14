@@ -10,6 +10,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  where,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -121,11 +122,19 @@ export const getDocuments = async (operationName, collectionName, order) => {
   }
 };
 
-export const getDaftarPenghasilan = async (
-  typePenghasilan,
+export const getDaftarPenghasilanByDate = async (
+  platform,
   order,
-  limitOffPage,
+  start,
+  end,
 ) => {
+  const startDate = new Date(start).getTime();
+  const input = end;
+  const date = new Date(input);
+  date.setDate(date.getDate() + 1);
+  const result = date.toISOString().slice(0, 10);
+  const endDate = new Date(result).getTime();
+
   const orderChoice = {
     newToOld: "desc",
     oldToNew: "asc",
@@ -133,7 +142,51 @@ export const getDaftarPenghasilan = async (
 
   try {
     console.log(
-      `Operation : Read , Operation Name : Get Daftar Penghasilan ${typePenghasilan}`,
+      `Operation : Read , Operation Name : Get Daftar Penghasilan By Date ${platform}`,
+    );
+    const queryShopee = query(
+      collection(db, "penghasilanJualanOnlineShopee"),
+      where("createdAtMs", ">=", startDate),
+      where("createdAtMs", "<", endDate),
+      orderBy("createdAtMs", orderChoice[order]),
+    );
+    const queryTikTok = query(
+      collection(db, "penghasilanJualanOnlineTikTok"),
+      where("createdAtMs", ">=", startDate),
+      where("createdAtMs", "<", endDate),
+      orderBy("createdAtMs", orderChoice[order]),
+    );
+
+    const snapshot = await getDocs(
+      platform === "shopee" ? queryShopee : queryTikTok,
+    );
+
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error,
+    };
+  }
+};
+
+export const getDaftarPenghasilan = async (platform, order, limitOffPage) => {
+  const orderChoice = {
+    newToOld: "desc",
+    oldToNew: "asc",
+  };
+
+  try {
+    console.log(
+      `Operation : Read , Operation Name : Get Daftar Penghasilan ${platform}`,
     );
     const queryShopee = query(
       collection(db, "penghasilanJualanOnlineShopee"),
@@ -147,7 +200,7 @@ export const getDaftarPenghasilan = async (
     );
 
     const snapshot = await getDocs(
-      typePenghasilan === "shopee" ? queryShopee : queryTikTok,
+      platform === "shopee" ? queryShopee : queryTikTok,
     );
 
     const result = snapshot.docs.map((doc) => ({
