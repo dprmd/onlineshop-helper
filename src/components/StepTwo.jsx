@@ -159,10 +159,11 @@ const Terjual = ({
         id={namaProduk}
         value={state}
         className="max-w-[150px]"
+        placeholder="0"
         onChange={(e) => {
           setShowConclusion(false);
           setSubmitOrder(1);
-          setState(raw(e.target.value));
+          setState(e.target.value);
         }}
       />
       <div className="inline-block">

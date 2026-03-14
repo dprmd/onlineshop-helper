@@ -10,7 +10,6 @@ import {
   query,
   serverTimestamp,
   setDoc,
-  where,
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -122,7 +121,11 @@ export const getDocuments = async (operationName, collectionName, order) => {
   }
 };
 
-export const getDaftarPenghasilan = async (typePenghasilan, order) => {
+export const getDaftarPenghasilan = async (
+  typePenghasilan,
+  order,
+  limitOffPage,
+) => {
   const orderChoice = {
     newToOld: "desc",
     oldToNew: "asc",
@@ -135,12 +138,12 @@ export const getDaftarPenghasilan = async (typePenghasilan, order) => {
     const queryShopee = query(
       collection(db, "penghasilanJualanOnlineShopee"),
       orderBy("createdAtMs", orderChoice[order]),
-      limit(limit ? limit : 10),
+      limit(limitOffPage),
     );
     const queryTikTok = query(
       collection(db, "penghasilanJualanOnlineTikTok"),
       orderBy("createdAtMs", orderChoice[order]),
-      limit(limit ? limit : 10),
+      limit(limitOffPage),
     );
 
     const snapshot = await getDocs(

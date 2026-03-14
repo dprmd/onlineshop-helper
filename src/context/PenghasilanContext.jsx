@@ -9,7 +9,7 @@ export function PenghasilanProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchPenghasilan = async (typePenghasilan, limit = 10) => {
+  const fetchPenghasilan = async (typePenghasilan, limit) => {
     setLoading(true);
     const data = await getDaftarPenghasilan(typePenghasilan, "newToOld", limit);
     if (data.success) {
@@ -27,8 +27,8 @@ export function PenghasilanProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchPenghasilan("shopee");
-    fetchPenghasilan("tiktok");
+    fetchPenghasilan("shopee", 10);
+    fetchPenghasilan("tiktok", 10);
   }, []);
 
   return (
