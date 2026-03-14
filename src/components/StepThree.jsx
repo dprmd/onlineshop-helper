@@ -43,7 +43,7 @@ const StepThree = ({
   produkInArray,
 }) => {
   // hooks
-  const { refetch } = usePenghasilan();
+  const { refetch: fetchPenghasilan } = usePenghasilan();
   const [addBill, setAddBill] = useState(false);
   const [sudahHitung, setSudahHitung] = useState(false);
   const [kerja, setKerja] = useState(day === 0 ? false : true);
@@ -59,6 +59,7 @@ const StepThree = ({
   const [uangEmaIki, setUangEmaIki] = useState(0);
   const [uangCapital, setUangCapital] = useState(0);
   const [uangDanaDarurat, setUangDanaDarurat] = useState(0);
+  const [uangKeinginan, setUangKeinginan] = useState(0);
   const [uangInvestasi, setUangInvestasi] = useState(0);
   const [uangUntukSedekah, setUangUntukSedekah] = useState(0);
 
@@ -124,6 +125,7 @@ const StepThree = ({
       uangDanaDarurat: Math.round(
         (metode.danaDarurat / 100) * totalKomisiBersih,
       ),
+      uangKeinginan: Math.round((metode.keinginan / 100) * totalKomisiBersih),
       uangInvestasi: Math.round((metode.investasi / 100) * totalKomisiBersih),
     };
 
@@ -131,11 +133,13 @@ const StepThree = ({
     const totalPembagian =
       pembagian.uangCapital +
       pembagian.uangDanaDarurat +
+      pembagian.uangKeinginan +
       pembagian.uangInvestasi;
     const sisaPembagian = totalKomisiBersih - totalPembagian;
 
     setUangCapital(pembagian.uangCapital + sisaPembagian);
     setUangDanaDarurat(pembagian.uangDanaDarurat);
+    setUangKeinginan(pembagian.uangKeinginan);
     setUangInvestasi(pembagian.uangInvestasi);
 
     // Render
@@ -145,6 +149,9 @@ const StepThree = ({
   const saveToFirebase = async () => {
     const tiktokCollectionName = "penghasilanJualanOnlineTikTok";
     const shopeeCollectionName = "penghasilanJualanOnlineShopee";
+    const platform = isTikTok ? "tiktok" : "shopee";
+    const lastSaveShopee = "shopeeLastSave";
+    const lastSaveTiktok = "tiktokLastSave";
 
     const saveNow = async () => {
       const konfirmasi = confirm(
@@ -186,6 +193,7 @@ const StepThree = ({
             komisiBersih,
             capital: uangCapital,
             danaDarurat: uangDanaDarurat,
+            uangKeinginan: uangKeinginan,
             uangInvestasi: uangInvestasi,
             sedekah: uangUntukSedekah,
           },
@@ -203,11 +211,11 @@ const StepThree = ({
           await updateDocument(
             "UpdateTikTokLastSave",
             tiktokCollectionName,
-            "tiktokLastSave",
+            lastSaveTiktok,
             { time: today },
             "Berhasil Update TikTok Last Save",
           );
-          localStorage.setItem("tiktokLastSave", today);
+          localStorage.setItem(lastSaveTiktok, today);
         } else {
           await createDocument(
             "saveNotePenghasilanShopee",
@@ -218,39 +226,45 @@ const StepThree = ({
           await updateDocument(
             "UpdateShopeeLastSave",
             shopeeCollectionName,
-            "shopeeLastSave",
+            lastSaveShopee,
             { time: today },
             "Berhasil Update Shopee Last Save",
           );
-          localStorage.setItem("shopeeLastSave", today);
+          localStorage.setItem(lastSaveShopee, today);
         }
 
-        refetch(isTikTok ? "tiktok" : "shopee", 10);
+        fetchPenghasilan(platform, 10);
         alert("Berhasil Menyimpan Dokumen");
       }
     };
 
+    const checkLastSaveToFirebase = async () => {
+      const shopeeLastSave = await getDocument(
+        "Ambil Last Save Shopee",
+        shopeeCollectionName,
+        lastSaveShopee,
+      );
+      const tiktokLastSave = await getDocument(
+        "Ambil Last Save TikTok",
+        tiktokCollectionName,
+        lastSaveTiktok,
+      );
+
+      // Local Storage
+      localStorage.setItem(lastSaveShopee, shopeeLastSave.data.time);
+      localStorage.setItem(lastSaveTiktok, tiktokLastSave.data.time);
+    };
+
     const lastSave = localStorage.getItem(
-      isTikTok ? "tiktokLastSave" : "shopeeLastSave",
+      isTikTok ? lastSaveTiktok : lastSaveShopee,
     );
     if (lastSave) {
       if (lastSave === today) {
         alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
       } else {
-        const shopeeLastSave = await getDocument(
-          "Ambil Last Save Shopee",
-          "penghasilanJualanOnlineShopee",
-          "shopeeLastSave",
-        );
-        const tiktokLastSave = await getDocument(
-          "Ambil Last Save TikTok",
-          "penghasilanJualanOnlineTikTok",
-          "tiktokLastSave",
-        );
-        localStorage.setItem("shopeeLastSave", shopeeLastSave.data.time);
-        localStorage.setItem("tiktokLastSave", tiktokLastSave.data.time);
+        checkLastSaveToFirebase();
         const newLastSave = localStorage.getItem(
-          isTikTok ? "tiktokLastSave" : "shopeeLastSave",
+          isTikTok ? lastSaveTiktok : lastSaveShopee,
         );
         if (newLastSave === today) {
           alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
@@ -259,20 +273,9 @@ const StepThree = ({
         }
       }
     } else {
-      const shopeeLastSave = await getDocument(
-        "Ambil Last Save Shopee",
-        "penghasilanJualanOnlineShopee",
-        "shopeeLastSave",
-      );
-      const tiktokLastSave = await getDocument(
-        "Ambil Last Save TikTok",
-        "penghasilanJualanOnlineTikTok",
-        "tiktokLastSave",
-      );
-      localStorage.setItem("shopeeLastSave", shopeeLastSave.data.time);
-      localStorage.setItem("tiktokLastSave", tiktokLastSave.data.time);
+      checkLastSaveToFirebase();
       const newLastSave = localStorage.getItem(
-        isTikTok ? "tiktokLastSave" : "shopeeLastSave",
+        isTikTok ? lastSaveTiktok : lastSaveShopee,
       );
       if (newLastSave === today) {
         alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
@@ -455,6 +458,7 @@ const StepThree = ({
           </div>
         ))}
 
+        {/* Tombol Tambahkan Tagihan Lainnya */}
         <div className="input-components">
           <MyButton
             buttonText={"Tambahkan Tagihan Lainnya . . ."}
@@ -468,6 +472,7 @@ const StepThree = ({
 
         {/* Tombol Navigasi */}
         <div className="input-components">
+          {/* Tombol Kembali ke StepTwo */}
           <MyButton
             buttonText={"Kembali"}
             buttonType={"button"}
@@ -484,7 +489,7 @@ const StepThree = ({
             tailwindClass={"bg-green-500 mx-1 px-2 py-1"}
           />
 
-          {/* Kirim Laporan Setor Hari Ini*/}
+          {/* Simpan Ke Firebase*/}
           {sudahHitung && (
             <MyButton
               buttonText={"Simpan Ke Firebase"}
@@ -497,6 +502,8 @@ const StepThree = ({
       </form>
 
       {/* Tampilkan Saat Tombol Hitung Di Tekan */}
+
+      {/* Shopee Conclusion */}
       {sudahHitung && !isTikTok ? (
         <div className="flex flex-col max-w-[700px]">
           <div className="border border-gray-400 rounded-md p-4 mt-4 flex flex-col gap-y-4 mx-2">
@@ -628,8 +635,9 @@ const StepThree = ({
                   </b>
                 </li>
 
-                {/* Catat Pemasukan Ke Dana Darurat */}
+                {/* Catat Pemasukan Ke Aplikasi Catatan Keuangan */}
                 <div className="mb-6">
+                  {/* Ribet Mode */}
                   {!simpleMode && (
                     <>
                       <li>
@@ -645,10 +653,21 @@ const StepThree = ({
                       </li>
                       <li>
                         Catat Pemasukan Uang Dana Darurat Sebesar{" "}
-                        <b>{formatNumber(uangDanaDarurat)}</b>
+                        <b>{formatNumber(uangDanaDarurat) || "0"}</b>
                         {!simpleMode && (
                           <WordInBracket
                             kalimat={`${metode.danaDarurat}% x ${formatNumber(
+                              komisiKotor - patunganUntukEma.adi,
+                            )}`}
+                          />
+                        )}
+                      </li>
+                      <li>
+                        Catat Pemasukan Uang Keinginan Sebesar{" "}
+                        <b>{formatNumber(uangKeinginan)}</b>
+                        {!simpleMode && (
+                          <WordInBracket
+                            kalimat={`${metode.keinginan}% x ${formatNumber(
                               komisiKotor - patunganUntukEma.adi,
                             )}`}
                           />
@@ -702,6 +721,8 @@ const StepThree = ({
                       )}
                     </>
                   )}
+
+                  {/* Simple Mode */}
                   {simpleMode && (
                     <li>
                       Catat Ke Aplikasi Keuangan :
@@ -714,7 +735,12 @@ const StepThree = ({
                         <li>
                           <span>Rekening Dana Darurat</span>{" "}
                           <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
-                          <b>{formatNumber(uangDanaDarurat)}</b>
+                          <b>{formatNumber(uangDanaDarurat) || "0"}</b>
+                        </li>
+                        <li>
+                          <span>Rekening Keinginan</span>{" "}
+                          <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
+                          <b>{formatNumber(uangKeinginan)}</b>
                         </li>
                         <li>
                           <span>Rekening Investasi</span>
@@ -816,6 +842,7 @@ const StepThree = ({
         <></>
       )}
 
+      {/* TikTok Conclusion */}
       {sudahHitung && isTikTok ? (
         <div className="flex flex-col max-w-[700px]">
           <div className="border border-gray-400 rounded-md p-4 mt-4 flex flex-col gap-y-4 mx-2">

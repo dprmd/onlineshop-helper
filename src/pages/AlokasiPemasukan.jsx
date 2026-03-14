@@ -23,18 +23,6 @@ const AlokasiPemasukan = () => {
   const [totalTagihan, setTotalTagihan] = useState(0);
   const [tagihan, setTagihan] = useState([]);
 
-  let noteProdukTerjual = "";
-  produkInArray.forEach((item) => {
-    if (item.terjual > 0) {
-      // Menggunakan list bullet ( - ) agar rapi secara vertikal
-      noteProdukTerjual += `\n- *${item.nama}* (${
-        item.terjual
-      }X)\n  ${formatNumber(item.hpp)} ⮕ *${formatNumber(
-        item.terjual * item.hpp,
-      )}*`;
-    }
-  });
-
   return (
     <>
       {/* Step Pertama */}

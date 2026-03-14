@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { formatNumber, validateNumber } from "../utils/generalFunction";
 import MyButton from "./MyButton";
 
-const StepOne = ({ totalPenghasilan, setTotalPenghasilan, setStep }) => {
+export default function ({ totalPenghasilan, setTotalPenghasilan, setStep }) {
   const navigate = useNavigate();
 
   return (
@@ -54,6 +54,4 @@ const StepOne = ({ totalPenghasilan, setTotalPenghasilan, setStep }) => {
       </form>
     </div>
   );
-};
-
-export default StepOne;
+}

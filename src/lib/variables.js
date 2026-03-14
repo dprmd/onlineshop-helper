@@ -63,10 +63,11 @@ export const patunganUntukEma = {
 
 // Harus Ada Total 100
 export const metode = {
-  capital: 40,
-  danaDarurat: 30,
+  capital: 50,
+  danaDarurat: 0,
   investasi: 29,
   sedekah: 1,
+  keinginan: 20,
 };
 
 // Gaji Harian Adi
