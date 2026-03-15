@@ -122,6 +122,58 @@ export const getDocuments = async (operationName, collectionName, order) => {
   }
 };
 
+export const getDaftarPenghasilanByMonth = async (
+  platform,
+  order,
+  year,
+  month,
+) => {
+  const startMonth = new Date(year, month - 1, 1).getTime();
+  const endMonth = new Date(year, month, 0).getTime();
+
+  const orderChoice = {
+    newToOld: "desc",
+    oldToNew: "asc",
+  };
+
+  try {
+    console.log(
+      `Operation : Read , Operation Name : Get Daftar Penghasilan By Month ${platform}`,
+    );
+    const queryShopee = query(
+      collection(db, "penghasilanJualanOnlineShopee"),
+      where("createdAtMs", ">=", startMonth),
+      where("createdAtMs", "<", endMonth),
+      orderBy("createdAtMs", orderChoice[order]),
+    );
+    const queryTikTok = query(
+      collection(db, "penghasilanJualanOnlineTikTok"),
+      where("createdAtMs", ">=", startMonth),
+      where("createdAtMs", "<", endMonth),
+      orderBy("createdAtMs", orderChoice[order]),
+    );
+
+    const snapshot = await getDocs(
+      platform === "shopee" ? queryShopee : queryTikTok,
+    );
+
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error,
+    };
+  }
+};
+
 export const getDaftarPenghasilanByDate = async (
   platform,
   order,

@@ -1,6 +1,7 @@
 import {
   getDaftarPenghasilan,
   getDaftarPenghasilanByDate,
+  getDaftarPenghasilanByMonth,
 } from "../services/firebase/docService";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -56,6 +57,29 @@ export function PenghasilanProvider({ children }) {
     }
   };
 
+  const fetchPenghasilanByMonth = async (platform, year, month) => {
+    setLoading(true);
+    const data = await getDaftarPenghasilanByMonth(
+      platform,
+      "newToOld",
+      year,
+      month,
+    );
+    if (data.success) {
+      if (platform === "shopee") {
+        console.log(data);
+        setPenghasilanShopee(data.data);
+      } else {
+        setPenghasilanTikTok(data.data);
+      }
+      setLoading(false);
+    } else {
+      setError(data.error);
+      setLoading(false);
+      console.log(data.error);
+    }
+  };
+
   const sortByLimitUnderTen = (platform, num) => {
     if (platform === "shopee") {
       setPenghasilanShopee(penghasilanShopeeTemp.slice(0, num));
@@ -83,6 +107,7 @@ export function PenghasilanProvider({ children }) {
         refetch: fetchPenghasilan,
         sortByLimitUnderTen,
         fetchPenghasilanByDate,
+        fetchPenghasilanByMonth,
       }}
     >
       {children}

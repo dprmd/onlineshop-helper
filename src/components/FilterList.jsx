@@ -6,12 +6,14 @@ export default function FilterList({ platform }) {
     refetch: fetchPenghasilan,
     sortByLimitUnderTen,
     fetchPenghasilanByDate,
+    fetchPenghasilanByMonth,
   } = usePenghasilan();
   const [limitOffPage, setLimitOffPage] = useState("");
   const [customShow, setCustomShow] = useState(false);
   const [customList, setCustomList] = useState("default");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [pickMonth, setPickMonth] = useState("");
 
   const handleShowByDay = async (e) => {
     e.preventDefault();
@@ -25,8 +27,12 @@ export default function FilterList({ platform }) {
   const handleShowByDate = async (e) => {
     e.preventDefault();
     await fetchPenghasilanByDate(platform, startDate, endDate);
-    console.log(startDate);
-    console.log(endDate);
+  };
+
+  const handleShowByMonth = async (e) => {
+    e.preventDefault();
+    const [year, month] = pickMonth.split("-");
+    await fetchPenghasilanByMonth(platform, Number(year), Number(month));
   };
 
   useEffect(() => {
@@ -128,6 +134,36 @@ export default function FilterList({ platform }) {
                   value={endDate}
                   onChange={(e) => {
                     setEndDate(e.target.value);
+                  }}
+                  required
+                />
+              </div>
+            </div>
+            <button
+              className="bg-gray-500 rounded-md text-white my-1 px-[4px] py-[2px]"
+              type="submit"
+            >
+              Tampilkan
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Sort By Month */}
+      {customShow && customList === "byMonth" && (
+        <div className="flex">
+          <form onSubmit={handleShowByMonth}>
+            <div>
+              <div>
+                <label htmlFor="month" className="font-bold">
+                  Month :{" "}
+                </label>
+                <input
+                  type="month"
+                  id="month"
+                  value={pickMonth}
+                  onChange={(e) => {
+                    setPickMonth(e.target.value);
                   }}
                   required
                 />
