@@ -603,12 +603,12 @@ const StepThree = ({
                   )}
                 </li>
 
-                {/* Transfer Uang Capital + Dana Darurat + Investasi + Sedekah + Ema Iki*/}
+                {/* Transfer Uang Capital + Dana Darurat + Keinginan + Investasi + Sedekah + Ema Iki*/}
                 <li>
                   {simpleMode ? "Transfer" : "Transfer Uang"}{" "}
                   {!simpleMode && (
                     <WordInBracket
-                      kalimat={`Capital + Dana Darurat + Investasi + Sedekah + Uang Ema Iki ${
+                      kalimat={`Capital + Dana Darurat + Keinginan + Investasi + Sedekah + Uang Ema Iki ${
                         kerja ? " + Gaji Perhari" : ""
                       }`}
                     />
@@ -619,19 +619,12 @@ const StepThree = ({
                       uangCapital +
                         uangDanaDarurat +
                         uangInvestasi +
+                        uangKeinginan +
                         uangUntukSedekah +
+                        patunganUntukEma.adi +
+                        patunganUntukEma.uko +
                         (kerja ? gajiHarian : 0),
                     )}
-                  </b>
-                </li>
-
-                {/* Transfer Uang Ema Iki Ke Bank Jago */}
-                <li>
-                  {simpleMode ? "Transfer" : "Transfer Uang"}{" "}
-                  {!simpleMode && <WordInBracket kalimat={`Uang Ema Iki`} />} Ke{" "}
-                  <b>Bank Jago Adi Permadi</b> Sebesar{" "}
-                  <b>
-                    {formatNumber(patunganUntukEma.adi + patunganUntukEma.uko)}
                   </b>
                 </li>
 

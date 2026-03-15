@@ -174,7 +174,7 @@ const Terjual = ({
             if (state !== 0) {
               setShowConclusion(false);
               setSubmitOrder(1);
-              setState(state - 1);
+              setState(Number(state) - 1);
             }
           }}
           tailwindClass={"bg-slate-300 ml-2 mx-1 px-2 py-1"}
@@ -185,7 +185,7 @@ const Terjual = ({
           onClick={() => {
             setShowConclusion(false);
             setSubmitOrder(1);
-            setState(state + 1);
+            setState(Number(state) + 1);
           }}
           tailwindClass={"bg-slate-300 mx-1 px-2 py-1"}
         />
