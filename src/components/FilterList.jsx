@@ -59,9 +59,11 @@ export default function FilterList({ platform }) {
       {/* Default Filter */}
       {customList === "default" && (
         <div>
-          <span>Hanya Menampilkan List Dalam 10 Hari Terakhir</span>
+          <span className="block">
+            Hanya Menampilkan List Dalam 10 Hari Terakhir
+          </span>
           <button
-            className="bg-gray-500 text-white px-[4px] rounded-md"
+            className="bg-gray-500 text-white px-[4px] rounded-md block"
             onClick={() => {
               setCustomShow(true);
               setCustomList("byDay");
