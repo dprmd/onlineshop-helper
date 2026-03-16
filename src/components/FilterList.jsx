@@ -101,6 +101,7 @@ export default function FilterList({ platform }) {
             onChange={(e) => {
               setCustomList(e.target.value);
             }}
+            className="outline-1 outline-black rounded-md mx-2"
           >
             <option value="default">Default</option>
             <option value="byDay">Berdasarkan Hari</option>
@@ -155,7 +156,7 @@ export default function FilterList({ platform }) {
       {customShow && customList === "byDate" && (
         <div className="flex">
           <form onSubmit={handleShowByDate}>
-            <div>
+            <div className="flex flex-col gap-y-2">
               <div>
                 <label htmlFor="startDate" className="font-bold">
                   Dari :{" "}
@@ -167,6 +168,7 @@ export default function FilterList({ platform }) {
                   onChange={(e) => {
                     setStartDate(e.target.value);
                   }}
+                  className="outline-1 outline-black rounded-md mx-2"
                   required
                 />
               </div>
@@ -181,6 +183,7 @@ export default function FilterList({ platform }) {
                   onChange={(e) => {
                     setEndDate(e.target.value);
                   }}
+                  className="outline-1 outline-black rounded-md mx-2"
                   required
                 />
               </div>
@@ -211,6 +214,7 @@ export default function FilterList({ platform }) {
                   onChange={(e) => {
                     setPickMonth(e.target.value);
                   }}
+                  className="outline-1 outline-black rounded-md mx-2"
                   required
                 />
               </div>

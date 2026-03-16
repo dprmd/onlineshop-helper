@@ -7,7 +7,7 @@ export default function PenghasilanShopeeCard({ data }) {
   const [showSetor, setShowSetor] = useState(false);
 
   return (
-    <div className="bg-green-100 px-3 py-2 flex flex-col gap-y-1 min-w-[350px]">
+    <div className="bg-gray-200 rounded-md px-3 py-2 flex flex-col gap-y-1 min-w-[350px]">
       <span>{formatTanggal(data.createdAtMs)}</span>
       <span>
         Total Penarikan : <b>{formatNumber(data.totalPenghasilan)}</b>
