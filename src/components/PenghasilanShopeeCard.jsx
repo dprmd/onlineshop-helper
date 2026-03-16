@@ -89,12 +89,11 @@ export default function PenghasilanShopeeCard({ data }) {
                 Capital : <b>{formatNumber(data.komisiAdi.capital)}</b>
               </span>
               <span>
-                Dana Darurat :{" "}
-                <b>{formatNumber(data.komisiAdi.danaDarurat) || "0"}</b>
+                Dana Darurat : <b>{formatNumber(data.komisiAdi.danaDarurat)}</b>
               </span>
               <span>
                 Uang Keinginan :{" "}
-                <b>{formatNumber(data.komisiAdi.uangKeinginan) || "0"}</b>
+                <b>{formatNumber(data.komisiAdi.uangKeinginan)}</b>
               </span>
               <span>
                 Investasi : <b>{formatNumber(data.komisiAdi.uangInvestasi)}</b>

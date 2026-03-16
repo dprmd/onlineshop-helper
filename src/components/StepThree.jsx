@@ -646,7 +646,7 @@ const StepThree = ({
                       </li>
                       <li>
                         Catat Pemasukan Uang Dana Darurat Sebesar{" "}
-                        <b>{formatNumber(uangDanaDarurat) || "0"}</b>
+                        <b>{formatNumber(uangDanaDarurat)}</b>
                         {!simpleMode && (
                           <WordInBracket
                             kalimat={`${metode.danaDarurat}% x ${formatNumber(
@@ -728,7 +728,7 @@ const StepThree = ({
                         <li>
                           <span>Rekening Dana Darurat</span>{" "}
                           <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
-                          <b>{formatNumber(uangDanaDarurat) || "0"}</b>
+                          <b>{formatNumber(uangDanaDarurat)}</b>
                         </li>
                         <li>
                           <span>Rekening Keinginan</span>{" "}

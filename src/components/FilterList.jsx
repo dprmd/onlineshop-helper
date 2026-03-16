@@ -83,10 +83,10 @@ export default function FilterList({ platform }) {
     <div className="text-sm text-gray-400">
       <div className="py-2">
         <p className="font-bold text-md">
-          Total Setor : {formatNumber(deposit[platform]) || "0"}
+          Total Setor : {formatNumber(deposit[platform])}
         </p>
         <p className="font-bold text-md">
-          Total Untung : {formatNumber(worth[platform]) || "0"}
+          Total Untung : {formatNumber(worth[platform])}
         </p>
       </div>
 
