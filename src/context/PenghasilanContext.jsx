@@ -80,7 +80,7 @@ export function PenghasilanProvider({ children }) {
     }
   };
 
-  const sortByLimitUnderTen = (platform, num) => {
+  const sortByLimitUnderSeven = (platform, num) => {
     if (platform === "shopee") {
       setPenghasilanShopee(penghasilanShopeeTemp.slice(0, num));
     }
@@ -91,8 +91,8 @@ export function PenghasilanProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchPenghasilan("shopee", 10);
-    fetchPenghasilan("tiktok", 10);
+    fetchPenghasilan("shopee", 7);
+    fetchPenghasilan("tiktok", 7);
   }, []);
 
   return (
@@ -105,7 +105,7 @@ export function PenghasilanProvider({ children }) {
         loading,
         error,
         refetch: fetchPenghasilan,
-        sortByLimitUnderTen,
+        sortByLimitUnderSeven,
         fetchPenghasilanByDate,
         fetchPenghasilanByMonth,
       }}

@@ -183,7 +183,7 @@ export const getDaftarPenghasilanByDate = async (
   const startDate = new Date(start).getTime();
   const input = end;
   const date = new Date(input);
-  date.setDate(date.getDate() + 1);
+  date.setDate(date.getDate());
   const result = date.toISOString().slice(0, 10);
   const endDate = new Date(result).getTime();
 
