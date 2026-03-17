@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function FilterList({ platform }) {
   const {
+    loading,
     refetch: fetchPenghasilan,
     sortByLimitUnderSeven,
     fetchPenghasilanByDate,
@@ -145,6 +146,7 @@ export default function FilterList({ platform }) {
             <button
               className="bg-gray-500 rounded-md text-white mx-2 px-[4px] py-[2px]"
               type="submit"
+              disabled={loading ? true : false}
             >
               Tampilkan
             </button>
@@ -191,6 +193,7 @@ export default function FilterList({ platform }) {
             <button
               className="bg-gray-500 rounded-md text-white my-1 px-[4px] py-[2px]"
               type="submit"
+              disabled={loading ? true : false}
             >
               Tampilkan
             </button>
@@ -222,6 +225,7 @@ export default function FilterList({ platform }) {
             <button
               className="bg-gray-500 rounded-md text-white my-1 px-[4px] py-[2px]"
               type="submit"
+              disabled={loading ? true : false}
             >
               Tampilkan
             </button>
