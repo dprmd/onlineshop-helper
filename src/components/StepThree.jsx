@@ -242,30 +242,33 @@ const StepThree = () => {
     };
 
     const sinkronLastSave = async () => {
-      const shopeeLastSave = await getDocument(
-        "Ambil Last Save Shopee",
-        shopeeCollectionName,
-        lastSaveShopee,
-      );
-      const tiktokLastSave = await getDocument(
-        "Ambil Last Save TikTok",
-        tiktokCollectionName,
-        lastSaveTiktok,
-      );
+      if (isTikTok) {
+        const tiktokLastSave = await getDocument(
+          "Ambil Last Save TikTok",
+          tiktokCollectionName,
+          lastSaveTiktok,
+        );
 
-      // Local Storage
-      localStorage.setItem(lastSaveShopee, shopeeLastSave.data.time);
-      localStorage.setItem(lastSaveTiktok, tiktokLastSave.data.time);
+        if (tiktokLastSave.data.time === today) {
+          alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
+        } else {
+          saveNow();
+        }
+      } else {
+        const shopeeLastSave = await getDocument(
+          "Ambil Last Save Shopee",
+          shopeeCollectionName,
+          lastSaveShopee,
+        );
+
+        if (shopeeLastSave.data.time === today) {
+          alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
+        } else {
+          saveNow();
+        }
+      }
 
       // Begin
-      const newLastSave = localStorage.getItem(
-        isTikTok ? lastSaveTiktok : lastSaveShopee,
-      );
-      if (newLastSave === today) {
-        alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
-      } else {
-        saveNow();
-      }
     };
 
     await sinkronLastSave();
