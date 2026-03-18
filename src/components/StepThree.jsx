@@ -241,7 +241,7 @@ const StepThree = () => {
       }
     };
 
-    const checkLastSaveToFirebase = async () => {
+    const sinkronLastSave = async () => {
       const shopeeLastSave = await getDocument(
         "Ambil Last Save Shopee",
         shopeeCollectionName,
@@ -256,27 +256,8 @@ const StepThree = () => {
       // Local Storage
       localStorage.setItem(lastSaveShopee, shopeeLastSave.data.time);
       localStorage.setItem(lastSaveTiktok, tiktokLastSave.data.time);
-    };
 
-    const lastSave = localStorage.getItem(
-      isTikTok ? lastSaveTiktok : lastSaveShopee,
-    );
-    if (lastSave) {
-      if (lastSave === today) {
-        alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
-      } else {
-        checkLastSaveToFirebase();
-        const newLastSave = localStorage.getItem(
-          isTikTok ? lastSaveTiktok : lastSaveShopee,
-        );
-        if (newLastSave === today) {
-          alert("Kamu Sudah Menyimpan Penghasilan Hari Ini, Kembali Lah Besok");
-        } else {
-          saveNow();
-        }
-      }
-    } else {
-      checkLastSaveToFirebase();
+      // Begin
       const newLastSave = localStorage.getItem(
         isTikTok ? lastSaveTiktok : lastSaveShopee,
       );
@@ -285,7 +266,9 @@ const StepThree = () => {
       } else {
         saveNow();
       }
-    }
+    };
+
+    await sinkronLastSave();
   };
 
   return (
