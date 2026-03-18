@@ -1,18 +1,21 @@
 import { formatNumber, raw } from "../utils/generalFunction";
 import MyButton from "./MyButton";
 import { hari, listProduk } from "../lib/variables";
+import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
+import { useNavigate } from "react-router-dom";
 
-const StepTwo = ({
-  setProduk,
-  setStep,
-  penghasilanHPP,
-  setPenghasilanHPP,
-  showConclusion,
-  setShowConclusion,
-  submitOrder,
-  setSubmitOrder,
-  produkInArray,
-}) => {
+const StepTwo = () => {
+  const {
+    setProduk,
+    penghasilanHPP,
+    setPenghasilanHPP,
+    showConclusion,
+    setShowConclusion,
+    submitOrder,
+    setSubmitOrder,
+    produkInArray,
+  } = useAlokasiPemasukan();
+  const navigate = useNavigate();
   // Function
   const handleReset = () => {
     setProduk(listProduk);
@@ -66,7 +69,7 @@ const StepTwo = ({
             buttonType="button"
             tailwindClass={"bg-red-500 mx-1 px-2 py-1"}
             onClick={() => {
-              setStep(1);
+              navigate("/AlokasiPemasukan");
             }}
           />
 
@@ -87,7 +90,7 @@ const StepTwo = ({
               buttonType={"button"}
               tailwindClass={"bg-green-500 mx-1 px-2 py-1"}
               onClick={() => {
-                setStep(3);
+                navigate("/AlokasiPemasukan/summary");
               }}
             />
           )}

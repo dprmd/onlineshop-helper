@@ -17,6 +17,8 @@ import {
 import { formatNumber, raw, validateNumber } from "../utils/generalFunction";
 import AddBillModal from "./AddBillModal";
 import MyButton from "./MyButton";
+import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
+import { useNavigate } from "react-router-dom";
 
 // additional function
 const date = new Date();
@@ -26,22 +28,23 @@ const today = new Intl.DateTimeFormat("en-GB", {
   year: "numeric",
 }).format(date);
 
-const StepThree = ({
-  totalPenghasilan,
-  setTotalPenghasilan,
-  penghasilanHPP,
-  setPenghasilanHPP,
-  setStep,
-  gajiHarian,
-  setGajiHarian,
-  totalTagihan,
-  setTotalTagihan,
-  tagihan,
-  setTagihan,
-  isTikTok,
-  setIsTikTok,
-  produkInArray,
-}) => {
+const StepThree = () => {
+  const {
+    totalPenghasilan,
+    setTotalPenghasilan,
+    penghasilanHPP,
+    setPenghasilanHPP,
+    gajiHarian,
+    setGajiHarian,
+    totalTagihan,
+    setTotalTagihan,
+    tagihan,
+    setTagihan,
+    isTikTok,
+    setIsTikTok,
+    produkInArray,
+  } = useAlokasiPemasukan();
+  const navigate = useNavigate();
   // hooks
   const { refetch: fetchPenghasilan } = usePenghasilan();
   const [addBill, setAddBill] = useState(false);
@@ -477,7 +480,7 @@ const StepThree = ({
             buttonText={"Kembali"}
             buttonType={"button"}
             onClick={() => {
-              setStep(2);
+              navigate("/AlokasiPemasukan/calculateHPP");
             }}
             tailwindClass={"bg-red-500 mx-1 px-2 py-1"}
           />

@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { formatNumber, validateNumber } from "../utils/generalFunction";
 import MyButton from "./MyButton";
+import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
 
-export default function ({ totalPenghasilan, setTotalPenghasilan, setStep }) {
+export default function () {
+  const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();
   const navigate = useNavigate();
 
   return (
@@ -11,7 +13,7 @@ export default function ({ totalPenghasilan, setTotalPenghasilan, setStep }) {
         className="border border-slate-400 rounded-md w-max mx-auto mt-3 p-4 max-w-[400px]"
         onSubmit={(e) => {
           e.preventDefault();
-          setStep(2);
+          navigate("/AlokasiPemasukan/calculateHPP");
         }}
       >
         {/* Input Total Penarikan Dana */}
