@@ -19,6 +19,7 @@ import AddBillModal from "./AddBillModal";
 import MyButton from "./MyButton";
 import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
 import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "./LoadingOverlay";
 
 // additional function
 const date = new Date();
@@ -46,7 +47,20 @@ const StepThree = () => {
   } = useAlokasiPemasukan();
   const navigate = useNavigate();
   // hooks
-  const { refetch: fetchPenghasilan } = usePenghasilan();
+  const {
+    fetchPenghasilan,
+    penghasilanHPPAT,
+    setPenghasilanHPPAT,
+    tagihanAT,
+    setTagihanAT,
+    setorAT,
+    setSetorAT,
+    untungAT,
+    setUntungAT,
+  } = usePenghasilan();
+
+  // State
+  const [loadingSave, setLoadingSave] = useState(false);
   const [addBill, setAddBill] = useState(false);
   const [sudahHitung, setSudahHitung] = useState(false);
   const [kerja, setKerja] = useState(day === 0 ? false : true);
@@ -96,10 +110,15 @@ const StepThree = () => {
     setTotalTagihan(totalTagihanLainnya);
 
     // Hitung Total Untuk Ade Siska
-    const untukAdeSiska =
-      raw(totalPenghasilan) -
-      (patunganUntukEma.uko + getKomisiKotor) -
-      totalTagihanLainnya;
+    let untukAdeSiska = 0;
+    if (isTikTok) {
+      untukAdeSiska = raw(penghasilanHPP) - totalTagihanLainnya;
+    } else {
+      untukAdeSiska =
+        raw(totalPenghasilan) -
+        (patunganUntukEma.uko + getKomisiKotor) -
+        totalTagihanLainnya;
+    }
     if (kerja) {
       setUangAdeSiska(untukAdeSiska - gajiHarianTemp);
     } else {
@@ -161,8 +180,10 @@ const StepThree = () => {
         "Apakah Anda Yakin Menyimpan Dokumen Ke Firebase ?",
       );
 
+      setLoadingSave(true);
+
       if (konfirmasi) {
-        // Data Penghasilan TikTok
+        // Data Penghasilan TikTok Yang Akan Di Simpan
         const penghasilanTikTok = {
           totalPenghasilan: raw(totalPenghasilan),
           penghasilanHPP: {
@@ -176,9 +197,10 @@ const StepThree = () => {
           komisiAdi: {
             total: komisiKotor,
           },
+          uangAdeSiska,
         };
 
-        // Data Penghasilan Shopee
+        // Data Penghasilan Shopee Yang Akan Di Simpan
         const penghasilanShopee = {
           totalPenghasilan: raw(totalPenghasilan),
           penghasilanHPP: {
@@ -219,6 +241,38 @@ const StepThree = () => {
             "Berhasil Update TikTok Last Save",
           );
           localStorage.setItem(lastSaveTiktok, today);
+
+          // Update All Time Document Tiktok
+          await updateDocument(
+            "UpdateAllTimeDocument",
+            "penghasilanAllTime",
+            "CatatanPenghasilanAllTime",
+            {
+              tiktok: {
+                penghasilanHPPAT: penghasilanHPPAT.tiktok + raw(penghasilanHPP),
+                tagihanAT: tagihanAT.tiktok + totalTagihan,
+                setorAT: setorAT.tiktok + uangAdeSiska,
+                untungAT: untungAT.tiktok + komisiKotor,
+              },
+            },
+            "Berhasil Mengupdate Document All Time Shopee",
+          );
+          setPenghasilanHPPAT((prev) => ({
+            ...prev,
+            tiktok: prev.tiktok + raw(penghasilanHPP),
+          }));
+          setTagihanAT((prev) => ({
+            ...prev,
+            tiktok: prev.tiktok + totalTagihan,
+          }));
+          setSetorAT((prev) => ({
+            ...prev,
+            tiktok: prev.tiktok + uangAdeSiska,
+          }));
+          setUntungAT((prev) => ({
+            ...prev,
+            tiktok: prev.tiktok + komisiKotor,
+          }));
         } else {
           await createDocument(
             "saveNotePenghasilanShopee",
@@ -234,9 +288,42 @@ const StepThree = () => {
             "Berhasil Update Shopee Last Save",
           );
           localStorage.setItem(lastSaveShopee, today);
+
+          // Update All Time Document Shopee
+          await updateDocument(
+            "UpdateAllTimeDocument",
+            "penghasilanAllTime",
+            "CatatanPenghasilanAllTime",
+            {
+              shopee: {
+                penghasilanHPPAT: penghasilanHPPAT.shopee + raw(penghasilanHPP),
+                tagihanAT: tagihanAT.shopee + totalTagihan,
+                setorAT: setorAT.shopee + uangAdeSiska,
+                untungAT: untungAT.shopee + komisiKotor,
+              },
+            },
+            "Berhasil Mengupdate Document All Time Shopee",
+          );
+          setPenghasilanHPPAT((prev) => ({
+            ...prev,
+            shopee: prev.shopee + raw(penghasilanHPP),
+          }));
+          setTagihanAT((prev) => ({
+            ...prev,
+            shopee: prev.shopee + totalTagihan,
+          }));
+          setSetorAT((prev) => ({
+            ...prev,
+            shopee: prev.shopee + uangAdeSiska,
+          }));
+          setUntungAT((prev) => ({
+            ...prev,
+            shopee: prev.shopee + komisiKotor,
+          }));
         }
 
         fetchPenghasilan(platform, 10);
+        setLoadingSave(false);
         alert("Berhasil Menyimpan Dokumen");
       }
     };
@@ -267,8 +354,6 @@ const StepThree = () => {
           saveNow();
         }
       }
-
-      // Begin
     };
 
     await sinkronLastSave();
@@ -276,6 +361,7 @@ const StepThree = () => {
 
   return (
     <div className="flex justify-center items-center flex-col py-3">
+      <LoadingOverlay show={loadingSave} text="Loading . . ." />
       <AddBillModal
         openModalState={addBill}
         setOpenModalState={setAddBill}

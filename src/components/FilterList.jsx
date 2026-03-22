@@ -2,11 +2,12 @@ import { formatNumber } from "../utils/generalFunction";
 import { usePenghasilan } from "../context/PenghasilanContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import LoadingOverlay from "./LoadingOverlay";
 
 export default function FilterList({ platform }) {
   const {
     loading,
-    refetch: fetchPenghasilan,
+    fetchPenghasilan,
     sortByLimitUnderSeven,
     fetchPenghasilanByDate,
     fetchPenghasilanByMonth,
@@ -14,11 +15,19 @@ export default function FilterList({ platform }) {
     penghasilanTikTok,
   } = usePenghasilan();
   const navigate = useNavigate();
-  const [deposit, setDeposit] = useState({
+  const [setor, setSetor] = useState({
     shopee: 0,
     tiktok: 0,
   });
-  const [worth, setWorth] = useState({
+  const [untung, setUntung] = useState({
+    shopee: 0,
+    tiktok: 0,
+  });
+  const [penghasilanHPPAT, setPenghasilanHPPAT] = useState({
+    shopee: 0,
+    tiktok: 0,
+  });
+  const [tagihanAT, setTagihanAT] = useState({
     shopee: 0,
     tiktok: 0,
   });
@@ -58,36 +67,64 @@ export default function FilterList({ platform }) {
   }, [customList]);
 
   useEffect(() => {
-    const shopeeDeposit = penghasilanShopee.reduce((acc, cur) => {
+    // Perhitungan Setor
+    const setorShopee = penghasilanShopee.reduce((acc, cur) => {
       return acc + cur.uangAdeSiska;
     }, 0);
-    const tiktokDeposit = penghasilanTikTok.reduce((acc, cur) => {
-      return acc + cur.penghasilanHPP.total - cur.tagihan.totalTagihan;
+    const setorTiktok = penghasilanTikTok.reduce((acc, cur) => {
+      return acc + cur.uangAdeSiska;
     }, 0);
-    setDeposit({ tiktok: tiktokDeposit, shopee: shopeeDeposit });
+    setSetor({ tiktok: setorTiktok, shopee: setorShopee });
 
-    const shopeeWorth = penghasilanShopee.reduce((acc, cur) => {
-      return (
-        acc +
-        cur.komisiAdi.total -
-        cur.komisiAdi.sedekah -
-        cur.patunganUntukEma.adi
-      );
+    // Perhitungan Untung
+    const untungShopee = penghasilanShopee.reduce((acc, cur) => {
+      return acc + cur.komisiAdi.komisiBersih;
     }, 0);
-    const tiktokWorth = penghasilanTikTok.reduce((acc, cur) => {
+    const untungTiktok = penghasilanTikTok.reduce((acc, cur) => {
       return acc + cur.komisiAdi.total;
     }, 0);
-    setWorth({ tiktok: tiktokWorth, shopee: shopeeWorth });
+    setUntung({ tiktok: untungTiktok, shopee: untungShopee });
+
+    // Perhitungan Penghasilan HPP
+    const penghasilanHPPATShopee = penghasilanShopee.reduce((acc, cur) => {
+      return acc + cur.totalPenghasilan;
+    }, 0);
+    const penghasilanHPPATTiktok = penghasilanTikTok.reduce((acc, cur) => {
+      return acc + cur.totalPenghasilan;
+    }, 0);
+    setPenghasilanHPPAT({
+      shopee: penghasilanHPPATShopee,
+      tiktok: penghasilanHPPATTiktok,
+    });
+
+    // Perhitungan Tagihan
+    const tagihanATShopee = penghasilanShopee.reduce((acc, cur) => {
+      return acc + cur.tagihan.totalTagihan;
+    }, 0);
+    const tagihanATTiktok = penghasilanTikTok.reduce((acc, cur) => {
+      return acc + cur.tagihan.totalTagihan;
+    }, 0);
+    setTagihanAT({
+      shopee: tagihanATShopee,
+      tiktok: tagihanATTiktok,
+    });
   }, [penghasilanShopee, penghasilanTikTok]);
 
   return (
     <div className="text-sm text-gray-400">
+      <LoadingOverlay show={loading} text="Loading . . ." />
       <div className="py-2">
         <p className="font-bold text-md">
-          Total Setor : {formatNumber(deposit[platform])}
+          Total Penghasilan : {formatNumber(penghasilanHPPAT[platform])}
         </p>
         <p className="font-bold text-md">
-          Total Untung : {formatNumber(worth[platform])}
+          Total Tagihan : {formatNumber(tagihanAT[platform])}
+        </p>
+        <p className="font-bold text-md">
+          Total Setor : {formatNumber(setor[platform])}
+        </p>
+        <p className="font-bold text-md">
+          Total Untung : {formatNumber(untung[platform])}
         </p>
       </div>
 
@@ -225,7 +262,6 @@ export default function FilterList({ platform }) {
             <button
               className="bg-gray-500 rounded-md text-white my-1 px-[4px] py-[2px]"
               type="submit"
-              disabled={loading ? true : false}
             >
               Tampilkan
             </button>

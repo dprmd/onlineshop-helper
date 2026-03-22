@@ -2,6 +2,7 @@ import {
   getDaftarPenghasilan,
   getDaftarPenghasilanByDate,
   getDaftarPenghasilanByMonth,
+  getDocument,
 } from "../services/firebase/docService";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -12,8 +13,43 @@ export function PenghasilanProvider({ children }) {
   const [penghasilanShopeeTemp, setPenghasilanShopeeTemp] = useState([]);
   const [penghasilanTikTok, setPenghasilanTikTok] = useState([]);
   const [penghasilanTikTokTemp, setPenghasilanTikTokTemp] = useState([]);
+
+  // Shopee
+  const dummy = { shopee: 0, tiktok: 0 };
+  const [penghasilanHPPAT, setPenghasilanHPPAT] = useState(dummy);
+  const [tagihanAT, setTagihanAT] = useState(dummy);
+  const [setorAT, setSetorAT] = useState(dummy);
+  const [untungAT, setUntungAT] = useState(dummy);
+
+  // Loading & Error
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const fetchAT = async () => {
+    setLoading(true);
+    const { shopee, tiktok } = await getDocument(
+      "Mengambil Document Catatan Penghasilan All Time",
+      "penghasilanAllTime",
+      "CatatanPenghasilanAllTime",
+    ).then((data) => data.data);
+
+    setPenghasilanHPPAT({
+      shopee: shopee.penghasilanHPPAT,
+      tiktok: tiktok.penghasilanHPPAT,
+    });
+    setTagihanAT({
+      shopee: shopee.tagihanAT,
+      tiktok: tiktok.tagihanAt,
+    });
+    setSetorAT({
+      shopee: shopee.setorAT,
+      tiktok: tiktok.setorAT,
+    });
+    setUntungAT({
+      shopee: shopee.untungAT,
+      tiktok: tiktok.untungAT,
+    });
+  };
 
   const fetchPenghasilan = async (platform, limit) => {
     setLoading(true);
@@ -44,7 +80,6 @@ export function PenghasilanProvider({ children }) {
     );
     if (data.success) {
       if (platform === "shopee") {
-        console.log(data);
         setPenghasilanShopee(data.data);
       } else {
         setPenghasilanTikTok(data.data);
@@ -67,7 +102,6 @@ export function PenghasilanProvider({ children }) {
     );
     if (data.success) {
       if (platform === "shopee") {
-        console.log(data);
         setPenghasilanShopee(data.data);
       } else {
         setPenghasilanTikTok(data.data);
@@ -93,6 +127,7 @@ export function PenghasilanProvider({ children }) {
   useEffect(() => {
     fetchPenghasilan("shopee", 7);
     fetchPenghasilan("tiktok", 7);
+    fetchAT();
   }, []);
 
   return (
@@ -104,10 +139,18 @@ export function PenghasilanProvider({ children }) {
         setPenghasilanTikTok,
         loading,
         error,
-        refetch: fetchPenghasilan,
+        fetchPenghasilan,
         sortByLimitUnderSeven,
         fetchPenghasilanByDate,
         fetchPenghasilanByMonth,
+        penghasilanHPPAT,
+        setPenghasilanHPPAT,
+        tagihanAT,
+        setTagihanAT,
+        setorAT,
+        setSetorAT,
+        untungAT,
+        setUntungAT,
       }}
     >
       {children}

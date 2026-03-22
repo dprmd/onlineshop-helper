@@ -2,6 +2,7 @@ import { createHashRouter, RouterProvider } from "react-router-dom";
 import { PenghasilanProvider } from "./context/PenghasilanContext";
 import CatatanPenghasilan from "./pages/CatatanPenghasilan";
 import Home from "./pages/Home";
+import TotalPenghasilan from "./pages/TotalPenghasilan";
 import PerhitunganProfit from "./pages/PerhitunganProfit";
 import RiwayatPenghasilanShopee from "./pages/RiwayatPenghasilanShopee";
 import RiwayatPenghasilanTikTok from "./pages/RiwayatPenghasilanTikTok";
@@ -28,6 +29,7 @@ const router = createHashRouter([
         path: "CatatanPenghasilan",
         children: [
           { index: true, element: <CatatanPenghasilan /> },
+          {path: "totalPenghasilan", element: <TotalPenghasilan />},
           { path: "Shopee", element: <RiwayatPenghasilanShopee /> },
           { path: "TikTok", element: <RiwayatPenghasilanTikTok /> },
         ],

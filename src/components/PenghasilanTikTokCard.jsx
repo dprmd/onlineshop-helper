@@ -53,12 +53,7 @@ export default function PenghasilanTikTokCard({ data }) {
       <div>
         <div className="flex gap-x-2">
           <span>
-            Total Setor :{" "}
-            <b>
-              {formatNumber(
-                data.penghasilanHPP.total - data.tagihan.totalTagihan,
-              )}
-            </b>
+            Total Setor : <b>{formatNumber(data.uangAdeSiska)}</b>
           </span>
           <button
             className="text-[12px] underline text-gray-400 cursor-pointer"
@@ -84,7 +79,7 @@ export default function PenghasilanTikTokCard({ data }) {
                 {data.tagihan.listTagihan.map((bill) => (
                   <div key={bill.identifier}>
                     <span className="text-[12px]">
-                      - {bill.billName} : {bill.totalBill}
+                      - {bill.billName} : <b>{bill.totalBill}</b>
                     </span>
                   </div>
                 ))}
@@ -98,12 +93,7 @@ export default function PenghasilanTikTokCard({ data }) {
                   ? formatNumber(data.tagihan.totalTagihan)
                   : "0"}
               </b>
-              ={" "}
-              <b>
-                {formatNumber(
-                  data.penghasilanHPP.total - data.tagihan.totalTagihan,
-                )}
-              </b>{" "}
+              = <b>{formatNumber(data.uangAdeSiska)}</b>{" "}
             </span>
           </div>
         )}

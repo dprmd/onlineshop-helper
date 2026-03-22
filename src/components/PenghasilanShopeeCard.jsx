@@ -135,7 +135,7 @@ export default function PenghasilanShopeeCard({ data }) {
                 {data.tagihan.listTagihan.map((bill) => (
                   <div key={bill.identifier}>
                     <span className="text-[12px]">
-                      - {bill.billName} : {bill.totalBill}
+                      - {bill.billName} : <b>{bill.totalBill}</b>
                     </span>
                   </div>
                 ))}
