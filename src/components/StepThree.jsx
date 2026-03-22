@@ -30,6 +30,7 @@ const today = new Intl.DateTimeFormat("en-GB", {
 }).format(date);
 
 const StepThree = () => {
+  // hooks
   const {
     totalPenghasilan,
     setTotalPenghasilan,
@@ -46,7 +47,6 @@ const StepThree = () => {
     produkInArray,
   } = useAlokasiPemasukan();
   const navigate = useNavigate();
-  // hooks
   const {
     fetchPenghasilan,
     penghasilanHPPAT,
@@ -183,50 +183,26 @@ const StepThree = () => {
       setLoadingSave(true);
 
       if (konfirmasi) {
-        // Data Penghasilan TikTok Yang Akan Di Simpan
-        const penghasilanTikTok = {
-          totalPenghasilan: raw(totalPenghasilan),
-          penghasilanHPP: {
-            total: raw(penghasilanHPP),
-            produkTerjual: produkInArray.filter((produk) => produk.terjual > 0),
-          },
-          tagihan: {
-            listTagihan: tagihan,
-            totalTagihan,
-          },
-          komisiAdi: {
-            total: komisiKotor,
-          },
-          uangAdeSiska,
-        };
+        const updateTiktokDoc = async () => {
+          // Data Penghasilan TikTok Yang Akan Di Simpan
+          const penghasilanTikTok = {
+            totalPenghasilan: raw(totalPenghasilan),
+            penghasilanHPP: {
+              total: raw(penghasilanHPP),
+              produkTerjual: produkInArray.filter(
+                (produk) => produk.terjual > 0,
+              ),
+            },
+            tagihan: {
+              listTagihan: tagihan,
+              totalTagihan,
+            },
+            komisiAdi: {
+              total: komisiKotor,
+            },
+            uangAdeSiska,
+          };
 
-        // Data Penghasilan Shopee Yang Akan Di Simpan
-        const penghasilanShopee = {
-          totalPenghasilan: raw(totalPenghasilan),
-          penghasilanHPP: {
-            total: raw(penghasilanHPP),
-            produkTerjual: produkInArray.filter((produk) => produk.terjual > 0),
-          },
-          tagihan: {
-            listTagihan: tagihan,
-            totalTagihan,
-          },
-          uangAdeSiska,
-          uangEmaIki,
-          komisiAdi: {
-            total: komisiKotor,
-            komisiBersih,
-            capital: uangCapital,
-            danaDarurat: uangDanaDarurat,
-            uangKeinginan: uangKeinginan,
-            uangInvestasi: uangInvestasi,
-            sedekah: uangUntukSedekah,
-          },
-          patunganUntukEma,
-          gajiAdi: gajiHarian,
-        };
-
-        if (isTikTok) {
           await createDocument(
             "saveNotePenghasilanTikTok",
             tiktokCollectionName,
@@ -257,23 +233,36 @@ const StepThree = () => {
             },
             "Berhasil Mengupdate Document All Time Shopee",
           );
-          setPenghasilanHPPAT((prev) => ({
-            ...prev,
-            tiktok: prev.tiktok + raw(penghasilanHPP),
-          }));
-          setTagihanAT((prev) => ({
-            ...prev,
-            tiktok: prev.tiktok + totalTagihan,
-          }));
-          setSetorAT((prev) => ({
-            ...prev,
-            tiktok: prev.tiktok + uangAdeSiska,
-          }));
-          setUntungAT((prev) => ({
-            ...prev,
-            tiktok: prev.tiktok + komisiKotor,
-          }));
-        } else {
+        };
+
+        const updateShopeeDoc = async () => {
+          // Data Penghasilan Shopee Yang Akan Di Simpan
+          const penghasilanShopee = {
+            totalPenghasilan: raw(totalPenghasilan),
+            penghasilanHPP: {
+              total: raw(penghasilanHPP),
+              produkTerjual: produkInArray.filter(
+                (produk) => produk.terjual > 0,
+              ),
+            },
+            tagihan: {
+              listTagihan: tagihan,
+              totalTagihan,
+            },
+            uangAdeSiska,
+            uangEmaIki,
+            komisiAdi: {
+              total: komisiKotor,
+              komisiBersih,
+              capital: uangCapital,
+              danaDarurat: uangDanaDarurat,
+              uangKeinginan: uangKeinginan,
+              uangInvestasi: uangInvestasi,
+              sedekah: uangUntukSedekah,
+            },
+            patunganUntukEma,
+            gajiAdi: gajiHarian,
+          };
           await createDocument(
             "saveNotePenghasilanShopee",
             "penghasilanJualanOnlineShopee",
@@ -304,25 +293,33 @@ const StepThree = () => {
             },
             "Berhasil Mengupdate Document All Time Shopee",
           );
-          setPenghasilanHPPAT((prev) => ({
-            ...prev,
-            shopee: prev.shopee + raw(penghasilanHPP),
-          }));
-          setTagihanAT((prev) => ({
-            ...prev,
-            shopee: prev.shopee + totalTagihan,
-          }));
-          setSetorAT((prev) => ({
-            ...prev,
-            shopee: prev.shopee + uangAdeSiska,
-          }));
-          setUntungAT((prev) => ({
-            ...prev,
-            shopee: prev.shopee + komisiKotor,
-          }));
+        };
+
+        if (isTikTok) {
+          await updateTiktokDoc();
+        } else {
+          await updateShopeeDoc();
         }
 
-        fetchPenghasilan(platform, 10);
+        // Optimistic Update
+        setPenghasilanHPPAT((prev) => ({
+          ...prev,
+          [platform]: prev[platform] + raw(penghasilanHPP),
+        }));
+        setTagihanAT((prev) => ({
+          ...prev,
+          [platform]: prev[platform] + totalTagihan,
+        }));
+        setSetorAT((prev) => ({
+          ...prev,
+          [platform]: prev[platform] + uangAdeSiska,
+        }));
+        setUntungAT((prev) => ({
+          ...prev,
+          [platform]: prev[platform] + komisiKotor,
+        }));
+
+        fetchPenghasilan(platform, 7);
         setLoadingSave(false);
         alert("Berhasil Menyimpan Dokumen");
       }

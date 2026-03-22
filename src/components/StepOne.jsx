@@ -2,10 +2,14 @@ import { useNavigate } from "react-router-dom";
 import { formatNumber, validateNumber } from "../utils/generalFunction";
 import MyButton from "./MyButton";
 import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
+import { usePenghasilan } from "../context/PenghasilanContext";
 
 export default function () {
   const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();
+  const { penghasilanHPPAT } = usePenghasilan();
   const navigate = useNavigate();
+
+  console.log(penghasilanHPPAT);
 
   return (
     <div className="flex justify-center items-center flex-col py-3">
