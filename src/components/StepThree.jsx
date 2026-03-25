@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import WordInBracket from "../components/WordInBracket";
 import { usePenghasilan } from "../context/PenghasilanContext";
 import {
@@ -236,6 +236,7 @@ const StepThree = () => {
         };
 
         const updateShopeeDoc = async () => {
+          2;
           // Data Penghasilan Shopee Yang Akan Di Simpan
           const penghasilanShopee = {
             totalPenghasilan: raw(totalPenghasilan),
@@ -355,6 +356,14 @@ const StepThree = () => {
 
     await sinkronLastSave();
   };
+
+  useEffect(() => {
+    if (isTikTok) {
+      setGajiHarian(0);
+      setKerja(false);
+      console.log("mode tiktok aktif, kini gaji jadi 0");
+    }
+  }, [isTikTok]);
 
   return (
     <div className="flex justify-center items-center flex-col py-3">
