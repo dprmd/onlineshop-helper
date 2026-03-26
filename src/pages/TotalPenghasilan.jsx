@@ -72,7 +72,7 @@ export default function TotalPenghasilan() {
 }
 
 function SalesPieChart({ data }) {
-  const COLORS = ["#f97316", "#3b82f6", "#FF0000"];
+  const COLORS = ["#f97316", "#000000", "#FF0000"];
   const total = data.reduce((acc, item) => acc + item.value, 0);
 
   return (
