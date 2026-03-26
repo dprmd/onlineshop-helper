@@ -16,7 +16,7 @@ export function PenghasilanProvider({ children }) {
 
   // Shopee
   const dummy = { shopee: 0, tiktok: 0 };
-  const [penghasilanHPPAT, setPenghasilanHPPAT] = useState(dummy);
+  const [penghasilanAT, setPenghasilanAT] = useState(dummy);
   const [tagihanAT, setTagihanAT] = useState(dummy);
   const [setorAT, setSetorAT] = useState(dummy);
   const [untungAT, setUntungAT] = useState(dummy);
@@ -33,13 +33,13 @@ export function PenghasilanProvider({ children }) {
       "CatatanPenghasilanAllTime",
     ).then((data) => data.data);
 
-    setPenghasilanHPPAT({
-      shopee: shopee.penghasilanHPPAT,
-      tiktok: tiktok.penghasilanHPPAT,
+    setPenghasilanAT({
+      shopee: shopee.penghasilanAT,
+      tiktok: tiktok.penghasilanAT,
     });
     setTagihanAT({
       shopee: shopee.tagihanAT,
-      tiktok: tiktok.tagihanAt,
+      tiktok: tiktok.tagihanAT,
     });
     setSetorAT({
       shopee: shopee.setorAT,
@@ -143,8 +143,8 @@ export function PenghasilanProvider({ children }) {
         sortByLimitUnderSeven,
         fetchPenghasilanByDate,
         fetchPenghasilanByMonth,
-        penghasilanHPPAT,
-        setPenghasilanHPPAT,
+        penghasilanAT,
+        setPenghasilanAT,
         tagihanAT,
         setTagihanAT,
         setorAT,

@@ -6,10 +6,10 @@ import { usePenghasilan } from "../context/PenghasilanContext";
 
 export default function () {
   const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();
-  const { penghasilanHPPAT } = usePenghasilan();
+  const hei = usePenghasilan();
   const navigate = useNavigate();
 
-  console.log(penghasilanHPPAT);
+  console.log(hei);
 
   return (
     <div className="flex justify-center items-center flex-col py-3">

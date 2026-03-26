@@ -23,7 +23,7 @@ export default function FilterList({ platform }) {
     shopee: 0,
     tiktok: 0,
   });
-  const [penghasilanHPPAT, setPenghasilanHPPAT] = useState({
+  const [penghasilanAT, setPenghasilanAT] = useState({
     shopee: 0,
     tiktok: 0,
   });
@@ -92,7 +92,7 @@ export default function FilterList({ platform }) {
     const penghasilanHPPATTiktok = penghasilanTikTok.reduce((acc, cur) => {
       return acc + cur.totalPenghasilan;
     }, 0);
-    setPenghasilanHPPAT({
+    setPenghasilanAT({
       shopee: penghasilanHPPATShopee,
       tiktok: penghasilanHPPATTiktok,
     });
@@ -115,7 +115,7 @@ export default function FilterList({ platform }) {
       <LoadingOverlay show={loading} text="Loading . . ." />
       <div className="py-2">
         <p className="font-bold text-md">
-          Total Penghasilan : {formatNumber(penghasilanHPPAT[platform])}
+          Total Penghasilan : {formatNumber(penghasilanAT[platform])}
         </p>
         <p className="font-bold text-md">
           Total Tagihan : {formatNumber(tagihanAT[platform])}

@@ -49,8 +49,8 @@ const StepThree = () => {
   const navigate = useNavigate();
   const {
     fetchPenghasilan,
-    penghasilanHPPAT,
-    setPenghasilanHPPAT,
+    penghasilanAT,
+    setPenghasilanAT,
     tagihanAT,
     setTagihanAT,
     setorAT,
@@ -225,7 +225,7 @@ const StepThree = () => {
             "CatatanPenghasilanAllTime",
             {
               tiktok: {
-                penghasilanHPPAT: penghasilanHPPAT.tiktok + raw(penghasilanHPP),
+                penghasilanAT: penghasilanAT.tiktok + raw(penghasilanHPP),
                 tagihanAT: tagihanAT.tiktok + totalTagihan,
                 setorAT: setorAT.tiktok + uangAdeSiska,
                 untungAT: untungAT.tiktok + komisiKotor,
@@ -286,7 +286,7 @@ const StepThree = () => {
             "CatatanPenghasilanAllTime",
             {
               shopee: {
-                penghasilanHPPAT: penghasilanHPPAT.shopee + raw(penghasilanHPP),
+                penghasilanAT: penghasilanAT.shopee + raw(penghasilanHPP),
                 tagihanAT: tagihanAT.shopee + totalTagihan,
                 setorAT: setorAT.shopee + uangAdeSiska,
                 untungAT: untungAT.shopee + komisiKotor,
@@ -303,7 +303,7 @@ const StepThree = () => {
         }
 
         // Optimistic Update
-        setPenghasilanHPPAT((prev) => ({
+        setPenghasilanAT((prev) => ({
           ...prev,
           [platform]: prev[platform] + raw(penghasilanHPP),
         }));
@@ -324,6 +324,8 @@ const StepThree = () => {
         setLoadingSave(false);
         alert("Berhasil Menyimpan Dokumen");
       }
+
+      setLoadingSave(false);
     };
 
     const sinkronLastSave = async () => {
