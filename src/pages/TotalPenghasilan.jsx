@@ -9,30 +9,31 @@ export default function TotalPenghasilan() {
   const navigate = useNavigate();
   const { penghasilanAT, tagihanAT, setorAT, untungAT } = usePenghasilan();
 
-  const totalPenghasilanAT = Object.values(penghasilanAT).reduce(
-    (acc, cur) => acc + cur,
-  );
-  const totalTagihanAT = Object.values(tagihanAT).reduce(
-    (acc, cur) => acc + cur,
-  );
-  const totalSetorAT = Object.values(setorAT).reduce((acc, cur) => acc + cur);
-  const totalUntungAT = Object.values(untungAT).reduce((acc, cur) => acc + cur);
+  const totalPenghasilanAT = Object.values(penghasilanAT).reduce((acc, cur) => {
+    return acc + cur;
+  }, 0);
+  const totalTagihanAT = Object.values(tagihanAT).reduce((acc, cur) => {
+    return acc + cur;
+  }, 0);
+  const totalSetorAT = Object.values(setorAT).reduce((acc, cur) => {
+    return acc + cur;
+  }, 0);
+  const totalUntungAT = Object.values(untungAT).reduce((acc, cur) => {
+    return acc + cur;
+  }, 0);
 
   const totalShopee = tagihanAT.shopee + setorAT.shopee + untungAT.shopee;
   const totalTiktok = tagihanAT.tiktok + setorAT.tiktok + untungAT.tiktok;
+  const totalLainnya = totalPenghasilanAT - totalShopee - totalTiktok;
 
   const dataKeuangan = [
     {
       name: "Shopee",
-      value: totalShopee,
+      value: penghasilanAT.shopee,
     },
     {
       name: "TikTok",
-      value: totalTiktok,
-    },
-    {
-      name: "Lainnya",
-      value: totalPenghasilanAT - totalShopee - totalTiktok,
+      value: penghasilanAT.tiktok,
     },
   ];
 
@@ -54,6 +55,9 @@ export default function TotalPenghasilan() {
           </p>
           <p>
             Total Untung : <b>RP {formatNumber(totalUntungAT)}</b>
+          </p>
+          <p>
+            Total Lainnya : <b>RP {formatNumber(totalLainnya)}</b>
           </p>
         </div>
         <SalesPieChart data={dataKeuangan} />

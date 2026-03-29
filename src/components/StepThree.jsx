@@ -219,17 +219,18 @@ const StepThree = () => {
           localStorage.setItem(lastSaveTiktok, today);
 
           // Update All Time Document Tiktok
+          const tiktokAllTime = {
+            penghasilanAT: penghasilanAT.tiktok + raw(penghasilanHPP),
+            tagihanAT: tagihanAT.tiktok + totalTagihan,
+            setorAT: setorAT.tiktok + uangAdeSiska,
+            untungAT: untungAT.tiktok + komisiKotor,
+          };
           await updateDocument(
             "UpdateAllTimeDocument",
             "penghasilanAllTime",
             "CatatanPenghasilanAllTime",
             {
-              tiktok: {
-                penghasilanAT: penghasilanAT.tiktok + raw(penghasilanHPP),
-                tagihanAT: tagihanAT.tiktok + totalTagihan,
-                setorAT: setorAT.tiktok + uangAdeSiska,
-                untungAT: untungAT.tiktok + komisiKotor,
-              },
+              tiktok: tiktokAllTime,
             },
             "Berhasil Mengupdate Document All Time Shopee",
           );
@@ -280,17 +281,18 @@ const StepThree = () => {
           localStorage.setItem(lastSaveShopee, today);
 
           // Update All Time Document Shopee
+          const shopeeAllTime = {
+            penghasilanAT: penghasilanAT.shopee + raw(penghasilanHPP),
+            tagihanAT: tagihanAT.shopee + totalTagihan,
+            setorAT: setorAT.shopee + uangAdeSiska,
+            untungAT: untungAT.shopee + komisiKotor,
+          };
           await updateDocument(
             "UpdateAllTimeDocument",
             "penghasilanAllTime",
             "CatatanPenghasilanAllTime",
             {
-              shopee: {
-                penghasilanAT: penghasilanAT.shopee + raw(penghasilanHPP),
-                tagihanAT: tagihanAT.shopee + totalTagihan,
-                setorAT: setorAT.shopee + uangAdeSiska,
-                untungAT: untungAT.shopee + komisiKotor,
-              },
+              shopee: shopeeAllTime,
             },
             "Berhasil Mengupdate Document All Time Shopee",
           );
