@@ -78,7 +78,7 @@ export default function FilterList({ platform }) {
 
     // Perhitungan Untung
     const untungShopee = penghasilanShopee.reduce((acc, cur) => {
-      return acc + cur.komisiAdi.komisiBersih;
+      return acc + cur.komisiAdi.total;
     }, 0);
     const untungTiktok = penghasilanTikTok.reduce((acc, cur) => {
       return acc + cur.komisiAdi.total;
