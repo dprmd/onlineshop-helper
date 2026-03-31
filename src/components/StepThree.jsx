@@ -220,7 +220,7 @@ const StepThree = () => {
 
           // Update All Time Document Tiktok
           const tiktokAllTime = {
-            penghasilanAT: penghasilanAT.tiktok + raw(penghasilanHPP),
+            penghasilanAT: penghasilanAT.tiktok + raw(totalPenghasilan),
             tagihanAT: tagihanAT.tiktok + totalTagihan,
             setorAT: setorAT.tiktok + uangAdeSiska,
             untungAT: untungAT.tiktok + komisiKotor,
@@ -282,7 +282,7 @@ const StepThree = () => {
 
           // Update All Time Document Shopee
           const shopeeAllTime = {
-            penghasilanAT: penghasilanAT.shopee + raw(penghasilanHPP),
+            penghasilanAT: penghasilanAT.shopee + raw(totalPenghasilan),
             tagihanAT: tagihanAT.shopee + totalTagihan,
             setorAT: setorAT.shopee + uangAdeSiska,
             untungAT: untungAT.shopee + komisiKotor,
@@ -307,7 +307,7 @@ const StepThree = () => {
         // Optimistic Update
         setPenghasilanAT((prev) => ({
           ...prev,
-          [platform]: prev[platform] + raw(penghasilanHPP),
+          [platform]: prev[platform] + raw(totalPenghasilan),
         }));
         setTagihanAT((prev) => ({
           ...prev,

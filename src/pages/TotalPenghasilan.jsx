@@ -22,12 +22,6 @@ export default function TotalPenghasilan() {
     return acc + cur;
   }, 0);
 
-  console.log(penghasilanAT);
-
-  const totalShopee = tagihanAT.shopee + setorAT.shopee + untungAT.shopee;
-  const totalTiktok = tagihanAT.tiktok + setorAT.tiktok + untungAT.tiktok;
-  const totalLainnya = totalPenghasilanAT - totalShopee - totalTiktok;
-
   const dataKeuangan = [
     {
       name: "Shopee",
@@ -57,9 +51,6 @@ export default function TotalPenghasilan() {
           </p>
           <p>
             Total Untung : <b>RP {formatNumber(totalUntungAT)}</b>
-          </p>
-          <p>
-            Total Lainnya : <b>RP {formatNumber(totalLainnya)}</b>
           </p>
         </div>
         <SalesPieChart data={dataKeuangan} />
