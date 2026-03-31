@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { formatNumber, validateNumber } from "../utils/generalFunction";
-import MyButton from "./MyButton";
-import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
-import { usePenghasilan } from "../context/PenghasilanContext";
+import { formatNumber, validateNumber } from "../../utils/generalFunction";
+import MyButton from "../../components/MyButton";
+import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
+import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
 
 export default function () {
   const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();

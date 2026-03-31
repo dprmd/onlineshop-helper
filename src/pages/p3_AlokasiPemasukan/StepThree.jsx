@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
-import WordInBracket from "../components/WordInBracket";
-import { usePenghasilan } from "../context/PenghasilanContext";
+import { useNavigate } from "react-router-dom";
+import AddBillModal from "../../components/AddBillModal";
+import LoadingOverlay from "../../components/LoadingOverlay";
+import MyButton from "../../components/MyButton";
+import WordInBracket from "../../components/WordInBracket";
+import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
+import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
 import {
   day,
   dayName,
@@ -8,18 +13,13 @@ import {
   gajiPerHariHalf,
   metode,
   patunganUntukEma,
-} from "../lib/variables";
+} from "../../lib/variables";
 import {
   createDocument,
   getDocument,
   updateDocument,
-} from "../services/firebase/docService";
-import { formatNumber, raw, validateNumber } from "../utils/generalFunction";
-import AddBillModal from "./AddBillModal";
-import MyButton from "./MyButton";
-import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
-import { useNavigate } from "react-router-dom";
-import LoadingOverlay from "./LoadingOverlay";
+} from "../../services/firebase/docService";
+import { formatNumber, raw, validateNumber } from "../../utils/generalFunction";
 
 // additional function
 const date = new Date();

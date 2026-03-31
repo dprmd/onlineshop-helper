@@ -1,6 +1,6 @@
-import PenghasilanShopeeCard from "../components/PenghasilanShopeeCard";
-import { usePenghasilan } from "../context/PenghasilanContext";
-import FilterList from "../components/FilterList";
+import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
+import FilterList from "./FilterList";
+import PenghasilanShopeeCard from "./PenghasilanShopeeCard";
 
 export default function RiwayatPenghasilanShopee() {
   const { penghasilanShopee } = usePenghasilan();

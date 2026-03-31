@@ -1,8 +1,8 @@
-import { formatNumber, raw } from "../utils/generalFunction";
-import MyButton from "./MyButton";
-import { hari, listProduk } from "../lib/variables";
-import { useAlokasiPemasukan } from "../context/AlokasiPemasukanContext";
 import { useNavigate } from "react-router-dom";
+import MyButton from "../../components/MyButton";
+import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
+import { hari, listProduk } from "../../lib/variables";
+import { formatNumber } from "../../utils/generalFunction";
 
 const StepTwo = () => {
   const {

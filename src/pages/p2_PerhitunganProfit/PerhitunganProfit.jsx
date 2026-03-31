@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DialogUbahValue from "../components/DialogUbahValue";
-import { formatNumber, raw, validateNumber } from "../utils/generalFunction";
+import DialogUbahValue from "../..//components/DialogUbahValue";
+import { formatNumber, raw, validateNumber } from "../../utils/generalFunction";
 
 // Helper Function
 const percentFrom = (percent, total) => {

@@ -1,6 +1,6 @@
-import { usePenghasilan } from "../context/PenghasilanContext";
-import PenghasilanTikTokCard from "../components/PenghasilanTikTokCard";
-import FilterList from "../components/FilterList";
+import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
+import FilterList from "./FilterList";
+import PenghasilanTikTokCard from "./PenghasilanTikTokCard";
 
 export default function RiwayatPenghasilanTikTok() {
   const { penghasilanTikTok } = usePenghasilan();

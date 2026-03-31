@@ -1,9 +1,9 @@
-import { formatNumber } from "../utils/generalFunction";
-import { usePenghasilan } from "../context/PenghasilanContext";
+import { formatNumber } from "../../utils/generalFunction";
+import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { CardFooter } from "../components/ui/card";
+import { CardFooter } from "../../components/ui/card";
 
 export default function TotalPenghasilan() {
   const navigate = useNavigate();
