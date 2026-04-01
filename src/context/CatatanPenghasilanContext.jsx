@@ -6,9 +6,9 @@ import {
 } from "../services/firebase/docService";
 import { createContext, useContext, useEffect, useState } from "react";
 
-const PenghasilanContext = createContext();
+const CatatanPenghasilanContext = createContext();
 
-export function PenghasilanProvider({ children }) {
+export function CatatanPenghasilanProvider({ children }) {
   const [penghasilanShopee, setPenghasilanShopee] = useState([]);
   const [penghasilanShopeeTemp, setPenghasilanShopeeTemp] = useState([]);
   const [penghasilanTikTok, setPenghasilanTikTok] = useState([]);
@@ -131,7 +131,7 @@ export function PenghasilanProvider({ children }) {
   }, []);
 
   return (
-    <PenghasilanContext.Provider
+    <CatatanPenghasilanContext.Provider
       value={{
         penghasilanShopee,
         penghasilanTikTok,
@@ -154,8 +154,9 @@ export function PenghasilanProvider({ children }) {
       }}
     >
       {children}
-    </PenghasilanContext.Provider>
+    </CatatanPenghasilanContext.Provider>
   );
 }
 
-export const usePenghasilan = () => useContext(PenghasilanContext);
+export const useCatatanPenghasilan = () =>
+  useContext(CatatanPenghasilanContext);

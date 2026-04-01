@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../components/LoadingOverlay";
-import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import { formatNumber } from "../../utils/generalFunction";
 
 export default function FilterList({ platform }) {
@@ -13,7 +13,7 @@ export default function FilterList({ platform }) {
     fetchPenghasilanByMonth,
     penghasilanShopee,
     penghasilanTikTok,
-  } = usePenghasilan();
+  } = useCatatanPenghasilan();
   const navigate = useNavigate();
   const [setor, setSetor] = useState({
     shopee: 0,

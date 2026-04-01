@@ -5,7 +5,7 @@ import LoadingOverlay from "../../components/LoadingOverlay";
 import MyButton from "../../components/MyButton";
 import WordInBracket from "../../components/WordInBracket";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
-import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import {
   day,
   dayName,
@@ -57,7 +57,7 @@ const StepThree = () => {
     setSetorAT,
     untungAT,
     setUntungAT,
-  } = usePenghasilan();
+  } = useCatatanPenghasilan();
 
   // State
   const [loadingSave, setLoadingSave] = useState(false);

@@ -1,9 +1,9 @@
-import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import FilterList from "./FilterList";
 import PenghasilanTikTokCard from "./PenghasilanTikTokCard";
 
 export default function RiwayatPenghasilanTikTok() {
-  const { penghasilanTikTok } = usePenghasilan();
+  const { penghasilanTikTok } = useCatatanPenghasilan();
 
   return (
     <div className="px-5 py-4">

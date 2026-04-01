@@ -1,6 +1,6 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { AlokasiPemasukanProvider } from "./context/AlokasiPemasukanContext";
-import { PenghasilanProvider } from "./context/CatatanPenghasilanContext";
+import { CatatanPenghasilanProvider } from "./context/CatatanPenghasilanContext";
 import Home from "./pages/p1_Home/Home";
 import PerhitunganProfit from "./pages/p2_PerhitunganProfit/PerhitunganProfit";
 import StepOne from "./pages/p3_AlokasiPemasukan/StepOne";
@@ -67,10 +67,10 @@ const router = createHashRouter([
 
 export default function App() {
   return (
-    <PenghasilanProvider>
+    <CatatanPenghasilanProvider>
       <AlokasiPemasukanProvider>
         <RouterProvider router={router} />
       </AlokasiPemasukanProvider>
-    </PenghasilanProvider>
+    </CatatanPenghasilanProvider>
   );
 }

@@ -1,5 +1,5 @@
 import { formatNumber } from "../../utils/generalFunction";
-import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
@@ -7,7 +7,8 @@ import { CardFooter } from "../../components/ui/card";
 
 export default function TotalPenghasilan() {
   const navigate = useNavigate();
-  const { penghasilanAT, tagihanAT, setorAT, untungAT } = usePenghasilan();
+  const { penghasilanAT, tagihanAT, setorAT, untungAT } =
+    useCatatanPenghasilan();
 
   const totalPenghasilanAT = Object.values(penghasilanAT).reduce((acc, cur) => {
     return acc + cur;
@@ -99,7 +100,7 @@ function SalesPieChart({ data }) {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(255,255,255,0.1)",
+                  backgroundColor: "rgb(255,255,255,0.1)",
                   backdropFilter: "blur(20px)",
                   border: "1px solid rgba(255,255,255,0.2)",
                   borderRadius: "8px",

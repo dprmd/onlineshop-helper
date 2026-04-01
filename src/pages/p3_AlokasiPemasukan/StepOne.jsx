@@ -2,11 +2,11 @@ import { useNavigate } from "react-router-dom";
 import { formatNumber, validateNumber } from "../../utils/generalFunction";
 import MyButton from "../../components/MyButton";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
-import { usePenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 
 export default function () {
   const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();
-  const hei = usePenghasilan();
+  const hei = useCatatanPenghasilan();
   const navigate = useNavigate();
 
   console.log(hei);
