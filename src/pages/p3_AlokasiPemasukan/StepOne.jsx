@@ -1,8 +1,15 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
-import MyButton from "../../components/MyButton";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
 import { formatNumber, validateNumber } from "../../utils/generalFunction";
-import { Button } from "@/components/ui/button";
 
 export default function () {
   const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();
@@ -10,34 +17,37 @@ export default function () {
 
   return (
     <div className="flex justify-center items-center flex-col py-3">
-      <form
-        className="border border-slate-400 rounded-md w-max mx-auto mt-3 p-4 max-w-[400px]"
-        onSubmit={(e) => {
-          e.preventDefault();
-          navigate("/alokasiPemasukan/calculateHPP");
-        }}
-      >
-        {/* Input Total Penarikan Dana */}
-        <div className="input-components">
-          <label className="block" htmlFor="totalPenarikanDana">
-            Masukan Total Penarikan Dana :
-          </label>
-          <input
-            type="text"
-            id="totalPenarikanDana"
-            value={totalPenghasilan}
-            className="max-w-full"
-            required={true}
-            onChange={(e) => {
-              const number = validateNumber(e);
-              setTotalPenghasilan(formatNumber(number));
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-center">
+            Masukan Total Penarikan Dana
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigate("/alokasiPemasukan/calculateHPP");
             }}
-            placeholder="Isi di sini . . ."
-          />
-        </div>
-
-        {/* Tombol Navigasi */}
-        <div className="input-components">
+            id="totalPenarikan"
+          >
+            <Input
+              type="text"
+              value={totalPenghasilan}
+              placeholder="0"
+              onChange={(e) => {
+                const number = validateNumber(e);
+                if (!number) {
+                  setTotalPenghasilan("");
+                } else {
+                  setTotalPenghasilan(formatNumber(number));
+                }
+              }}
+              required
+            />
+          </form>
+        </CardContent>
+        <CardFooter>
           <Button
             size="lg"
             onClick={() => {
@@ -48,11 +58,16 @@ export default function () {
           </Button>
 
           {/* Selanjutnya */}
-          <Button size="lg" type="submit" className="bg-green-700">
+          <Button
+            size="lg"
+            type="submit"
+            className="bg-green-700"
+            form="totalPenarikan"
+          >
             Selanjutnya
           </Button>
-        </div>
-      </form>
+        </CardFooter>
+      </Card>
     </div>
   );
 }

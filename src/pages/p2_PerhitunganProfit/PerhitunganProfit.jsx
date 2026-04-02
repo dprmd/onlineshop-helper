@@ -265,7 +265,7 @@ export default function PerhitunganProfit() {
         <div className="input-components">
           <label htmlFor="HargaJual">Harga Jual : </label>
           <input
-            type="number"
+            type="text"
             id="HargaJual"
             value={hargaJual}
             required={true}
@@ -286,7 +286,7 @@ export default function PerhitunganProfit() {
         <div className="input-components">
           <label htmlFor="voucher">Voucher (Jika Ada) : </label>
           <input
-            type="number"
+            type="text"
             id="voucher"
             value={voucher}
             className="max-w-[200px]"
