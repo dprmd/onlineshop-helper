@@ -1,3 +1,4 @@
+import { CRUDBarangProvider } from "./context/CRUDBarangContext";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { AlokasiPemasukanProvider } from "./context/AlokasiPemasukanContext";
 import { CatatanPenghasilanProvider } from "./context/CatatanPenghasilanContext";
@@ -12,6 +13,7 @@ import RiwayatPenghasilanTikTok from "./pages/p4_CatatanPenghasilan/RiwayatPengh
 import TotalPenghasilan from "./pages/p4_CatatanPenghasilan/TotalPenghasilan";
 import CRUDBarang from "./pages/p5_CRUDBarang/CRUDBarang";
 import Supplier from "./pages/p5_CRUDBarang/Supplier";
+import TambahHutangBarang from "./pages/p5_CRUDBarang/TambahHutangBarang";
 
 const router = createHashRouter([
   {
@@ -21,11 +23,11 @@ const router = createHashRouter([
       { index: true, element: <Home /> },
 
       // Page 2
-      { path: "PerhitunganProfit", element: <PerhitunganProfit /> },
+      { path: "perhitunganProfit", element: <PerhitunganProfit /> },
 
       // Page 3
       {
-        path: "AlokasiPemasukan",
+        path: "alokasiPemasukan",
         children: [
           { index: true, element: <StepOne /> },
           { path: "calculateHPP", element: <StepTwo /> },
@@ -35,21 +37,22 @@ const router = createHashRouter([
 
       // Page 4
       {
-        path: "CatatanPenghasilan",
+        path: "catatanPenghasilan",
         children: [
           { index: true, element: <CatatanPenghasilan /> },
           { path: "totalPenghasilan", element: <TotalPenghasilan /> },
-          { path: "Shopee", element: <RiwayatPenghasilanShopee /> },
-          { path: "TikTok", element: <RiwayatPenghasilanTikTok /> },
+          { path: "shopee", element: <RiwayatPenghasilanShopee /> },
+          { path: "tiktok", element: <RiwayatPenghasilanTikTok /> },
         ],
       },
 
       // Page 5
       {
-        path: "CRUDBarang",
+        path: "crudBarang",
         children: [
           { index: true, element: <CRUDBarang /> },
-          { path: "Supplier", element: <Supplier /> },
+          { path: "supplier", element: <Supplier /> },
+          { path: "tambahHutangBarang", element: <TambahHutangBarang /> },
         ],
       },
 
@@ -67,10 +70,12 @@ const router = createHashRouter([
 
 export default function App() {
   return (
-    <CatatanPenghasilanProvider>
-      <AlokasiPemasukanProvider>
-        <RouterProvider router={router} />
-      </AlokasiPemasukanProvider>
-    </CatatanPenghasilanProvider>
+    <CRUDBarangProvider>
+      <CatatanPenghasilanProvider>
+        <AlokasiPemasukanProvider>
+          <RouterProvider router={router} />
+        </AlokasiPemasukanProvider>
+      </CatatanPenghasilanProvider>
+    </CRUDBarangProvider>
   );
 }

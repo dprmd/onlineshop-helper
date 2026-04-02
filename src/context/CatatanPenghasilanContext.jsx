@@ -62,12 +62,12 @@ export function CatatanPenghasilanProvider({ children }) {
         setPenghasilanTikTok(data.data);
         setPenghasilanTikTokTemp(data.data);
       }
-      setLoading(false);
     } else {
       setError(data.error);
-      setLoading(false);
       console.log(data.error);
     }
+
+    setLoading(false);
   };
 
   const fetchPenghasilanByDate = async (platform, start, end) => {
@@ -84,12 +84,12 @@ export function CatatanPenghasilanProvider({ children }) {
       } else {
         setPenghasilanTikTok(data.data);
       }
-      setLoading(false);
     } else {
       setError(data.error);
-      setLoading(false);
       console.log(data.error);
     }
+
+    setLoading(false);
   };
 
   const fetchPenghasilanByMonth = async (platform, year, month) => {
@@ -106,12 +106,12 @@ export function CatatanPenghasilanProvider({ children }) {
       } else {
         setPenghasilanTikTok(data.data);
       }
-      setLoading(false);
     } else {
       setError(data.error);
-      setLoading(false);
       console.log(data.error);
     }
+
+    setLoading(false);
   };
 
   const sortByLimitUnderSeven = (platform, num) => {

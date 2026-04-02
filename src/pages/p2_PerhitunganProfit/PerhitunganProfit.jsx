@@ -1,15 +1,15 @@
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DialogUbahValue from "../..//components/DialogUbahValue";
 import { formatNumber, raw, validateNumber } from "../../utils/generalFunction";
+import { Button } from "@/components/ui/button";
 
 // Helper Function
 const percentFrom = (percent, total) => {
   return (percent / 100) * total;
 };
 
-const PerhitunganProfit = () => {
+export default function PerhitunganProfit() {
   // State
   const navigate = useNavigate();
   const [sudahHitung, setSudahHitung] = useState(false);
@@ -274,21 +274,16 @@ const PerhitunganProfit = () => {
 
         {/* Button */}
         <div className="px-3 flex gap-x-2 mt-4">
-          <button
-            type="button"
-            className="bg-red-600 hover:bg-red-400 px-2 py-1 rounded-md"
+          <Button
             onClick={() => {
               navigate("/");
             }}
           >
             Kembali
-          </button>
-          <button
-            type="submit"
-            className="bg-green-600 hover:bg-green-400 px-2 py-1 rounded-md"
-          >
-            Kalkulasikan
-          </button>
+          </Button>
+          <Button type="submit" className="bg-green-700">
+            Hitung
+          </Button>
         </div>
       </form>
 
@@ -348,6 +343,4 @@ const PerhitunganProfit = () => {
       )}
     </div>
   );
-};
-
-export default PerhitunganProfit;
+}

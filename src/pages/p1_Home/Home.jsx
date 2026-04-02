@@ -1,43 +1,55 @@
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
+  const navigate = useNavigate();
+
   return (
     <div>
-      <h3 className="text-center text-3xl my-4 font-bold">
+      <h3 className="text-center text-2xl my-4 font-bold">
         Hallo Selamat Datang 😄
       </h3>
-      <ul className="text-center flex flex-col gap-y-6 justify-center">
+      <ul className="text-center flex flex-col gap-y-2 justify-center">
         <li>
-          <Link
-            to="PerhitunganProfit"
-            className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/perhitunganProfit");
+            }}
           >
             Perhitungan Profit
-          </Link>
+          </Button>
         </li>
         <li>
-          <Link
-            to="AlokasiPemasukan"
-            className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/alokasiPemasukan");
+            }}
           >
             Alokasi Pemasukan
-          </Link>
+          </Button>
         </li>
         <li>
-          <Link
-            to="CatatanPenghasilan"
-            className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/catatanPenghasilan");
+            }}
           >
             Catatan Penghasilan
-          </Link>
+          </Button>
         </li>
         <li>
-          <Link
-            to="CRUDBarang"
-            className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/crudBarang");
+            }}
           >
             CRUD Barang
-          </Link>
+          </Button>
         </li>
       </ul>
     </div>

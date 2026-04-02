@@ -17,7 +17,7 @@ export default function CatatanPenghasilan() {
         </li>
         <li>
           <Link
-            to="Shopee"
+            to="shopee"
             className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
           >
             Shopee
@@ -25,7 +25,7 @@ export default function CatatanPenghasilan() {
         </li>
         <li>
           <Link
-            to="TikTok"
+            to="tiktok"
             className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
           >
             TikTok

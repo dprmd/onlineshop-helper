@@ -1,15 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { formatNumber, validateNumber } from "../../utils/generalFunction";
 import MyButton from "../../components/MyButton";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
-import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
+import { formatNumber, validateNumber } from "../../utils/generalFunction";
+import { Button } from "@/components/ui/button";
 
 export default function () {
   const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();
-  const hei = useCatatanPenghasilan();
   const navigate = useNavigate();
-
-  console.log(hei);
 
   return (
     <div className="flex justify-center items-center flex-col py-3">
@@ -17,7 +14,7 @@ export default function () {
         className="border border-slate-400 rounded-md w-max mx-auto mt-3 p-4 max-w-[400px]"
         onSubmit={(e) => {
           e.preventDefault();
-          navigate("/AlokasiPemasukan/calculateHPP");
+          navigate("/alokasiPemasukan/calculateHPP");
         }}
       >
         {/* Input Total Penarikan Dana */}
@@ -41,21 +38,19 @@ export default function () {
 
         {/* Tombol Navigasi */}
         <div className="input-components">
-          <MyButton
-            buttonText={"Kembali"}
-            buttonType={"button"}
+          <Button
+            size="lg"
             onClick={() => {
               navigate("/");
             }}
-            tailwindClass={"bg-red-500  mx-1 px-2 py-1"}
-          />
+          >
+            Kembali
+          </Button>
 
           {/* Selanjutnya */}
-          <MyButton
-            buttonText={"Selanjutnya"}
-            buttonType={"submit"}
-            tailwindClass={"bg-green-500  mx-1 px-2 py-1"}
-          />
+          <Button size="lg" type="submit" className="bg-green-700">
+            Selanjutnya
+          </Button>
         </div>
       </form>
     </div>

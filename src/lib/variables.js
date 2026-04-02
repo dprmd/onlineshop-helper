@@ -17,12 +17,6 @@ export const listProduk = {
     hpp: 60000,
     terjual: 0,
   },
-  chea200: {
-    identifier: "chea200",
-    nama: "Chea Harga 200Rb",
-    hpp: 100000,
-    terjual: 0,
-  },
   cheaKorneli: {
     identifier: "cheaKorneli",
     nama: "Chea Korneli",

@@ -1,7 +1,12 @@
 import { formatNumber } from "../../utils/generalFunction";
 import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { CardFooter } from "../../components/ui/card";
 
@@ -59,7 +64,7 @@ export default function TotalPenghasilan() {
       <button
         type="button"
         onClick={() => {
-          navigate("/CatatanPenghasilan");
+          navigate("/catatanPenghasilan");
         }}
         className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300 mt-2"
       >

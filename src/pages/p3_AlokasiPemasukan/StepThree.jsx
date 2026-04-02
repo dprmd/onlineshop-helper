@@ -562,7 +562,7 @@ const StepThree = () => {
             buttonText={"Kembali"}
             buttonType={"button"}
             onClick={() => {
-              navigate("/AlokasiPemasukan/calculateHPP");
+              navigate("/alokasiPemasukan/calculateHPP");
             }}
             tailwindClass={"bg-red-500 mx-1 px-2 py-1"}
           />
