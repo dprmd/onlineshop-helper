@@ -1,8 +1,20 @@
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Field, FieldGroup } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import DialogUbahValue from "../..//components/DialogUbahValue";
 import { formatNumber, raw, validateNumber } from "../../utils/generalFunction";
-import { Button } from "@/components/ui/button";
 
 // Helper Function
 const percentFrom = (percent, total) => {
@@ -14,31 +26,26 @@ export default function PerhitunganProfit() {
   const navigate = useNavigate();
   const [sudahHitung, setSudahHitung] = useState(false);
 
-  // Perubahan Data
-  const [perubahanAdminShopee, setPerubahanAdminShopee] = useState("");
-  const [perubahanAdminPromoExtra, setPerubahanAdminPromoExtra] = useState("");
-  const [perubahanAdminGratisOngkirExtra, setPerubahanAdminGratisOngkirExtra] =
-    useState("");
-  const [perubahanKomisiAMS, setPerubahanKomisiAMS] = useState("");
-
-  // State Untuk Menutup dan Membuka Dialog
-  const [ubahAdminShopee, setUbahAdminShopee] = useState(false);
-  const [ubahAdminPromoExtra, setUbahAdminPromoExtra] = useState(false);
-  const [ubahAdminGratisOngkirExtra, setUbahAdminGratisOngkirExtra] =
-    useState(false);
-  const [ubahKomisiAMS, setUbahKomisiAMS] = useState(false);
-
   // Admin Shopee
   const biayaPerPesanan = 1250;
   const biayaPengiriman = 350;
-  const [adminShopee, setAdminShopee] = useState(8);
-  const [adminPromoExtra, setAdminPromoExtra] = useState(4.5);
-  const [adminGratisOngkirExtra, setAdminGratisOngkirExtra] = useState(5.5);
-  const [komisiAMS, setKomisiAMS] = useState(10);
+  const [admin, setAdmin] = useState({
+    adminShopee: 8,
+    adminPromoExtra: 4.5,
+    adminGratisOngkirExtra: 5.5,
+    komisiAMS: 10,
+  });
 
   // Input
   const [hargaJual, setHargaJual] = useState("");
   const [voucher, setVoucher] = useState("0");
+
+  // State Untuk Menutup dan Membuka Dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialog, setDialog] = useState({
+    title: "",
+    identifier: "",
+  });
 
   // Output
   const [totalKomisiSaya, setTotalKomisiSaya] = useState(0);
@@ -54,14 +61,16 @@ export default function PerhitunganProfit() {
     const totalAdmin =
       Math.round(
         percentFrom(
-          adminShopee + adminPromoExtra + adminGratisOngkirExtra,
+          admin.adminShopee +
+            admin.adminPromoExtra +
+            admin.adminGratisOngkirExtra,
           raw(hargaJual),
         ),
       ) +
       biayaPerPesanan +
       biayaPengiriman;
     const hargaFinal = raw(hargaJual) - totalAdmin - raw(voucher);
-    const totalKomisiAMSDidapat = percentFrom(komisiAMS, raw(hargaJual));
+    const totalKomisiAMSDidapat = percentFrom(admin.komisiAMS, raw(hargaJual));
 
     setTotalKomisiSaya(hargaFinal);
     setTotalAdminShopee(totalAdmin);
@@ -74,52 +83,51 @@ export default function PerhitunganProfit() {
   const localStorageInit = (
     localStorageIdentifier,
     realValueSetterFunc,
-    tempValueSetterFunc,
     initValue,
   ) => {
     if (localStorage.getItem(localStorageIdentifier)) {
       const value = localStorage.getItem(localStorageIdentifier);
-      realValueSetterFunc(Number(value));
-      tempValueSetterFunc(value);
+      realValueSetterFunc((prev) => ({
+        ...prev,
+        [localStorageIdentifier]: Number(value),
+      }));
     } else {
       localStorage.setItem(localStorageIdentifier, initValue);
     }
   };
 
+  const handleChangeAdminShopee = (e) => {
+    e.preventDefault();
+    setAdmin((prev) => {
+      return {
+        adminShopee: Number(prev.adminShopee),
+        adminPromoExtra: Number(prev.adminPromoExtra),
+        adminGratisOngkirExtra: Number(prev.adminGratisOngkirExtra),
+        komisiAMS: Number(prev.komisiAMS),
+      };
+    });
+    setDialogOpen(false);
+  };
+
   useEffect(() => {
     // localStorage Init
-    localStorageInit(
-      "adminShopee",
-      setAdminShopee,
-      setPerubahanAdminShopee,
-      "8",
-    );
-    localStorageInit(
-      "adminPromoExtra",
-      setAdminPromoExtra,
-      setPerubahanAdminPromoExtra,
-      "4.5",
-    );
-    localStorageInit(
-      "adminGratisOngkirExtra",
-      setAdminGratisOngkirExtra,
-      setPerubahanAdminGratisOngkirExtra,
-      "5.5",
-    );
-    localStorageInit("komisiAMS", setKomisiAMS, setPerubahanKomisiAMS, "10");
+    localStorageInit("adminShopee", setAdmin, "8");
+    localStorageInit("adminPromoExtra", setAdmin, "4.5");
+    localStorageInit("adminGratisOngkirExtra", setAdmin, "5.5");
+    localStorageInit("komisiAMS", setAdmin, "10");
   }, []);
 
   // Html Css Data
   const keterangan = [
-    { label: "Admin Shopee", value: `${adminShopee} %` },
-    { label: "Admin Promo Extra", value: `${adminPromoExtra} %` },
+    { label: "Admin Shopee", value: `${admin.adminShopee} %` },
+    { label: "Admin Promo Extra", value: `${admin.adminPromoExtra} %` },
     {
       label: "Admin Gratis Ongkir Extra",
-      value: `${adminGratisOngkirExtra} %`,
+      value: `${admin.adminGratisOngkirExtra} %`,
     },
     {
       label: "Komisi Affiliate",
-      value: `${komisiAMS} %`,
+      value: `${admin.komisiAMS} %`,
     },
     {
       label: "Biaya Per Pesanan",
@@ -133,47 +141,45 @@ export default function PerhitunganProfit() {
 
   return (
     <div className="flex justify-center items-center flex-col gap-y-3 py-3 mx-2">
-      {/* dialog ubah admin shopee percent */}
-      {ubahAdminShopee && (
-        <DialogUbahValue
-          title="Ubah Admin Shopee"
-          changeOpenStateFunction={setUbahAdminShopee}
-          changeValueFunction={setPerubahanAdminShopee}
-          localStorageIdentifier="adminShopee"
-          realStateChangeFunction={setAdminShopee}
-          valueState={perubahanAdminShopee}
-        />
-      )}
-      {ubahAdminPromoExtra && (
-        <DialogUbahValue
-          title="Ubah Admin Promo Extra"
-          changeOpenStateFunction={setUbahAdminPromoExtra}
-          changeValueFunction={setPerubahanAdminPromoExtra}
-          localStorageIdentifier="adminPromoExtra"
-          realStateChangeFunction={setAdminPromoExtra}
-          valueState={perubahanAdminPromoExtra}
-        />
-      )}
-      {ubahAdminGratisOngkirExtra && (
-        <DialogUbahValue
-          title="Ubah Admin Gratis Ongkir Extra"
-          changeOpenStateFunction={setUbahAdminGratisOngkirExtra}
-          changeValueFunction={setPerubahanAdminGratisOngkirExtra}
-          localStorageIdentifier="adminGratisOngkirExtra"
-          realStateChangeFunction={setAdminGratisOngkirExtra}
-          valueState={perubahanAdminGratisOngkirExtra}
-        />
-      )}
-      {ubahKomisiAMS && (
-        <DialogUbahValue
-          title="Ubah Komisi Affiliate"
-          changeOpenStateFunction={setUbahKomisiAMS}
-          changeValueFunction={setPerubahanKomisiAMS}
-          localStorageIdentifier="komisiAMS"
-          realStateChangeFunction={setKomisiAMS}
-          valueState={perubahanKomisiAMS}
-        />
-      )}
+      {/* Dialog Ubah Admin shopee */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <form onSubmit={handleChangeAdminShopee} id={dialog.identifier}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{dialog.title}</DialogTitle>
+            </DialogHeader>
+            <FieldGroup>
+              <Field>
+                <Label htmlFor={dialog.identifier}>Berapa Persen</Label>
+                <Input
+                  id={dialog.identifier}
+                  type="number"
+                  placeholder="0"
+                  value={admin[dialog.identifier]}
+                  onChange={(e) => {
+                    setAdmin((prev) => ({
+                      ...prev,
+                      [dialog.identifier]: e.target.value,
+                    }));
+                    localStorage.setItem(
+                      dialog.identifier,
+                      Number(e.target.value),
+                    );
+                  }}
+                />
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Batal</Button>
+              </DialogClose>
+              <Button type="submit" form={dialog.identifier}>
+                Simpan
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </form>
+      </Dialog>
 
       {/* Judul */}
       <h3 className="text-2xl font-bold">Perhitungan Profit Shopee</h3>
@@ -202,7 +208,11 @@ export default function PerhitunganProfit() {
                     <i
                       className="bi bi-pencil ml-2 hover:bg-black hover:text-white p-1 rounded-md"
                       onClick={() => {
-                        setUbahAdminShopee(true);
+                        setDialog({
+                          identifier: "adminShopee",
+                          title: "Ubah Admin Shopee",
+                        });
+                        setDialogOpen(true);
                       }}
                     ></i>
                   )}
@@ -211,7 +221,11 @@ export default function PerhitunganProfit() {
                     <i
                       className="bi bi-pencil ml-2 hover:bg-black hover:text-white p-1 rounded-md"
                       onClick={() => {
-                        setUbahAdminPromoExtra(true);
+                        setDialog({
+                          identifier: "adminPromoExtra",
+                          title: "Ubah Admin Promo Extra",
+                        });
+                        setDialogOpen(true);
                       }}
                     ></i>
                   )}
@@ -220,7 +234,11 @@ export default function PerhitunganProfit() {
                     <i
                       className="bi bi-pencil ml-2 hover:bg-black hover:text-white p-1 rounded-md"
                       onClick={() => {
-                        setUbahAdminGratisOngkirExtra(true);
+                        setDialog({
+                          identifier: "adminGratisOngkirExtra",
+                          title: "Ubah Admin Gratis Ongkir Extra",
+                        });
+                        setDialogOpen(true);
                       }}
                     ></i>
                   )}
@@ -229,7 +247,11 @@ export default function PerhitunganProfit() {
                     <i
                       className="bi bi-pencil ml-2 hover:bg-black hover:text-white p-1 rounded-md"
                       onClick={() => {
-                        setUbahKomisiAMS(true);
+                        setDialog({
+                          identifier: "komisiAMS",
+                          title: "Ubah Komisi AMS",
+                        });
+                        setDialogOpen(true);
                       }}
                     ></i>
                   )}
@@ -243,7 +265,7 @@ export default function PerhitunganProfit() {
         <div className="input-components">
           <label htmlFor="HargaJual">Harga Jual : </label>
           <input
-            type="text"
+            type="number"
             id="HargaJual"
             value={hargaJual}
             required={true}
@@ -251,7 +273,11 @@ export default function PerhitunganProfit() {
             placeholder="Isi Harga Jual . . ."
             onChange={(e) => {
               const number = validateNumber(e);
-              setHargaJual(formatNumber(number));
+              if (!number) {
+                setHargaJual("");
+              } else {
+                setHargaJual(formatNumber(number));
+              }
             }}
           />
         </div>
@@ -267,7 +293,11 @@ export default function PerhitunganProfit() {
             placeholder="Masukan Voucher . . ."
             onChange={(e) => {
               const number = validateNumber(e);
-              setVoucher(formatNumber(number));
+              if (!number) {
+                setVoucher("");
+              } else {
+                setVoucher(formatNumber(number));
+              }
             }}
           />
         </div>
@@ -293,19 +323,21 @@ export default function PerhitunganProfit() {
             <small>
               Biaya Admin Star : Rp{" "}
               {formatNumber(
-                Math.round(percentFrom(adminShopee, raw(hargaJual))),
+                Math.round(percentFrom(admin.adminShopee, raw(hargaJual))),
               )}
             </small>
             <small>
               Biaya Admin Promo Extra : Rp{" "}
               {formatNumber(
-                Math.round(percentFrom(adminPromoExtra, raw(hargaJual))),
+                Math.round(percentFrom(admin.adminPromoExtra, raw(hargaJual))),
               )}
             </small>
             <small>
               Biaya Admin Gratis Ongkir Extra : Rp{" "}
               {formatNumber(
-                Math.round(percentFrom(adminGratisOngkirExtra, raw(hargaJual))),
+                Math.round(
+                  percentFrom(admin.adminGratisOngkirExtra, raw(hargaJual)),
+                ),
               )}
             </small>
             <small>
