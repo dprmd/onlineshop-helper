@@ -1,4 +1,18 @@
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -53,11 +67,31 @@ export default function Supplier() {
   };
 
   return (
-    <div className="px-3 py-2">
+    <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/crudBarang">CRUD</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Supplier</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       {/* If Supplier Length Equal to Zero */}
       {supplier.length === 0 && (
-        <div className="text-center">
-          <h3 className="text-xl">Anda Belum Memiliki Supplier</h3>
+        <div className="text-center flex flex-col justify-center items-center gap-y-3">
+          <h3 className="text-lg">Anda Belum Memiliki Supplier</h3>
           <DialogAddSupplier
             dialog={dialogAddSupplier}
             setDialog={setDialogAddSupplier}
@@ -71,12 +105,15 @@ export default function Supplier() {
       {/* If Supplier Length Greater than Zero */}
       {supplier.length > 0 && (
         <div className="text-center">
-          <h3 className="text-xl">List Supplier</h3>
-          <ul className="list-disc text-left px-3 py-2">
+          <div>
             {supplier.map((supplier) => (
-              <li id={supplier.docId}>{supplier.name}</li>
+              <Card className="my-2 min-w-[350px]">
+                <CardHeader>
+                  <p>Nama : {supplier.name}</p>
+                </CardHeader>
+              </Card>
             ))}
-          </ul>
+          </div>
           <DialogAddSupplier
             dialog={dialogAddSupplier}
             setDialog={setDialogAddSupplier}
@@ -86,12 +123,6 @@ export default function Supplier() {
           />
         </div>
       )}
-      <Link
-        to="/crudBarang"
-        className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
-      >
-        Kembali
-      </Link>
     </div>
   );
 }
@@ -107,13 +138,7 @@ const DialogAddSupplier = ({
     <Dialog open={dialog} onOpenChange={setDialog}>
       <form id="addSupplier" onSubmit={onSubmit}>
         <DialogTrigger asChild>
-          <Button
-            variant="outline"
-            type="button"
-            className="bg-green-400 my-3 hover:bg-green-300"
-          >
-            Tambah Supplier
-          </Button>
+          <Button size="lg">Tambah Supplier</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>

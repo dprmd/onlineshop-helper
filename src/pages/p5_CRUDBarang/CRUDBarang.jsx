@@ -1,36 +1,51 @@
-import { Link } from "react-router-dom";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function CRUDBarang() {
+  const navigate = useNavigate();
   return (
-    <div>
-      <div className="text-center text-3xl my-4 font-bold">
-        <p>Create Read Update Delete</p>
-        <p>Barang</p>
-      </div>
-      <ul className="text-center flex flex-col gap-y-6 justify-center">
+    <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>CRUD</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <ul className="text-center flex flex-col justify-center gap-y-2">
         <li>
-          <Link
-            to="supplier"
-            className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/crudBarang/supplier");
+            }}
           >
             Supplier
-          </Link>
+          </Button>
         </li>
         <li>
-          <Link
-            to="tambahHutangBarang"
-            className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/crudBarang/tambahHutangBarang");
+            }}
           >
             Tambah Hutang Barang
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/"
-            className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300"
-          >
-            Kembali
-          </Link>
+          </Button>
         </li>
       </ul>
     </div>

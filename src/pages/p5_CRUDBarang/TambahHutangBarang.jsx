@@ -1,4 +1,23 @@
 import LoadingOverlay from "@/components/LoadingOverlay";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -12,22 +31,14 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useCRUDBarang } from "../../context/CRUDBarangContext";
 import { listProduk } from "../../lib/variables";
 import { formatNumber } from "../../utils/generalFunction";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { FieldDescription, FieldLegend, FieldSet } from "@/components/ui/field";
 
 export default function TambahHutangBarang() {
+  const navigate = useNavigate();
   const { loading, supplier } = useCRUDBarang();
   const [whichSupplier, setWhichSupplier] = useState(null);
   const [dialogTambahBarang, setDialogTambahBarang] = useState(false);
@@ -70,19 +81,56 @@ export default function TambahHutangBarang() {
   };
 
   return (
-    <div>
+    <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
       {loading && <LoadingOverlay show={loading} />}
-      <div className="px-3 py-2">
-        {/* jika supplier kosong */}
-        {supplier.length === 0 && (
-          <div className="text-center text-lg font-bold">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/crudBarang">CRUD</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Hutang</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      {/* jika supplier kosong */}
+      {supplier.length === 0 && (
+        <div className="text-center text-lg font-bold flex flex-col justify-center items-center gap-y-2">
+          <div>
             <p>Anda Belum Menambahkan Supplier</p>
             <p>Tolong Tambahkan Terlebih Dahulu</p>
           </div>
-        )}
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/crudBarang/supplier");
+            }}
+          >
+            Tambah Sekarang
+          </Button>
+        </div>
+      )}
 
-        {/* jika supplier ada */}
-        {supplier.length > 0 && (
+      {/* jika supplier ada */}
+      {supplier.length > 0 && (
+        <>
+          <Field>
+            <FieldSet>
+              <FieldLegend>Tambah Hutang Barang</FieldLegend>
+              <FieldDescription>
+                Isi Dengan Barang Apa Saja Yang Di Pinjam Hari Ini
+              </FieldDescription>
+            </FieldSet>
+          </Field>
           <form className="min-w-[200px] max-w-[350px]">
             {/* select supplier */}
             <div className="px-2 py-3 my-2 flex justify-between">
@@ -265,8 +313,8 @@ export default function TambahHutangBarang() {
               </AlertDialog>
             </div>
           </form>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
