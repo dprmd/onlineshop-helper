@@ -187,6 +187,7 @@ export default function PerhitunganProfit() {
       <form
         className="border border-gray-400 rounded-md pb-4"
         onSubmit={hitung}
+        id="hitungProfitShopee"
       >
         <div className="input-components w-full">
           {/* Pengisian Sebelum Menghitung */}
@@ -305,13 +306,18 @@ export default function PerhitunganProfit() {
         {/* Button */}
         <div className="px-3 flex gap-x-2 mt-4">
           <Button
+            type="button"
             onClick={() => {
               navigate("/");
             }}
           >
             Kembali
           </Button>
-          <Button type="submit" className="bg-green-700">
+          <Button
+            type="submit"
+            className="bg-green-700"
+            form="hitungProfitShopee"
+          >
             Hitung
           </Button>
         </div>
