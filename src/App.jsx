@@ -1,16 +1,16 @@
-import { CRUDBarangProvider } from "./context/CRUDBarangContext";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { AlokasiPemasukanProvider } from "./context/AlokasiPemasukanContext";
 import { CatatanPenghasilanProvider } from "./context/CatatanPenghasilanContext";
+import { CRUDBarangProvider } from "./context/CRUDBarangContext";
 import Home from "./pages/p1_Home/Home";
 import PerhitunganProfit from "./pages/p2_PerhitunganProfit/PerhitunganProfit";
 import StepOne from "./pages/p3_AlokasiPemasukan/StepOne";
 import StepThree from "./pages/p3_AlokasiPemasukan/StepThree";
 import StepTwo from "./pages/p3_AlokasiPemasukan/StepTwo";
-import CatatanPenghasilan from "./pages/p4_CatatanPenghasilan/CatatanPenghasilan";
-import RiwayatPenghasilanShopee from "./pages/p4_CatatanPenghasilan/RiwayatPenghasilanShopee";
-import RiwayatPenghasilanTikTok from "./pages/p4_CatatanPenghasilan/RiwayatPenghasilanTikTok";
-import TotalPenghasilan from "./pages/p4_CatatanPenghasilan/TotalPenghasilan";
+import Penghasilan from "./pages/p4_Penghasilan/Penghasilan";
+import RiwayatPenghasilanShopee from "./pages/p4_Penghasilan/RiwayatPenghasilanShopee";
+import RiwayatPenghasilanTikTok from "./pages/p4_Penghasilan/RiwayatPenghasilanTikTok";
+import TotalPenghasilan from "./pages/p4_Penghasilan/TotalPenghasilan";
 import CRUDBarang from "./pages/p5_CRUDBarang/CRUDBarang";
 import Supplier from "./pages/p5_CRUDBarang/Supplier";
 import TambahHutangBarang from "./pages/p5_CRUDBarang/TambahHutangBarang";
@@ -37,9 +37,9 @@ const router = createHashRouter([
 
       // Page 4
       {
-        path: "catatanPenghasilan",
+        path: "penghasilan",
         children: [
-          { index: true, element: <CatatanPenghasilan /> },
+          { index: true, element: <Penghasilan /> },
           { path: "totalPenghasilan", element: <TotalPenghasilan /> },
           { path: "shopee", element: <RiwayatPenghasilanShopee /> },
           { path: "tiktok", element: <RiwayatPenghasilanTikTok /> },

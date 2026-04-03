@@ -16,7 +16,7 @@ export default function () {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-center items-center flex-col py-3">
+    <div className="flex justify-center items-center flex-col gap-y-4 px-4 py-3">
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-center">
@@ -47,7 +47,7 @@ export default function () {
             />
           </form>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex justify-center gap-x-2">
           <Button
             size="lg"
             onClick={() => {

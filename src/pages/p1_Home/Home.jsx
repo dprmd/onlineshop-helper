@@ -35,10 +35,10 @@ const Home = () => {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/catatanPenghasilan");
+              navigate("/penghasilan");
             }}
           >
-            Catatan Penghasilan
+            Penghasilan
           </Button>
         </li>
         <li>

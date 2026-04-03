@@ -268,16 +268,6 @@ export default function FilterList({ platform }) {
           </form>
         </div>
       )}
-
-      <button
-        type="button"
-        onClick={() => {
-          navigate("/catatanPenghasilan");
-        }}
-        className="bg-green-400 text-black px-4 py-2 rounded-xl hover:bg-green-300 mt-2"
-      >
-        Kembali
-      </button>
     </div>
   );
 }
