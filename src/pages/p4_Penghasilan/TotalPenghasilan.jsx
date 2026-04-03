@@ -50,9 +50,14 @@ export default function TotalPenghasilan() {
     }, 0);
   });
 
-  const totalShopee = tagihanAT.shopee + setorAT.shopee + untungAT.shopee;
-  const totalTiktok = tagihanAT.tiktok + setorAT.tiktok + untungAT.tiktok;
-  const totalLainnya = totalPenghasilanAT - totalShopee - totalTiktok;
+  const tempCalculateShopee =
+    tagihanAT.shopee + setorAT.shopee + untungAT.shopee;
+  const tempCalculateTiktok =
+    tagihanAT.tiktok + setorAT.tiktok + untungAT.tiktok;
+  const remainingShopee = penghasilanAT.shopee - tempCalculateShopee;
+  const remainingTiktok = penghasilanAT.tiktok - tempCalculateTiktok;
+  const totalShopee = tempCalculateShopee + remainingShopee;
+  const totalTiktok = tempCalculateTiktok + remainingTiktok;
 
   return (
     <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
@@ -99,7 +104,6 @@ export default function TotalPenghasilan() {
             total={totalPenghasilanAT}
             totalShopee={totalShopee}
             totalTiktok={totalTiktok}
-            totalLainnya={totalLainnya}
           />
         </CardContent>
       </Card>
@@ -107,15 +111,10 @@ export default function TotalPenghasilan() {
   );
 }
 
-function SalesPieChart({ total, totalShopee, totalTiktok, totalLainnya }) {
+function SalesPieChart({ total, totalShopee, totalTiktok }) {
   const chartData = [
     { marketplace: "Shopee", total: totalShopee, fill: "var(--color-shopee)" },
     { marketplace: "TikTok", total: totalTiktok, fill: "var(--color-tiktok)" },
-    {
-      marketplace: "Lainnya",
-      total: totalLainnya,
-      fill: "var(--color-lainnya)",
-    },
   ];
   const chartConfig = {
     total: {
@@ -128,10 +127,6 @@ function SalesPieChart({ total, totalShopee, totalTiktok, totalLainnya }) {
     tiktok: {
       label: "TikTok",
       color: "black",
-    },
-    lainnya: {
-      label: "Lainnya",
-      color: "gray",
     },
   };
 
