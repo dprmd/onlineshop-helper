@@ -11,7 +11,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Label, Pie, PieChart } from "recharts";
 import {
@@ -24,10 +24,13 @@ import {
 } from "../../components/ui/card";
 import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import { formatNumber } from "../../utils/generalFunction";
+import { Button } from "@/components/ui/button";
 
 export default function TotalPenghasilan() {
   const { penghasilanAT, tagihanAT, setorAT, untungAT } =
     useCatatanPenghasilan();
+
+  const [showUntung, setShowUntung] = useState(false);
 
   const totalPenghasilanAT = useMemo(() => {
     return Object.values(penghasilanAT).reduce((acc, cur) => {
@@ -101,9 +104,11 @@ export default function TotalPenghasilan() {
             </p>
           </div>
           <SalesPieChart
-            total={totalPenghasilanAT}
-            totalShopee={totalShopee}
-            totalTiktok={totalTiktok}
+            total={showUntung ? totalUntungAT : totalPenghasilanAT}
+            totalShopee={showUntung ? untungAT.shopee : totalShopee}
+            totalTiktok={showUntung ? untungAT.tiktok : totalTiktok}
+            showUntung={showUntung}
+            setShowUntung={setShowUntung}
           />
         </CardContent>
       </Card>
@@ -111,7 +116,13 @@ export default function TotalPenghasilan() {
   );
 }
 
-function SalesPieChart({ total, totalShopee, totalTiktok }) {
+function SalesPieChart({
+  total,
+  totalShopee,
+  totalTiktok,
+  showUntung,
+  setShowUntung,
+}) {
   const chartData = [
     { marketplace: "Shopee", total: totalShopee, fill: "var(--color-shopee)" },
     { marketplace: "TikTok", total: totalTiktok, fill: "var(--color-tiktok)" },
@@ -131,10 +142,19 @@ function SalesPieChart({ total, totalShopee, totalTiktok }) {
   };
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col relative">
       <CardHeader className="items-center pb-0">
         <CardTitle>Kontribusi Marketplace</CardTitle>
         <CardDescription>6 Maret - Sekarang</CardDescription>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setShowUntung((prev) => !prev);
+          }}
+          className="absolute right-1 top-1 text-[10px] cursor-pointer"
+        >
+          {showUntung ? "Omzet" : "Untung"}
+        </Button>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
