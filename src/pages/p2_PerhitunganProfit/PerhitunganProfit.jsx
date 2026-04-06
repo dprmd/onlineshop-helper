@@ -35,6 +35,12 @@ export default function PerhitunganProfit() {
     adminGratisOngkirExtra: 5.5,
     komisiAMS: 10,
   });
+  const [tempAdmin, setTempAdmin] = useState({
+    adminShopee: 8,
+    adminPromoExtra: 4.5,
+    adminGratisOngkirExtra: 5.5,
+    komisiAMS: 10,
+  });
 
   // Input
   const [hargaJual, setHargaJual] = useState("");
@@ -61,9 +67,9 @@ export default function PerhitunganProfit() {
     const totalAdmin =
       Math.round(
         percentFrom(
-          admin.adminShopee +
-            admin.adminPromoExtra +
-            admin.adminGratisOngkirExtra,
+          tempAdmin.adminShopee +
+            tempAdmin.adminPromoExtra +
+            tempAdmin.adminGratisOngkirExtra,
           raw(hargaJual),
         ),
       ) +
@@ -98,13 +104,9 @@ export default function PerhitunganProfit() {
 
   const handleChangeAdminShopee = (e) => {
     e.preventDefault();
-    setAdmin((prev) => {
-      return {
-        adminShopee: Number(prev.adminShopee),
-        adminPromoExtra: Number(prev.adminPromoExtra),
-        adminGratisOngkirExtra: Number(prev.adminGratisOngkirExtra),
-        komisiAMS: Number(prev.komisiAMS),
-      };
+    setAdmin({ ...tempAdmin });
+    Object.entries(tempAdmin).map((admin) => {
+      localStorage.setItem(admin[0], Number(admin[1]));
     });
     setDialogOpen(false);
   };
@@ -115,6 +117,10 @@ export default function PerhitunganProfit() {
     localStorageInit("adminPromoExtra", setAdmin, "4.5");
     localStorageInit("adminGratisOngkirExtra", setAdmin, "5.5");
     localStorageInit("komisiAMS", setAdmin, "10");
+    localStorageInit("adminShopee", setTempAdmin, "8");
+    localStorageInit("adminPromoExtra", setTempAdmin, "4.5");
+    localStorageInit("adminGratisOngkirExtra", setTempAdmin, "5.5");
+    localStorageInit("komisiAMS", setTempAdmin, "10");
   }, []);
 
   // Html Css Data
@@ -142,7 +148,15 @@ export default function PerhitunganProfit() {
   return (
     <div className="flex justify-center items-center flex-col gap-y-3 py-3 mx-2">
       {/* Dialog Ubah Admin shopee */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(isOpen) => {
+          setDialogOpen(isOpen);
+          if (!isOpen) {
+            setTempAdmin({ ...admin });
+          }
+        }}
+      >
         <form onSubmit={handleChangeAdminShopee} id={dialog.identifier}>
           <DialogContent className="sm:max-w-sm">
             <DialogHeader>
@@ -155,16 +169,12 @@ export default function PerhitunganProfit() {
                   id={dialog.identifier}
                   type="number"
                   placeholder="0"
-                  value={admin[dialog.identifier]}
+                  value={tempAdmin[dialog.identifier]}
                   onChange={(e) => {
-                    setAdmin((prev) => ({
+                    setTempAdmin((prev) => ({
                       ...prev,
                       [dialog.identifier]: e.target.value,
                     }));
-                    localStorage.setItem(
-                      dialog.identifier,
-                      Number(e.target.value),
-                    );
                   }}
                 />
               </Field>
