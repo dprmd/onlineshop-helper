@@ -166,7 +166,9 @@ export default function TambahHutangBarang() {
                   <SelectContent>
                     <SelectGroup>
                       {supplier.map((s) => (
-                        <SelectItem value={s.id}>{s.name}</SelectItem>
+                        <SelectItem value={s.id} key={s.id}>
+                          {s.name}
+                        </SelectItem>
                       ))}
                     </SelectGroup>
                   </SelectContent>
@@ -180,7 +182,10 @@ export default function TambahHutangBarang() {
                   <form className="min-w-[200px] max-w-[350px]">
                     {/* isi quantity produk */}
                     {choosedProduk.map((produk) => (
-                      <div className="border px-2 py-3 flex gap-x-2 justify-between">
+                      <div
+                        className="border px-2 py-3 flex gap-x-2 justify-between"
+                        key={produk.identifier}
+                      >
                         <FieldLabel htmlFor={produk.identifier}>
                           {produk.name}
                         </FieldLabel>
@@ -259,6 +264,7 @@ export default function TambahHutangBarang() {
                     <div>
                       {notChoosedProduk.map((produk) => (
                         <Field
+                          key={produk.identifier}
                           orientation="horizontal"
                           className="my-1 border py-3 px-2 rounded-md"
                         >
@@ -334,7 +340,7 @@ export default function TambahHutangBarang() {
                         </AlertDialogHeader>
                         <AlertDialogDescription>
                           <div>
-                            <p>
+                            <div>
                               Supplier :{" "}
                               <span>
                                 {
@@ -342,18 +348,18 @@ export default function TambahHutangBarang() {
                                     ?.name
                                 }
                               </span>
-                            </p>
-                            <p>
-                              <p>
+                            </div>
+                            <div>
+                              <div>
                                 {choosedProduk
                                   .filter((p) => p.terjual > 0)
                                   .map((p) => (
-                                    <p>
+                                    <div key={p.identifier}>
                                       {p.name} x {p.terjual}
-                                    </p>
+                                    </div>
                                   ))}
-                              </p>
-                            </p>
+                              </div>
+                            </div>
                           </div>
                         </AlertDialogDescription>
                         <AlertDialogFooter>

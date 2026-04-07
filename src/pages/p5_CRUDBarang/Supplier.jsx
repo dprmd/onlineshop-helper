@@ -117,9 +117,9 @@ export default function Supplier() {
       {/* If Supplier Length Greater than Zero */}
       {supplier.length > 0 && (
         <div className="text-center">
-          <div>
+          <div className="flex gap-2 flex-wrap justify-center py-2">
             {supplier.map((supplier) => (
-              <Card key={supplier.id} className="my-2 min-w-[380px]">
+              <Card key={supplier.id} className="min-w-[380px]">
                 <CardHeader>
                   <p>Nama : {supplier.name}</p>
                   {supplier.hutangBarang.length === 0 && (
@@ -132,7 +132,10 @@ export default function Supplier() {
                       <p className="text-gray-500">Daftar Hutang Barang</p>
                       <i className="bi bi-arrow-down text-[10px]"></i>
                       {supplier.hutangBarang.map((barang) => (
-                        <p className="text-[12px] text-gray-400">
+                        <p
+                          className="text-[12px] text-gray-400"
+                          key={barang.identifier}
+                        >
                           {barang.name} {barang.terjual} Pcs
                         </p>
                       ))}
