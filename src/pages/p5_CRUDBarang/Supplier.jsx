@@ -50,7 +50,11 @@ export default function Supplier() {
       const newSupplier = await createDocument(
         "Menambahkan Supplier Baru",
         "supplier",
-        { username: toCamelCase(supplierName), name: supplierName },
+        {
+          username: toCamelCase(supplierName),
+          name: supplierName,
+          hutangBarang: [],
+        },
         "Berhasil Menambahkan Supplier",
       );
       setSupplier([
@@ -59,6 +63,7 @@ export default function Supplier() {
           id: newSupplier.docId,
           name: supplierName,
           username: toCamelCase(supplierName),
+          hutangBarang: [],
         },
       ]);
       setSupplierName("");
@@ -114,9 +119,25 @@ export default function Supplier() {
         <div className="text-center">
           <div>
             {supplier.map((supplier) => (
-              <Card className="my-2 min-w-[350px]">
+              <Card key={supplier.id} className="my-2 min-w-[380px]">
                 <CardHeader>
                   <p>Nama : {supplier.name}</p>
+                  {supplier.hutangBarang.length === 0 && (
+                    <p className="text-[12px] text-gray-400">
+                      Anda Belum Mempunyai Hutang Ke Supplier Ini
+                    </p>
+                  )}
+                  {supplier.hutangBarang.length > 0 && (
+                    <>
+                      <p className="text-gray-500">Daftar Hutang Barang</p>
+                      <i className="bi bi-arrow-down text-[10px]"></i>
+                      {supplier.hutangBarang.map((barang) => (
+                        <p className="text-[12px] text-gray-400">
+                          {barang.name} {barang.terjual} Pcs
+                        </p>
+                      ))}
+                    </>
+                  )}
                 </CardHeader>
               </Card>
             ))}

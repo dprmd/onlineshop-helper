@@ -1,4 +1,3 @@
-import LoadingOverlay from "@/components/LoadingOverlay";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -8,7 +7,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Breadcrumb,
@@ -29,14 +27,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldLabel } from "@/components/ui/field";
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useCRUDBarang } from "../../context/CRUDBarangContext";
-import { listProduk } from "../../lib/variables";
-import { formatNumber } from "../../utils/generalFunction";
-import { FieldDescription, FieldLegend, FieldSet } from "@/components/ui/field";
-import { FieldGroup } from "@/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -45,12 +43,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCRUDBarang } from "../../context/CRUDBarangContext";
+import { listProduk } from "../../lib/variables";
+import { formatNumber } from "../../utils/generalFunction";
 
 export default function TambahHutangBarang() {
   const navigate = useNavigate();
-  const { supplier, getSupplierList, initialFetch } = useCRUDBarang();
-  const [whichSupplier, setWhichSupplier] = useState(null);
+  const { supplier, getSupplierList, initialFetch, tambahHutangBarang } =
+    useCRUDBarang();
+  const [whichSupplier, setWhichSupplier] = useState("");
   const [dialogTambahBarang, setDialogTambahBarang] = useState(false);
+  const [dialogTambahHutang, setDialogTambahHutang] = useState(false);
   const produk = Object.entries(listProduk).map((v) => ({
     ...v[1],
     checked: false,
@@ -58,8 +63,7 @@ export default function TambahHutangBarang() {
   const [cloneProduk, setCloneProduk] = useState(produk);
   const [choosedProduk, setChoosedProduk] = useState([]);
   const [notChoosedProduk, setNotChoosedProduk] = useState(produk);
-
-  console.log(supplier);
+  const [hutangProduk, setHutangProduk] = useState([]);
 
   const handlePilihProduk = () => {
     const choosed = cloneProduk.filter((p) => p.checked);
@@ -74,21 +78,28 @@ export default function TambahHutangBarang() {
     // validasi
     if (choosedProduk.length === 0) {
       alert("Mohon Tambah Barang Terlebih Dahulu");
+      return;
     } else if (!whichSupplier) {
       alert("Mohon Pilih Supplier Terlebih Dahulu");
+      return;
     }
 
     // sort terlebih dahulu
-    const hutangProduk = choosedProduk
+    const hutang = choosedProduk
       .map((produk) => ({
-        nama: produk.nama,
+        identifier: produk.identifier,
+        name: produk.name,
         terjual: Number(produk.terjual),
       }))
       .filter((produk) => produk.terjual > 0);
 
-    if (hutangProduk.length === 0) {
+    if (hutang.length === 0) {
       alert("Mohon Masukan Jumlah Produk Yang Di Pinjam");
+      return;
     }
+
+    setDialogTambahHutang(true);
+    setHutangProduk([...hutang]);
   };
 
   useEffect(() => {
@@ -118,6 +129,7 @@ export default function TambahHutangBarang() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
       {/* jika supplier kosong */}
       {supplier.length === 0 && (
         <div className="text-center text-lg font-bold flex flex-col justify-center items-center gap-y-2">
@@ -147,7 +159,7 @@ export default function TambahHutangBarang() {
             <FieldGroup>
               <Field>
                 <FieldLabel>Supplier</FieldLabel>
-                <Select>
+                <Select required onValueChange={setWhichSupplier}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Siapa Suppliernya" />
                   </SelectTrigger>
@@ -160,172 +172,207 @@ export default function TambahHutangBarang() {
                   </SelectContent>
                 </Select>
               </Field>
+              {choosedProduk.length > 0 && (
+                <Field>
+                  {choosedProduk.length > 0 && (
+                    <FieldLabel>Pilih Barang</FieldLabel>
+                  )}
+                  <form className="min-w-[200px] max-w-[350px]">
+                    {/* isi quantity produk */}
+                    {choosedProduk.map((produk) => (
+                      <div className="border px-2 py-3 flex gap-x-2 justify-between">
+                        <FieldLabel htmlFor={produk.identifier}>
+                          {produk.name}
+                        </FieldLabel>
+                        <div>
+                          <input
+                            type="number"
+                            value={produk.terjual}
+                            placeholder="0"
+                            onChange={(e) => {
+                              setChoosedProduk((prev) => {
+                                return prev.map((p) => {
+                                  if (p.identifier === produk.identifier) {
+                                    return {
+                                      ...produk,
+                                      terjual: e.target.value,
+                                    };
+                                  }
+
+                                  return p;
+                                });
+                              });
+                            }}
+                            className="px-2 py-1 outline-1 outline-gray-400 rounded-md max-w-[100px]"
+                          />
+                          <button
+                            className="bg-gray-800 text-white px-2 py-1 mx-1 rounded-md"
+                            type="button"
+                            onClick={() => {
+                              setCloneProduk((prev) => {
+                                const notChoosed = prev.map((p) => {
+                                  if (p.identifier === produk.identifier) {
+                                    return { ...produk, checked: false };
+                                  }
+
+                                  return p;
+                                });
+
+                                setNotChoosedProduk(
+                                  notChoosed.filter((p) => !p.checked),
+                                );
+
+                                return notChoosed;
+                              });
+                              setChoosedProduk((prev) => {
+                                return prev.filter(
+                                  (p) => p.identifier !== produk.identifier,
+                                );
+                              });
+                            }}
+                          >
+                            <i className="bi bi-trash" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </form>
+                </Field>
+              )}
               <Field>
-                <FieldLabel>Pilih Barang</FieldLabel>
+                {choosedProduk.length === 0 && (
+                  <FieldLabel>Pilih Barang</FieldLabel>
+                )}
+                <Dialog
+                  open={dialogTambahBarang}
+                  onOpenChange={setDialogTambahBarang}
+                >
+                  {notChoosedProduk.length > 0 && (
+                    <DialogTrigger asChild>
+                      <Button className="my-2">Tambah Barang</Button>
+                    </DialogTrigger>
+                  )}
+                  <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                      <DialogTitle>Tambah Barang</DialogTitle>
+                    </DialogHeader>
+                    <div>
+                      {notChoosedProduk.map((produk) => (
+                        <Field
+                          orientation="horizontal"
+                          className="my-1 border py-3 px-2 rounded-md"
+                        >
+                          <Checkbox
+                            id={produk.identifier}
+                            name={produk.identifier}
+                            checked={produk.checked}
+                            onCheckedChange={(e) => {
+                              setCloneProduk((prev) => {
+                                return prev.map((p) => {
+                                  if (p.identifier === produk.identifier) {
+                                    return { ...produk, checked: e };
+                                  }
+
+                                  return p;
+                                });
+                              });
+                              setNotChoosedProduk((prev) => {
+                                return prev.map((p) => {
+                                  if (p.identifier === produk.identifier) {
+                                    return { ...produk, checked: e };
+                                  }
+
+                                  return p;
+                                });
+                              });
+                            }}
+                          />
+                          <FieldLabel htmlFor={produk.identifier}>
+                            {produk.name}
+                            <span className="text-[10px] text-gray-400">
+                              {formatNumber(produk.hpp)}
+                            </span>
+                          </FieldLabel>
+                        </Field>
+                      ))}
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline">Batal</Button>
+                      </DialogClose>
+                      <Button type="button" onClick={handlePilihProduk}>
+                        Simpan
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </Field>
+              <Field>
+                <div className="flex justify-end items-center">
+                  {/* button tambah sekarang */}
+                  <div>
+                    <Button
+                      type="button"
+                      className="bg-green-700"
+                      onClick={handleTambahHutangSekarang}
+                    >
+                      Tambah Hutang Sekarang
+                    </Button>
+                  </div>
+
+                  {/* peringatan sebelum menambahkan hutang barang */}
+                  <div>
+                    <AlertDialog
+                      open={dialogTambahHutang}
+                      onOpenChange={setDialogTambahHutang}
+                    >
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Apakah Kamu Yakin ?
+                          </AlertDialogTitle>
+                        </AlertDialogHeader>
+                        <AlertDialogDescription>
+                          <div>
+                            <p>
+                              Supplier :{" "}
+                              <span>
+                                {
+                                  supplier.find((s) => s.id == whichSupplier)
+                                    ?.name
+                                }
+                              </span>
+                            </p>
+                            <p>
+                              <p>
+                                {choosedProduk
+                                  .filter((p) => p.terjual > 0)
+                                  .map((p) => (
+                                    <p>
+                                      {p.name} x {p.terjual}
+                                    </p>
+                                  ))}
+                              </p>
+                            </p>
+                          </div>
+                        </AlertDialogDescription>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Batal</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => {
+                              tambahHutangBarang(whichSupplier, hutangProduk);
+                            }}
+                          >
+                            Lanjutkan
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
               </Field>
             </FieldGroup>
           </FieldSet>
-          <form className="min-w-[200px] max-w-[350px]">
-            {/* isi quantity produk */}
-            {choosedProduk.length > 0 &&
-              choosedProduk.map((produk) => (
-                <div className="my-2 px-2 py-3 flex gap-x-2 justify-between">
-                  <label htmlFor={produk.identifier}>{produk.nama} : </label>
-                  <div>
-                    <input
-                      type="number"
-                      value={produk.terjual}
-                      placeholder="0"
-                      onChange={(e) => {
-                        setChoosedProduk((prev) => {
-                          return prev.map((p) => {
-                            if (p.identifier === produk.identifier) {
-                              return {
-                                ...produk,
-                                terjual: e.target.value,
-                              };
-                            }
-
-                            return p;
-                          });
-                        });
-                      }}
-                      className="px-2 py-1 outline-1 outline-gray-400 rounded-md max-w-[100px]"
-                    />
-                    <button
-                      className="border border-gray-400 bg-red-500 text-white px-2 py-1 mx-1 rounded-md"
-                      type="button"
-                      onClick={() => {
-                        setCloneProduk((prev) => {
-                          const notChoosed = prev.map((p) => {
-                            if (p.identifier === produk.identifier) {
-                              return { ...produk, checked: false };
-                            }
-
-                            return p;
-                          });
-
-                          setNotChoosedProduk(
-                            notChoosed.filter((p) => !p.checked),
-                          );
-
-                          return notChoosed;
-                        });
-                        setChoosedProduk((prev) => {
-                          return prev.filter(
-                            (p) => p.identifier !== produk.identifier,
-                          );
-                        });
-                      }}
-                    >
-                      <i className="bi bi-trash" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-            {/* dialog tambah produk */}
-            <div>
-              <Dialog
-                open={dialogTambahBarang}
-                onOpenChange={setDialogTambahBarang}
-              >
-                {notChoosedProduk.length > 0 && (
-                  <DialogTrigger asChild>
-                    <Button className="my-2">Tambah Barang</Button>
-                  </DialogTrigger>
-                )}
-                <DialogContent className="sm:max-w-sm">
-                  <DialogHeader>
-                    <DialogTitle>Tambah Barang</DialogTitle>
-                  </DialogHeader>
-                  <div>
-                    {notChoosedProduk.map((produk) => (
-                      <Field
-                        orientation="horizontal"
-                        className="my-1 border py-3 px-2 rounded-md"
-                      >
-                        <Checkbox
-                          id={produk.identifier}
-                          name={produk.identifier}
-                          checked={produk.checked}
-                          onCheckedChange={(e) => {
-                            setCloneProduk((prev) => {
-                              return prev.map((p) => {
-                                if (p.identifier === produk.identifier) {
-                                  return { ...produk, checked: e };
-                                }
-
-                                return p;
-                              });
-                            });
-                            setNotChoosedProduk((prev) => {
-                              return prev.map((p) => {
-                                if (p.identifier === produk.identifier) {
-                                  return { ...produk, checked: e };
-                                }
-
-                                return p;
-                              });
-                            });
-                          }}
-                        />
-                        <FieldLabel htmlFor={produk.identifier}>
-                          {produk.nama}
-                          <span className="text-[10px] text-gray-400">
-                            {formatNumber(produk.hpp)}
-                          </span>
-                        </FieldLabel>
-                      </Field>
-                    ))}
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button variant="outline">Batal</Button>
-                    </DialogClose>
-                    <Button type="button" onClick={handlePilihProduk}>
-                      Simpan
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            {/* button tambah sekarang */}
-            <div>
-              <Button
-                type="button"
-                className="bg-green-700"
-                onClick={handleTambahHutangSekarang}
-              >
-                Tambah Hutang Sekarang
-              </Button>
-            </div>
-
-            {/* peringatan sebelum menambahkan hutang barang */}
-            <div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="outline">Show Dialog</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
-                      Are you absolutely sure?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      your account from our servers.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction>Continue</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </form>
         </div>
       )}
     </div>

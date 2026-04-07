@@ -48,7 +48,7 @@ const StepTwo = () => {
         {produkInArray.map((item, index) => (
           <Terjual
             key={index}
-            namaProduk={item.nama}
+            namaProduk={item.name}
             setShowConclusion={setShowConclusion}
             setSubmitOrder={setSubmitOrder}
             state={item.terjual}
@@ -112,7 +112,7 @@ const StepTwo = () => {
                     <th className="border border-black px-3 py-2">Hari</th>
                     {produkInArray.map((item, index) => (
                       <th className="border border-black px-3 py-2" key={index}>
-                        {item.nama}
+                        {item.name}
                       </th>
                     ))}
                     <th className="border border-black px-3 py-2">

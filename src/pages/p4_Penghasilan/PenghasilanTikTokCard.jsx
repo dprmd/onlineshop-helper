@@ -29,7 +29,8 @@ export default function PenghasilanTikTokCard({ data }) {
           <ul className="p-2 bg-green-50 text-sm">
             {data.penghasilanHPP.produkTerjual.map((produk, i) => (
               <li className="text-sm" key={i}>
-                {produk.nama} : {produk.terjual} x {formatNumber(produk.hpp)} ={" "}
+                {produk.name || produk.nama} : {produk.terjual} x{" "}
+                {formatNumber(produk.hpp)} ={" "}
                 {formatNumber(produk.terjual * produk.hpp)}
               </li>
             ))}

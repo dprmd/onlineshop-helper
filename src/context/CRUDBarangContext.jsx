@@ -1,5 +1,9 @@
 import { useUI } from "@/context/UIContext";
-import { getDocuments } from "../services/firebase/docService";
+import {
+  getDocument,
+  getDocuments,
+  updateDocument,
+} from "../services/firebase/docService";
 import { toCamelCase } from "../utils/generalFunction";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -37,6 +41,50 @@ export function CRUDBarangProvider({ children }) {
     return exist ? true : false;
   };
 
+  const tambahHutangBarang = async (supplierId, hutangBarang) => {
+    setLoading(true);
+    const { data: supplierObject } = await getDocument(
+      "Mengambil Data Supplier",
+      "supplier",
+      supplierId,
+    );
+
+    const hutangBarangBefore = supplierObject.hutangBarang;
+
+    const merged = hutangBarang.map((barang) => {
+      const sameBarang = hutangBarangBefore.find(
+        (b) => b.identifier === barang.identifier,
+      );
+
+      if (sameBarang) {
+        return { ...sameBarang, terjual: sameBarang.terjual + barang.terjual };
+      } else {
+        return barang;
+      }
+    });
+
+    let barangNotEdited = [];
+
+    hutangBarangBefore.forEach((barang) => {
+      if (!merged.find((p) => p.identifier === barang.identifier)) {
+        barangNotEdited.push(barang);
+      }
+    });
+
+    await updateDocument(
+      "Update Supplier Data",
+      "supplier",
+      supplierId,
+      {
+        ...supplierObject,
+        hutangBarang: [...barangNotEdited, ...merged],
+      },
+      "Berhasil Mengupdate Supplier",
+    );
+
+    setLoading(false);
+  };
+
   return (
     <CRUDBarangContext.Provider
       value={{
@@ -49,6 +97,7 @@ export function CRUDBarangProvider({ children }) {
         checkSupplierIfExist,
         getSupplierList,
         initialFetch,
+        tambahHutangBarang,
       }}
     >
       {children}
