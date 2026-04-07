@@ -37,6 +37,14 @@ import { listProduk } from "../../lib/variables";
 import { formatNumber } from "../../utils/generalFunction";
 import { FieldDescription, FieldLegend, FieldSet } from "@/components/ui/field";
 import { FieldGroup } from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function TambahHutangBarang() {
   const navigate = useNavigate();
@@ -50,6 +58,8 @@ export default function TambahHutangBarang() {
   const [cloneProduk, setCloneProduk] = useState(produk);
   const [choosedProduk, setChoosedProduk] = useState([]);
   const [notChoosedProduk, setNotChoosedProduk] = useState(produk);
+
+  console.log(supplier);
 
   const handlePilihProduk = () => {
     const choosed = cloneProduk.filter((p) => p.checked);
@@ -124,7 +134,7 @@ export default function TambahHutangBarang() {
       {/* jika supplier ada */}
       {supplier.length > 0 && (
         <div className="flex flex-col justify-center items-center">
-          <FieldSet className="border">
+          <FieldSet className="px-3 py-2 border rounded-md">
             <FieldLegend>Tambah Hutang Barang</FieldLegend>
             <FieldDescription>
               Isi Dengan Barang Apa Saja Yang Di Pinjam Hari Ini
@@ -132,31 +142,25 @@ export default function TambahHutangBarang() {
             <FieldGroup>
               <Field>
                 <FieldLabel>Supplier</FieldLabel>
+                <Select>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Siapa Suppliernya" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {supplier.map((s) => (
+                        <SelectItem value={s.id}>{s.name}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <FieldLabel>Pilih Barang</FieldLabel>
               </Field>
             </FieldGroup>
           </FieldSet>
           <form className="min-w-[200px] max-w-[350px]">
-            {/* select supplier */}
-            <div className="px-2 py-3 my-2 flex justify-between">
-              <label htmlFor="supplierName">Supplier : </label>
-              <select
-                value={whichSupplier}
-                onChange={(e) => {
-                  setWhichSupplier(e.target.value);
-                }}
-                id="supplierName"
-                required
-                className="outline-1 outline-gray-400 rounded-md"
-              >
-                <option value={null}>Siapa ?</option>
-                {supplier.map((s) => (
-                  <option key={s.docId} value={s.username}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             {/* isi quantity produk */}
             {choosedProduk.length > 0 &&
               choosedProduk.map((produk) => (
