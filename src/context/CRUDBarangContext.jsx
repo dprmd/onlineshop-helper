@@ -1,3 +1,4 @@
+import { useUI } from "@/context/UIContext";
 import { getDocuments } from "../services/firebase/docService";
 import { toCamelCase } from "../utils/generalFunction";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -5,12 +6,14 @@ import { createContext, useContext, useEffect, useState } from "react";
 const CRUDBarangContext = createContext();
 
 export function CRUDBarangProvider({ children }) {
+  const { loading, setLoading } = useUI();
+  const [initialFetch, setInitialFetch] = useState(true);
   const [supplier, setSupplier] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const getSupplierList = async () => {
     setLoading(true);
+    setInitialFetch(false);
     const data = await getDocuments(
       "Ambil List Supplier",
       "supplier",
@@ -20,7 +23,6 @@ export function CRUDBarangProvider({ children }) {
     if (data.success) {
       setSupplier(data.data);
     } else {
-      ``;
       setError(data.error);
       console.log(data.error);
     }
@@ -35,10 +37,6 @@ export function CRUDBarangProvider({ children }) {
     return exist ? true : false;
   };
 
-  useEffect(() => {
-    getSupplierList();
-  }, []);
-
   return (
     <CRUDBarangContext.Provider
       value={{
@@ -49,6 +47,8 @@ export function CRUDBarangProvider({ children }) {
         supplier,
         setSupplier,
         checkSupplierIfExist,
+        getSupplierList,
+        initialFetch,
       }}
     >
       {children}

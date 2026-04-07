@@ -30,7 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCRUDBarang } from "../../context/CRUDBarangContext";
 import { listProduk } from "../../lib/variables";
@@ -48,7 +48,7 @@ import {
 
 export default function TambahHutangBarang() {
   const navigate = useNavigate();
-  const { loading, supplier } = useCRUDBarang();
+  const { supplier, getSupplierList, initialFetch } = useCRUDBarang();
   const [whichSupplier, setWhichSupplier] = useState(null);
   const [dialogTambahBarang, setDialogTambahBarang] = useState(false);
   const produk = Object.entries(listProduk).map((v) => ({
@@ -91,9 +91,14 @@ export default function TambahHutangBarang() {
     }
   };
 
+  useEffect(() => {
+    if (initialFetch) {
+      getSupplierList();
+    }
+  }, []);
+
   return (
     <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
-      {loading && <LoadingOverlay show={loading} />}
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

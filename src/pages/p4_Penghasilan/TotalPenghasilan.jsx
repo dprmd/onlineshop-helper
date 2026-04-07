@@ -6,12 +6,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Label, Pie, PieChart } from "recharts";
 import {
@@ -24,11 +25,16 @@ import {
 } from "../../components/ui/card";
 import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import { formatNumber } from "../../utils/generalFunction";
-import { Button } from "@/components/ui/button";
 
 export default function TotalPenghasilan() {
-  const { penghasilanAT, tagihanAT, setorAT, untungAT } =
-    useCatatanPenghasilan();
+  const {
+    penghasilanAT,
+    tagihanAT,
+    setorAT,
+    untungAT,
+    fetchAT,
+    totalInitialFetch,
+  } = useCatatanPenghasilan();
 
   const [showUntung, setShowUntung] = useState(false);
 
@@ -61,6 +67,12 @@ export default function TotalPenghasilan() {
   const remainingTiktok = penghasilanAT.tiktok - tempCalculateTiktok;
   const totalShopee = tempCalculateShopee + remainingShopee;
   const totalTiktok = tempCalculateTiktok + remainingTiktok;
+
+  useEffect(() => {
+    if (totalInitialFetch) {
+      fetchAT();
+    }
+  }, []);
 
   return (
     <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">

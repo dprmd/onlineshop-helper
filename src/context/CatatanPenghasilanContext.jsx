@@ -1,3 +1,4 @@
+import { useUI } from "@/context/UIContext";
 import {
   getDaftarPenghasilan,
   getDaftarPenghasilanByDate,
@@ -21,12 +22,16 @@ export function CatatanPenghasilanProvider({ children }) {
   const [setorAT, setSetorAT] = useState(dummy);
   const [untungAT, setUntungAT] = useState(dummy);
 
-  // Loading & Error
-  const [loading, setLoading] = useState(false);
+  // Loading & Error & Initial Fetch
+  const { loading, setLoading } = useUI();
   const [error, setError] = useState(null);
+  const [totalInitialFetch, setTotalInitialFetch] = useState(true);
+  const [shopeeInitialFetch, setShopeeInitialFetch] = useState(true);
+  const [tiktokInitialFetch, setTiktokInitialFetch] = useState(true);
 
   const fetchAT = async () => {
     setLoading(true);
+    setTotalInitialFetch(false);
     const { shopee, tiktok } = await getDocument(
       "Mengambil Document Catatan Penghasilan All Time",
       "penghasilanAllTime",
@@ -49,6 +54,7 @@ export function CatatanPenghasilanProvider({ children }) {
       shopee: shopee.untungAT,
       tiktok: tiktok.untungAT,
     });
+    setLoading(false);
   };
 
   const fetchPenghasilan = async (platform, limit) => {
@@ -56,9 +62,11 @@ export function CatatanPenghasilanProvider({ children }) {
     const data = await getDaftarPenghasilan(platform, "newToOld", limit);
     if (data.success) {
       if (platform === "shopee") {
+        setShopeeInitialFetch(false);
         setPenghasilanShopee(data.data);
         setPenghasilanShopeeTemp(data.data);
       } else {
+        setTiktokInitialFetch(false);
         setPenghasilanTikTok(data.data);
         setPenghasilanTikTokTemp(data.data);
       }
@@ -124,12 +132,6 @@ export function CatatanPenghasilanProvider({ children }) {
     }
   };
 
-  useEffect(() => {
-    fetchPenghasilan("shopee", 7);
-    fetchPenghasilan("tiktok", 7);
-    fetchAT();
-  }, []);
-
   return (
     <CatatanPenghasilanContext.Provider
       value={{
@@ -151,6 +153,13 @@ export function CatatanPenghasilanProvider({ children }) {
         setSetorAT,
         untungAT,
         setUntungAT,
+        fetchAT,
+        totalInitialFetch,
+        setTotalInitialFetch,
+        shopeeInitialFetch,
+        setShopeeInitialFetch,
+        tiktokInitialFetch,
+        setTiktokInitialFetch,
       }}
     >
       {children}

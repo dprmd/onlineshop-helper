@@ -1,3 +1,4 @@
+import { UIProvider } from "@/context/UIContext";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { AlokasiPemasukanProvider } from "./context/AlokasiPemasukanContext";
 import { CatatanPenghasilanProvider } from "./context/CatatanPenghasilanContext";
@@ -70,12 +71,14 @@ const router = createHashRouter([
 
 export default function App() {
   return (
-    <CRUDBarangProvider>
-      <CatatanPenghasilanProvider>
-        <AlokasiPemasukanProvider>
-          <RouterProvider router={router} />
-        </AlokasiPemasukanProvider>
-      </CatatanPenghasilanProvider>
-    </CRUDBarangProvider>
+    <UIProvider>
+      <CRUDBarangProvider>
+        <CatatanPenghasilanProvider>
+          <AlokasiPemasukanProvider>
+            <RouterProvider router={router} />
+          </AlokasiPemasukanProvider>
+        </CatatanPenghasilanProvider>
+      </CRUDBarangProvider>
+    </UIProvider>
   );
 }

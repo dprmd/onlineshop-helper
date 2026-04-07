@@ -10,9 +10,17 @@ import { Link } from "react-router-dom";
 import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import FilterList from "./FilterList";
 import PenghasilanShopeeCard from "./PenghasilanShopeeCard";
+import { useEffect } from "react";
 
 export default function RiwayatPenghasilanShopee() {
-  const { penghasilanShopee } = useCatatanPenghasilan();
+  const { penghasilanShopee, fetchPenghasilan, shopeeInitialFetch } =
+    useCatatanPenghasilan();
+
+  useEffect(() => {
+    if (shopeeInitialFetch) {
+      fetchPenghasilan("shopee", 7);
+    }
+  }, []);
 
   return (
     <div className="px-5 py-4 flex flex-col gap-y-4">

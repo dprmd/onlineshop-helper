@@ -7,12 +7,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card, CardHeader } from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -25,14 +20,20 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCRUDBarang } from "../../context/CRUDBarangContext";
 import { createDocument } from "../../services/firebase/docService";
 import { toCamelCase } from "../../utils/generalFunction";
 
 export default function Supplier() {
-  const { supplier, setSupplier, checkSupplierIfExist } = useCRUDBarang();
+  const {
+    supplier,
+    setSupplier,
+    checkSupplierIfExist,
+    getSupplierList,
+    initialFetch,
+  } = useCRUDBarang();
 
   const [supplierName, setSupplierName] = useState("");
   const [dialogAddSupplier, setDialogAddSupplier] = useState(false);
@@ -55,7 +56,7 @@ export default function Supplier() {
       setSupplier([
         ...supplier,
         {
-          docId: newSupplier.docId,
+          id: newSupplier.docId,
           name: supplierName,
           username: toCamelCase(supplierName),
         },
@@ -65,6 +66,12 @@ export default function Supplier() {
       alert("Berhasil Menyimpan Supplier");
     }
   };
+
+  useEffect(() => {
+    if (initialFetch) {
+      getSupplierList();
+    }
+  }, []);
 
   return (
     <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">

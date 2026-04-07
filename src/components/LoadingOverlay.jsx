@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-export default function LoadingOverlay({ show, text = "Loading..." }) {
+export default function LoadingOverlay({ show, text = "Memuat . . ." }) {
   useEffect(() => {
     if (show) {
       document.body.classList.add("overflow-hidden");

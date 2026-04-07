@@ -10,9 +10,17 @@ import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import FilterList from "./FilterList";
 import PenghasilanTikTokCard from "./PenghasilanTikTokCard";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function RiwayatPenghasilanTikTok() {
-  const { penghasilanTikTok } = useCatatanPenghasilan();
+  const { penghasilanTikTok, fetchPenghasilan, tiktokInitialFetch } =
+    useCatatanPenghasilan();
+
+  useEffect(() => {
+    if (tiktokInitialFetch) {
+      fetchPenghasilan("tiktok", 7);
+    }
+  }, []);
 
   return (
     <div className="px-4 py-3 flex flex-col gap-y-4">

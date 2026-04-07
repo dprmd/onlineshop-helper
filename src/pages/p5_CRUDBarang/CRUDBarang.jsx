@@ -7,10 +7,20 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function CRUDBarang() {
   const navigate = useNavigate();
+  const { getSupplierList, initialFetch } = useCRUDBarang();
+
+  useEffect(() => {
+    if (initialFetch) {
+      getSupplierList();
+    }
+  }, []);
+
   return (
     <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
       <Breadcrumb>

@@ -1,20 +1,17 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import LoadingOverlay from "../../components/LoadingOverlay";
 import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
 import { formatNumber } from "../../utils/generalFunction";
 
 export default function FilterList({ platform }) {
   const {
-    loading,
     fetchPenghasilan,
     sortByLimitUnderSeven,
     fetchPenghasilanByDate,
     fetchPenghasilanByMonth,
     penghasilanShopee,
     penghasilanTikTok,
+    loading,
   } = useCatatanPenghasilan();
-  const navigate = useNavigate();
   const [setor, setSetor] = useState({
     shopee: 0,
     tiktok: 0,
@@ -112,7 +109,6 @@ export default function FilterList({ platform }) {
 
   return (
     <div className="text-sm text-gray-400">
-      <LoadingOverlay show={loading} text="Loading . . ." />
       <div className="py-2">
         <p className="font-bold text-md">
           Total Penghasilan : {formatNumber(penghasilanAT[platform])}
