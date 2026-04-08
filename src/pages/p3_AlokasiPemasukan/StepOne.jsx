@@ -10,64 +10,132 @@ import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
 import { formatNumber, validateNumber } from "../../utils/generalFunction";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+} from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useEffect, useState } from "react";
 
 export default function () {
-  const { totalPenghasilan, setTotalPenghasilan } = useAlokasiPemasukan();
+  const {
+    totalPenghasilan,
+    setTotalPenghasilan,
+    whichSupplier,
+    setWhichSupplier,
+  } = useAlokasiPemasukan();
+  const { supplier, getSupplierList, initialFetch } = useCRUDBarang();
+
+  const [errorSupplier, setErrorSupplier] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (initialFetch) {
+      getSupplierList();
+    }
+  }, []);
 
   return (
     <div className="flex justify-center items-center flex-col gap-y-4 px-4 py-3">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-center">
-            Masukan Total Penarikan Dana
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
+      <FieldSet>
+        <FieldLegend>Supplier & Total Penarikan</FieldLegend>
+        <FieldDescription>
+          Mohon masukan supplier dan total penarikan dana
+        </FieldDescription>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (whichSupplier) {
               navigate("/alokasiPemasukan/calculateHPP");
-            }}
-            id="totalPenarikan"
-          >
-            <Input
-              type="text"
-              value={totalPenghasilan}
-              placeholder="0"
-              onChange={(e) => {
-                const number = validateNumber(e);
-                if (!number) {
-                  setTotalPenghasilan("");
-                } else {
-                  setTotalPenghasilan(formatNumber(number));
-                }
-              }}
-              required
-            />
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center gap-x-2">
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/");
-            }}
-          >
-            Kembali
-          </Button>
+            } else {
+              setErrorSupplier(true);
+            }
+          }}
+          id="totalPenarikan"
+        >
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="supplier">Supplier</FieldLabel>
+              <Select
+                id="supplier"
+                required
+                value={whichSupplier}
+                onValueChange={(e) => {
+                  setErrorSupplier(false);
+                  setWhichSupplier(e);
+                }}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Supplier" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {supplier.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {errorSupplier && <FieldError>Mohon Pilih Supplier</FieldError>}
+            </Field>
+            <Field>
+              <FieldLabel>Total Penarikan Dana</FieldLabel>
+              <Input
+                type="text"
+                value={totalPenghasilan}
+                placeholder="0"
+                onChange={(e) => {
+                  const number = validateNumber(e);
+                  if (!number) {
+                    setTotalPenghasilan("");
+                  } else {
+                    setTotalPenghasilan(formatNumber(number));
+                  }
+                }}
+                required
+              />
+            </Field>
+            <Field>
+              <Button
+                size="lg"
+                onClick={() => {
+                  navigate("/");
+                }}
+              >
+                Kembali
+              </Button>
 
-          {/* Selanjutnya */}
-          <Button
-            size="lg"
-            type="submit"
-            className="bg-green-700"
-            form="totalPenarikan"
-          >
-            Selanjutnya
-          </Button>
-        </CardFooter>
-      </Card>
+              {/* Selanjutnya */}
+              <Button
+                size="lg"
+                type="submit"
+                className="bg-green-700"
+                form="totalPenarikan"
+              >
+                Selanjutnya
+              </Button>
+            </Field>
+          </FieldGroup>
+        </form>
+      </FieldSet>
     </div>
   );
 }

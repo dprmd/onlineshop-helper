@@ -69,7 +69,7 @@ const StepTwo = () => {
             buttonType="button"
             tailwindClass={"bg-red-500 mx-1 px-2 py-1"}
             onClick={() => {
-              navigate("/AlokasiPemasukan");
+              navigate("/alokasiPemasukan");
             }}
           />
 

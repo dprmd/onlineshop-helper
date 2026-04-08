@@ -10,6 +10,7 @@ export function AlokasiPemasukanProvider({ children }) {
   const [produk, setProduk] = useState(listProduk);
   const produkInArray = Object.values(produk);
   const [isTikTok, setIsTikTok] = useState(false);
+  const [whichSupplier, setWhichSupplier] = useState("");
 
   // calculateHPP Context
   const [showConclusion, setShowConclusion] = useState(false);
@@ -42,6 +43,8 @@ export function AlokasiPemasukanProvider({ children }) {
         setTotalTagihan,
         tagihan,
         setTagihan,
+        whichSupplier,
+        setWhichSupplier,
       }}
     >
       {children}
