@@ -3,6 +3,22 @@ import MyButton from "../../components/MyButton";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
 import { hari, listProduk } from "../../lib/variables";
 import { formatNumber } from "../../utils/generalFunction";
+import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldTitle,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const StepTwo = () => {
   const {
@@ -14,11 +30,22 @@ const StepTwo = () => {
     submitOrder,
     setSubmitOrder,
     produkInArray,
+    whichSupplier,
   } = useAlokasiPemasukan();
+  const { supplier } = useCRUDBarang();
   const navigate = useNavigate();
+  const choosedSupplier = supplier.find((s) => s.id === whichSupplier);
+  const listBarang = useMemo(() => {
+    return choosedSupplier?.hutangBarang.map((p) => ({
+      ...p,
+      setor: 0,
+    }));
+  });
+  const [setorBarang, setSetorBarang] = useState(listBarang);
+
   // Function
   const handleReset = () => {
-    setProduk(listProduk);
+    setSetorBarang(listBarang);
     setPenghasilanHPP("");
     setSubmitOrder(1);
     setShowConclusion(false);
@@ -27,8 +54,8 @@ const StepTwo = () => {
   const handlePerhitungan = (e) => {
     e.preventDefault();
 
-    const total = produkInArray.reduce((acc, curr) => {
-      return acc + curr.terjual * curr.hpp;
+    const total = setorBarang.reduce((acc, curr) => {
+      return acc + Number(curr.setor) * curr.hpp;
     }, 0);
     setPenghasilanHPP(formatNumber(total));
 
@@ -42,166 +69,170 @@ const StepTwo = () => {
     setSubmitOrder(2);
   };
 
+  useEffect(() => {
+    if (!whichSupplier) {
+      navigate("/alokasiPemasukan");
+    }
+  }, []);
+
   return (
-    <div>
-      <form onSubmit={handlePerhitungan}>
-        {produkInArray.map((item, index) => (
-          <Terjual
-            key={index}
-            namaProduk={item.name}
-            setShowConclusion={setShowConclusion}
-            setSubmitOrder={setSubmitOrder}
-            state={item.terjual}
-            setState={(value) => {
-              setProduk((prev) => ({
-                ...prev,
-                [item.identifier]: {
-                  ...prev[item.identifier],
-                  terjual: value,
-                },
-              }));
-            }}
-          />
-        ))}
-        <div className="px-3 py-2">
-          <MyButton
-            buttonText="Kembali"
-            buttonType="button"
-            tailwindClass={"bg-red-500 mx-1 px-2 py-1"}
-            onClick={() => {
-              navigate("/alokasiPemasukan");
-            }}
-          />
-
-          <MyButton
-            buttonText="Reset All"
-            buttonType="button"
-            tailwindClass={"bg-green-500 mx-1 px-2 py-1"}
-            onClick={handleReset}
-          />
-          <MyButton
-            buttonText={"Hitung"}
-            buttonType={"submit"}
-            tailwindClass={"bg-green-500 mx-1 px-2 py-1"}
-          />
-          {submitOrder === 2 && (
-            <MyButton
-              buttonText={"Selanjutnya"}
-              buttonType={"button"}
-              tailwindClass={"bg-green-500 mx-1 px-2 py-1"}
-              onClick={() => {
-                navigate("/AlokasiPemasukan/summary");
-              }}
-            />
-          )}
-        </div>
+    <div className="flex justify-center items-center">
+      <form
+        onSubmit={handlePerhitungan}
+        className="mt-4 border px-4 py-3 min-w-[380px]"
+      >
+        <FieldSet>
+          <FieldLegend>Setor Barang</FieldLegend>
+          <FieldDescription>Masukan Barang Yang Akan Di Setor</FieldDescription>
+          <FieldGroup>
+            {listBarang?.map((p, i) => (
+              <Field>
+                <FieldLabel htmlFor={p.identifier}>
+                  <span>{p.name}</span>
+                  <span className="text-[10px] text-gray-400">
+                    Sisa {p.terjual}
+                  </span>
+                </FieldLabel>
+                <Input
+                  id={p.identifier}
+                  autoComplete="off"
+                  placeholder="0"
+                  value={setorBarang[i].setor}
+                  onChange={(e) => {
+                    setSubmitOrder(1);
+                    setShowConclusion(false);
+                    setSetorBarang((prev) => {
+                      return prev.map((prod) => {
+                        if (prod.identifier === p.identifier) {
+                          return { ...prod, setor: e.target.value };
+                        } else {
+                          return prod;
+                        }
+                      });
+                    });
+                  }}
+                />
+              </Field>
+            ))}
+            {showConclusion && (
+              <Field>
+                <div className="border p-2 rounded-md text-center text-[12px]">
+                  {setorBarang.map((barang) => {
+                    if (Number(barang.setor > 0)) {
+                      return (
+                        <p>
+                          {barang.name} {barang.setor} x{" "}
+                          {formatNumber(barang.hpp)} ={" "}
+                          {formatNumber(barang.hpp * barang.setor)}
+                        </p>
+                      );
+                    }
+                  })}
+                  Total Setor : {formatNumber(penghasilanHPP)}
+                </div>
+              </Field>
+            )}
+            <Field>
+              <Button
+                type="button"
+                onClick={() => {
+                  navigate("/alokasiPemasukan");
+                }}
+              >
+                Kembali
+              </Button>
+              <Button type="button" onClick={handleReset}>
+                Reset All
+              </Button>
+              <Button type="submit">Hitung</Button>
+              {submitOrder === 2 && (
+                <Button
+                  type="button"
+                  onClick={() => {
+                    navigate("/alokasiPemasukan/summary");
+                  }}
+                >
+                  Selanjutnya
+                </Button>
+              )}
+            </Field>
+          </FieldGroup>
+        </FieldSet>
+        {/* {choosedSupplier?.hutangBarang.map((item, index) => ( */}
+        {/* <Terjual
+          // key={index}
+          // namaProduk={item.name}
+          // setShowConclusion={setShowConclusion}
+          // setSubmitOrder={setSubmitOrder}
+          // state={item.terjual}
+          // setState={(value) => {
+          //   setProduk((prev) => ({
+          //     ...prev,
+          //     [item.identifier]: {
+          //       ...prev[item.identifier],
+          //       terjual: value,
+          //     },
+          //   }));
+          // }}
+        /> */}
+        {/* ))} */}
       </form>
-
-      {showConclusion && (
-        <div className="p-3 flex flex-col gap-y-4">
-          <div>
-            <span className="font-bold text-xl">
-              Total Penghasilan HPP: {formatNumber(penghasilanHPP)}
-            </span>
-          </div>
-          <div>
-            <div className="overflow-x-auto">
-              <table className="w-full border border-black border-collapse text-sm">
-                <thead>
-                  <tr className="font-bold text-center">
-                    <th className="border border-black px-3 py-2">Hari</th>
-                    {produkInArray.map((item, index) => (
-                      <th className="border border-black px-3 py-2" key={index}>
-                        {item.name}
-                      </th>
-                    ))}
-                    <th className="border border-black px-3 py-2">
-                      Total Penghasilan HPP
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  <tr className="text-center">
-                    <td className="border border-black px-3 py-2 text-center whitespace-nowrap">
-                      {hari}
-                    </td>
-                    {produkInArray.map((item, index) => (
-                      <td className="border border-black px-3 py-2" key={index}>
-                        {item.terjual}
-                      </td>
-                    ))}
-                    <td className="border border-black px-3 py-2 text-center">
-                      {formatNumber(penghasilanHPP)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
 
-const Terjual = ({
-  namaProduk,
-  state,
-  setState,
-  setShowConclusion,
-  setSubmitOrder,
-}) => {
+const Terjual = ({ daftarBarang }) => {
   return (
-    <div className="input-components">
-      <label htmlFor={namaProduk} className="block text-lg font-semibold">
-        {namaProduk}
-      </label>
-      <input
-        type="number"
-        id={namaProduk}
-        value={state}
-        className="max-w-[150px]"
-        placeholder="0"
-        onChange={(e) => {
-          setShowConclusion(false);
-          setSubmitOrder(1);
-          setState(e.target.value);
-        }}
-      />
-      <div className="inline-block">
-        <MyButton
-          buttonText={"-"}
-          buttonType={"button"}
-          onClick={() => {
-            if (state !== 0) {
-              setShowConclusion(false);
-              setSubmitOrder(1);
-              setState(Number(state) - 1);
-            }
-          }}
-          tailwindClass={"bg-slate-300 ml-2 mx-1 px-2 py-1"}
-        />
-        <MyButton
-          buttonText={"+"}
-          buttonType={"button"}
-          onClick={() => {
-            setShowConclusion(false);
-            setSubmitOrder(1);
-            setState(Number(state) + 1);
-          }}
-          tailwindClass={"bg-slate-300 mx-1 px-2 py-1"}
-        />
-        <MyButton
-          buttonText={"Reset"}
-          buttonType={"button"}
-          onClick={() => {
-            setState(0);
-          }}
-          tailwindClass={"bg-slate-300 mx-1 px-2 py-1"}
-        />
-      </div>
-    </div>
+    <></>
+    // <div className="input-components">
+    //   <label htmlFor={namaProduk} className="block text-lg font-semibold">
+    //     {namaProduk}
+    //   </label>
+    //   <input
+    //     type="number"
+    //     id={namaProduk}
+    //     value={state}
+    //     className="max-w-[150px]"
+    //     placeholder="0"
+    //     onChange={(e) => {
+    //       setShowConclusion(false);
+    //       setSubmitOrder(1);
+    //       setState(e.target.value);
+    //     }}
+    //   />
+    //   <div className="inline-block">
+    //     <MyButton
+    //       buttonText={"-"}
+    //       buttonType={"button"}
+    //       onClick={() => {
+    //         if (state !== 0) {
+    //           setShowConclusion(false);
+    //           setSubmitOrder(1);
+    //           setState(Number(state) - 1);
+    //         }
+    //       }}
+    //       tailwindClass={"bg-slate-300 ml-2 mx-1 px-2 py-1"}
+    //     />
+    //     <MyButton
+    //       buttonText={"+"}
+    //       buttonType={"button"}
+    //       onClick={() => {
+    //         setShowConclusion(false);
+    //         setSubmitOrder(1);
+    //         setState(Number(state) + 1);
+    //       }}
+    //       tailwindClass={"bg-slate-300 mx-1 px-2 py-1"}
+    //     />
+    //     <MyButton
+    //       buttonText={"Reset"}
+    //       buttonType={"button"}
+    //       onClick={() => {
+    //         setState(0);
+    //       }}
+    //       tailwindClass={"bg-slate-300 mx-1 px-2 py-1"}
+    //     />
+    //   </div>
+    // </div>
   );
 };
 

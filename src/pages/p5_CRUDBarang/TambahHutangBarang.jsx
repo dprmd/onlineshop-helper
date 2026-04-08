@@ -63,7 +63,7 @@ export default function TambahHutangBarang() {
   const [cloneProduk, setCloneProduk] = useState(produk);
   const [choosedProduk, setChoosedProduk] = useState([]);
   const [notChoosedProduk, setNotChoosedProduk] = useState(produk);
-  const [hutangProduk, setHutangProduk] = useState([]);
+  const [hutangBarang, setHutangBarang] = useState([]);
 
   const handlePilihProduk = () => {
     const choosed = cloneProduk.filter((p) => p.checked);
@@ -89,6 +89,7 @@ export default function TambahHutangBarang() {
       .map((produk) => ({
         identifier: produk.identifier,
         name: produk.name,
+        hpp: produk.hpp,
         terjual: Number(produk.terjual),
       }))
       .filter((produk) => produk.terjual > 0);
@@ -99,7 +100,7 @@ export default function TambahHutangBarang() {
     }
 
     setDialogTambahHutang(true);
-    setHutangProduk([...hutang]);
+    setHutangBarang([...hutang]);
   };
 
   useEffect(() => {
@@ -366,7 +367,10 @@ export default function TambahHutangBarang() {
                           <AlertDialogCancel>Batal</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => {
-                              tambahHutangBarang(whichSupplier, hutangProduk);
+                              tambahHutangBarang(whichSupplier, hutangBarang);
+                              setChoosedProduk([]);
+                              setNotChoosedProduk(produk);
+                              setCloneProduk(produk);
                             }}
                           >
                             Lanjutkan

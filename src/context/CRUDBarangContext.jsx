@@ -81,6 +81,18 @@ export function CRUDBarangProvider({ children }) {
       },
       "Berhasil Mengupdate Supplier",
     );
+    setSupplier((prev) => {
+      return prev.map((s) => {
+        if (s.id === supplierId) {
+          return {
+            ...s,
+            hutangBarang: [...barangNotEdited, ...merged],
+          };
+        } else {
+          return s;
+        }
+      });
+    });
 
     setLoading(false);
   };

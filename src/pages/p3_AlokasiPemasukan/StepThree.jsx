@@ -1,8 +1,39 @@
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AddBillModal from "../../components/AddBillModal";
 import LoadingOverlay from "../../components/LoadingOverlay";
-import MyButton from "../../components/MyButton";
 import WordInBracket from "../../components/WordInBracket";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
 import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
@@ -19,7 +50,7 @@ import {
   getDocument,
   updateDocument,
 } from "../../services/firebase/docService";
-import { formatNumber, raw, validateNumber } from "../../utils/generalFunction";
+import { formatNumber, raw, toCamelCase } from "../../utils/generalFunction";
 
 // additional function
 const date = new Date();
@@ -62,6 +93,8 @@ const StepThree = () => {
   // State
   const [loadingSave, setLoadingSave] = useState(false);
   const [addBill, setAddBill] = useState(false);
+  const [billName, setBillName] = useState("");
+  const [totalBill, setTotalBill] = useState("");
   const [sudahHitung, setSudahHitung] = useState(false);
   const [kerja, setKerja] = useState(day === 0 ? false : true);
   const [waktuKerja, setWaktuKerja] = useState("Satu Hari Full");
@@ -361,6 +394,32 @@ const StepThree = () => {
     await sinkronLastSave();
   };
 
+  const handleAddBill = (e) => {
+    e.preventDefault();
+
+    const cekIfBillNameExist = tagihan.some(
+      (bill) => bill.identifier === toCamelCase(billName),
+    );
+
+    if (cekIfBillNameExist) {
+      alert("Maaf Tagihan Sudah Ada, Beri Nama Lain");
+      setBillName("");
+    } else {
+      const newBill = {
+        identifier: toCamelCase(billName),
+        billName,
+        totalBill,
+      };
+
+      setTagihan((prevBills) => [...prevBills, newBill]);
+
+      setBillName("");
+      setTotalBill("");
+      setAddBill(false);
+      setSudahHitung(false);
+    }
+  };
+
   useEffect(() => {
     if (isTikTok) {
       setGajiHarian(0);
@@ -372,218 +431,251 @@ const StepThree = () => {
   return (
     <div className="flex justify-center items-center flex-col py-3">
       <LoadingOverlay show={loadingSave} text="Loading . . ." />
-      <AddBillModal
-        openModalState={addBill}
-        setOpenModalState={setAddBill}
-        tagihan={tagihan}
-        setTagihan={setTagihan}
-        setSudahHitung={setSudahHitung}
-      />
-      <h1 className="text-2xl font-bold">Alokasi Pemasukan</h1>
       <form
-        className="border border-slate-400 rounded-md w-max mx-auto mt-3 p-4 max-w-[800px]"
+        className="border-slate-400 rounded-md w-max mx-auto mt-3 max-w-[800px]"
         onSubmit={hitungSekarang}
+        id="alokasiPemasukan"
       >
-        {/* Nama Hari */}
-        <div className="flex items-center justify-between input-components">
-          <span>Hari : {dayName[day]}</span>
-        </div>
+        <Card className="min-w-[380px]">
+          <CardHeader>
+            <CardTitle>Alokasi Pemasukan</CardTitle>
 
-        {/* Tombol On Off Mode TikTok */}
-        <div className="flex items-center justify-between input-components">
-          <span>Mode TikTok</span>
-          <button
-            type="button"
-            onClick={() => {
-              setIsTikTok(!isTikTok);
-              setSudahHitung(false);
-            }}
-            className={`w-[45px] h-[25px] rounded-full flex ${
-              isTikTok
-                ? "bg-green-400 justify-end"
-                : "bg-slate-300 justify-start"
-            }`}
-          >
-            <span className="inline-block w-[25px] h-[25px] bg-black rounded-full"></span>
-          </button>
-        </div>
+            <Dialog open={addBill} onOpenChange={setAddBill}>
+              <DialogTrigger>
+                {/* Tombol Tambahkan Tagihan Lainnya */}
+                <CardAction>
+                  <Button
+                    size={"xs"}
+                    type="button"
+                    onClick={() => {
+                      setAddBill(!addBill);
+                    }}
+                  >
+                    + Bill
+                  </Button>
+                </CardAction>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Tambah Tagihan Lainnya</DialogTitle>
+                  <FieldSet>
+                    <FieldGroup>
+                      <Field>
+                        <FieldLabel>Nama Tagihan</FieldLabel>
+                        <Input
+                          value={billName}
+                          required
+                          onChange={(e) => {
+                            setBillName(e.target.value);
+                          }}
+                        />
+                      </Field>
+                      <Field>
+                        <FieldLabel>Total Tagihan</FieldLabel>
+                        <Input
+                          value={totalBill}
+                          required
+                          onChange={(e) => {
+                            setTotalBill(e.target.value);
+                          }}
+                        />
+                      </Field>
+                      <Field>
+                        <div className="flex justify-end gap-1">
+                          <Button
+                            type="button"
+                            onClick={() => {
+                              setAddBill(false);
+                            }}
+                          >
+                            Batal
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={handleAddBill}
+                            className="bg-sky-700"
+                          >
+                            Tambahkan
+                          </Button>
+                        </div>
+                      </Field>
+                    </FieldGroup>
+                  </FieldSet>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+          </CardHeader>
+          <CardContent>
+            {/* Nama Hari */}
+            <div className="flex items-center justify-between input-components">
+              <span>Hari : {dayName[day]}</span>
+            </div>
 
-        {/* Tombol On Off Kerja */}
-        {!isTikTok && (
-          <div className="flex items-center justify-between input-components">
-            <span>Kerja Hari Ini</span>
-            <button
-              type="button"
-              onClick={() => {
-                setKerja(!kerja);
-                setSudahHitung(false);
-              }}
-              className={`w-[45px] h-[25px] rounded-full flex ${
-                kerja
-                  ? "bg-green-400 justify-end"
-                  : "bg-slate-300 justify-start"
-              }`}
-            >
-              <span className="inline-block w-[25px] h-[25px] bg-black rounded-full"></span>
-            </button>
-          </div>
-        )}
-
-        {kerja && !isTikTok ? (
-          <div className="flex items-center justify-between input-components">
-            <span>Berapa Lama Kerja :</span>
-            <select
-              value={waktuKerja}
-              onChange={(e) => {
-                setWaktuKerja(e.target.value);
-                setSudahHitung(false);
-              }}
-            >
-              <option value="Satu Hari Full">Satu Hari Full</option>
-              <option value="Setengah Hari">Setengah Hari</option>
-            </select>
-          </div>
-        ) : (
-          <></>
-        )}
-
-        {/* Tombol On Off Mode Simple */}
-        <div className="flex items-center justify-between input-components">
-          <span>Mode Simple</span>
-          <button
-            type="button"
-            onClick={() => {
-              setSimpleMode(!simpleMode);
-            }}
-            className={`w-[45px] h-[25px] rounded-full flex ${
-              simpleMode
-                ? "bg-green-400 justify-end"
-                : "bg-slate-300 justify-start"
-            }`}
-          >
-            <span className="inline-block w-[25px] h-[25px] bg-black rounded-full"></span>
-          </button>
-        </div>
-
-        {/* Input Total Penarikan Dana */}
-        <div className="input-components">
-          <label className="block" htmlFor="totalPenghasilan">
-            Masukan Total Penghasilan :
-          </label>
-          <input
-            type="text"
-            id="totalPenghasilan"
-            value={totalPenghasilan}
-            className="max-w-full"
-            required={true}
-            onChange={(e) => {
-              setSudahHitung(false);
-              const number = validateNumber(e);
-              setTotalPenghasilan(formatNumber(number));
-            }}
-            placeholder="Isi di sini . . ."
-          />
-        </div>
-
-        {/* Input Penghasilan HPP */}
-        <div className="input-components">
-          <label className="block" htmlFor="penghasilanHPP">
-            Masukan Penghasilan HPP :
-          </label>
-          <input
-            type="text"
-            id="penghasilanHPP"
-            value={penghasilanHPP}
-            className="max-w-full"
-            required={true}
-            onChange={(e) => {
-              setSudahHitung(false);
-              const number = validateNumber(e);
-              setPenghasilanHPP(formatNumber(number));
-            }}
-            placeholder="Isi di sini . . ."
-          />
-        </div>
-
-        {/* Tagihan Lainnya */}
-        {tagihan.map((bill, index) => (
-          <div className="input-components" key={index}>
-            <label className="block" htmlFor="tagihan">
-              {bill.billName} :{" "}
-              <MyButton
-                buttonText={"Hapus Tagihan"}
-                buttonType={"button"}
-                tailwindClass={"bg-red-500 text-[10px] mx-1 px-2 py-1"}
-                onClick={() => {
+            {/* Tombol On Off Mode TikTok */}
+            <div className="flex items-center justify-between input-components">
+              <span>Mode TikTok</span>
+              <Switch
+                checked={isTikTok}
+                onCheckedChange={() => {
+                  setIsTikTok(!isTikTok);
                   setSudahHitung(false);
-                  setTagihan((prev) =>
-                    prev.filter((item) => item.identifier !== bill.identifier),
-                  );
                 }}
               />
-            </label>
-            <input
-              type="text"
-              value={bill.totalBill}
-              className="max-w-full"
-              onChange={(e) => {
-                setSudahHitung(false);
-                const number = validateNumber(e);
-                setTagihan((prev) => {
-                  const newBill = [...prev];
-                  newBill[index] = {
-                    ...newBill[index],
-                    totalBill: formatNumber(number),
-                  };
-                  return newBill;
-                });
-              }}
-              placeholder="Isi di sini . . ."
-            />
-          </div>
-        ))}
+            </div>
 
-        {/* Tombol Tambahkan Tagihan Lainnya */}
-        <div className="input-components">
-          <MyButton
-            buttonText={"Tambahkan Tagihan Lainnya . . ."}
-            buttonType={"button"}
-            onClick={() => {
-              setAddBill(!addBill);
-            }}
-            tailwindClass={"bg-blue-500 text-white mx-1 px-2 py-1"}
-          />
-        </div>
+            {/* Tombol On Off Kerja */}
+            {!isTikTok && (
+              <div className="flex items-center justify-between input-components">
+                <span>Kerja Hari Ini</span>
+                <Switch
+                  checked={kerja}
+                  onCheckedChange={() => {
+                    setKerja(!kerja);
+                    setSudahHitung(false);
+                  }}
+                />
+              </div>
+            )}
 
-        {/* Tombol Navigasi */}
-        <div className="input-components">
-          {/* Tombol Kembali ke StepTwo */}
-          <MyButton
-            buttonText={"Kembali"}
-            buttonType={"button"}
-            onClick={() => {
-              navigate("/alokasiPemasukan/calculateHPP");
-            }}
-            tailwindClass={"bg-red-500 mx-1 px-2 py-1"}
-          />
+            {kerja && !isTikTok ? (
+              <div className="flex items-center justify-between input-components">
+                <span>Berapa Lama Kerja :</span>
+                <Select
+                  value={waktuKerja}
+                  onValueChange={(e) => {
+                    setWaktuKerja(e);
+                    setSudahHitung(false);
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Berapa Lama ?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="Satu Hari Full">
+                        Satu Hari Full
+                      </SelectItem>
+                      <SelectItem value="Setengah Hari">
+                        Setengah Hari
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <></>
+            )}
 
-          {/* Hitung Sekarang */}
-          <MyButton
-            buttonText={"Hitung Sekarang"}
-            buttonType={"submit"}
-            tailwindClass={"bg-green-500 mx-1 px-2 py-1"}
-          />
+            {/* Tombol On Off Mode Simple */}
+            <div className="flex items-center justify-between input-components">
+              <span>Mode Simple</span>
+              <Switch checked={simpleMode} onCheckedChange={setSimpleMode} />
+            </div>
 
-          {/* Simpan Ke Firebase*/}
-          {sudahHitung && (
-            <MyButton
-              buttonText={"Simpan Ke Firebase"}
-              buttonType={"button"}
-              tailwindClass={"bg-sky-500 mx-1 px-2 py-1 mx-1 px-2 py-1"}
-              onClick={saveToFirebase}
-            />
-          )}
-        </div>
+            <FieldSet className="input-components">
+              <FieldGroup>
+                <Field>
+                  <FieldLabel htmlFor="penarikanDana">
+                    Total Penarikan Dana
+                  </FieldLabel>
+                  <Input
+                    id="penarikanDana"
+                    autoComplete="off"
+                    required
+                    placeholder="0"
+                    value={totalPenghasilan}
+                    onChange={(e) => {
+                      setSudahHitung(false);
+                      setTotalPenghasilan(e.target.value);
+                    }}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor="penghasilanHPP">
+                    Total Penghasilan HPP
+                  </FieldLabel>
+                  <Input
+                    id="penghasilanHPP"
+                    autoComplete="off"
+                    required
+                    placeholder="0"
+                    value={penghasilanHPP}
+                    onChange={(e) => {
+                      setSudahHitung(false);
+                      setPenghasilanHPP(e.target.value);
+                    }}
+                  />
+                </Field>
+              </FieldGroup>
+            </FieldSet>
+
+            {/* Tagihan Lainnya */}
+            {tagihan.map((bill, index) => (
+              <div className="input-components border rounded-md">
+                <FieldSet>
+                  <FieldLegend>List Tagihan</FieldLegend>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel>{bill.billName}</FieldLabel>
+                      <div className="flex gap-x-1">
+                        <Input
+                          value={bill.totalBill}
+                          placeholder="0"
+                          onChange={(e) => {
+                            setSudahHitung(false);
+                            setTagihan((prev) => {
+                              const newBill = [...prev];
+                              newBill[index] = {
+                                ...newBill[index],
+                                totalBill: e.target.value,
+                              };
+                              return newBill;
+                            });
+                          }}
+                        />
+                        <Button className="bi bi-trash" />
+                      </div>
+                    </Field>
+                  </FieldGroup>
+                </FieldSet>
+              </div>
+            ))}
+          </CardContent>
+          <CardFooter className="flex flex-col">
+            {/* Tombol Navigasi */}
+            <CardAction>
+              {/* Tombol Kembali ke StepTwo */}
+              <Button
+                type="button"
+                onClick={() => {
+                  navigate("/alokasiPemasukan/calculateHPP");
+                }}
+              >
+                Kembali
+              </Button>
+
+              {/* Hitung Sekarang */}
+              <Button
+                type="submit"
+                className="bg-green-700"
+                form="alokasiPemasukan"
+              >
+                Hitung
+              </Button>
+
+              {/* Simpan Ke Firebase*/}
+              {sudahHitung && (
+                <Button
+                  type="button"
+                  onClick={saveToFirebase}
+                  className="bg-sky-700"
+                >
+                  Simpan Ke Firebase
+                </Button>
+              )}
+            </CardAction>
+          </CardFooter>
+        </Card>
       </form>
 
       {/* Tampilkan Saat Tombol Hitung Di Tekan */}
