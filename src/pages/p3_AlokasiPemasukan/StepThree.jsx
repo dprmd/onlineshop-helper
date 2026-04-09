@@ -50,7 +50,12 @@ import {
   getDocument,
   updateDocument,
 } from "../../services/firebase/docService";
-import { formatNumber, raw, toCamelCase } from "../../utils/generalFunction";
+import {
+  formatNumber,
+  raw,
+  toCamelCase,
+  validateNumber,
+} from "../../utils/generalFunction";
 
 // additional function
 const date = new Date();
@@ -76,6 +81,7 @@ const StepThree = () => {
     isTikTok,
     setIsTikTok,
     produkInArray,
+    whichSupplier,
   } = useAlokasiPemasukan();
   const navigate = useNavigate();
   const {
@@ -88,6 +94,8 @@ const StepThree = () => {
     setSetorAT,
     untungAT,
     setUntungAT,
+    fetchAT,
+    totalInitialFetch,
   } = useCatatanPenghasilan();
 
   // State
@@ -428,6 +436,16 @@ const StepThree = () => {
     }
   }, [isTikTok]);
 
+  useEffect(() => {
+    if (!whichSupplier) {
+      navigate("/alokasiPemasukan");
+    }
+
+    if (totalInitialFetch) {
+      fetchAT();
+    }
+  }, []);
+
   return (
     <div className="flex justify-center items-center flex-col py-3">
       <LoadingOverlay show={loadingSave} text="Loading . . ." />
@@ -474,9 +492,15 @@ const StepThree = () => {
                         <FieldLabel>Total Tagihan</FieldLabel>
                         <Input
                           value={totalBill}
+                          type="text"
                           required
                           onChange={(e) => {
-                            setTotalBill(e.target.value);
+                            const number = validateNumber(e);
+                            if (!number) {
+                              setTotalBill("");
+                            } else {
+                              setTotalBill(formatNumber(number));
+                            }
                           }}
                         />
                       </Field>
@@ -581,12 +605,18 @@ const StepThree = () => {
                   <Input
                     id="penarikanDana"
                     autoComplete="off"
+                    type="text"
                     required
                     placeholder="0"
                     value={totalPenghasilan}
                     onChange={(e) => {
                       setSudahHitung(false);
-                      setTotalPenghasilan(e.target.value);
+                      const number = validateNumber(e);
+                      if (!number) {
+                        setTotalPenghasilan("");
+                      } else {
+                        setTotalPenghasilan(formatNumber(number));
+                      }
                     }}
                   />
                 </Field>
@@ -597,12 +627,18 @@ const StepThree = () => {
                   <Input
                     id="penghasilanHPP"
                     autoComplete="off"
+                    type="text"
                     required
                     placeholder="0"
                     value={penghasilanHPP}
                     onChange={(e) => {
                       setSudahHitung(false);
-                      setPenghasilanHPP(e.target.value);
+                      const number = validateNumber(e);
+                      if (!number) {
+                        setPenghasilanHPP("");
+                      } else {
+                        setPenghasilanHPP(number);
+                      }
                     }}
                   />
                 </Field>
@@ -610,36 +646,46 @@ const StepThree = () => {
             </FieldSet>
 
             {/* Tagihan Lainnya */}
-            {tagihan.map((bill, index) => (
+            {tagihan.length > 0 && (
               <div className="input-components border rounded-md">
                 <FieldSet>
                   <FieldLegend>List Tagihan</FieldLegend>
                   <FieldGroup>
-                    <Field>
-                      <FieldLabel>{bill.billName}</FieldLabel>
-                      <div className="flex gap-x-1">
-                        <Input
-                          value={bill.totalBill}
-                          placeholder="0"
-                          onChange={(e) => {
-                            setSudahHitung(false);
-                            setTagihan((prev) => {
-                              const newBill = [...prev];
-                              newBill[index] = {
-                                ...newBill[index],
-                                totalBill: e.target.value,
-                              };
-                              return newBill;
-                            });
-                          }}
-                        />
-                        <Button className="bi bi-trash" />
-                      </div>
-                    </Field>
+                    {tagihan.map((bill, index) => (
+                      <Field>
+                        <FieldLabel>{bill.billName}</FieldLabel>
+                        <div className="flex gap-x-1">
+                          <Input
+                            value={bill.totalBill}
+                            placeholder="0"
+                            onChange={(e) => {
+                              setSudahHitung(false);
+                              setTagihan((prev) => {
+                                const newBill = [...prev];
+                                newBill[index] = {
+                                  ...newBill[index],
+                                  totalBill: e.target.value,
+                                };
+                                return newBill;
+                              });
+                            }}
+                          />
+                          <Button
+                            className="bi bi-trash"
+                            onClick={() => {
+                              setSudahHitung(false);
+                              setTagihan((prev) => {
+                                return prev.filter((_, ind) => ind !== index);
+                              });
+                            }}
+                          />
+                        </div>
+                      </Field>
+                    ))}
                   </FieldGroup>
                 </FieldSet>
               </div>
-            ))}
+            )}
           </CardContent>
           <CardFooter className="flex flex-col">
             {/* Tombol Navigasi */}
@@ -683,7 +729,7 @@ const StepThree = () => {
       {/* Shopee Conclusion */}
       {sudahHitung && !isTikTok ? (
         <div className="flex flex-col max-w-[700px]">
-          <div className="border border-gray-400 rounded-md p-4 mt-4 flex flex-col gap-y-4 mx-2">
+          <div className="border border-gray-200 rounded-md p-4 mt-4 flex flex-col gap-y-4 mx-2">
             <div>
               {/* Judul */}
               <b className="text-lg">Ringkasan</b>

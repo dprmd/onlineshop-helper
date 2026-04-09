@@ -1,35 +1,27 @@
-import { useNavigate } from "react-router-dom";
-import MyButton from "../../components/MyButton";
-import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
-import { hari, listProduk } from "../../lib/variables";
-import { formatNumber } from "../../utils/generalFunction";
-import { useCRUDBarang } from "@/context/CRUDBarangContext";
-import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Field,
-  FieldContent,
   FieldDescription,
-  FieldError,
   FieldGroup,
   FieldLabel,
   FieldLegend,
-  FieldSeparator,
   FieldSet,
-  FieldTitle,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
+import { formatNumber } from "../../utils/generalFunction";
 
 const StepTwo = () => {
   const {
-    setProduk,
     penghasilanHPP,
     setPenghasilanHPP,
     showConclusion,
     setShowConclusion,
     submitOrder,
     setSubmitOrder,
-    produkInArray,
     whichSupplier,
   } = useAlokasiPemasukan();
   const { supplier } = useCRUDBarang();
@@ -79,7 +71,7 @@ const StepTwo = () => {
     <div className="flex justify-center items-center">
       <form
         onSubmit={handlePerhitungan}
-        className="mt-4 border px-4 py-3 min-w-[380px]"
+        className="mt-4 border px-4 py-3 min-w-[380px] rounded-md"
       >
         <FieldSet>
           <FieldLegend>Setor Barang</FieldLegend>
