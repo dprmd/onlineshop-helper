@@ -3,13 +3,11 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldGroup } from "@/components/ui/field";
+import { Field, FieldGroup, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
@@ -162,23 +160,25 @@ export default function PerhitunganProfit() {
             <DialogHeader>
               <DialogTitle>{dialog.title}</DialogTitle>
             </DialogHeader>
-            <FieldGroup>
-              <Field>
-                <Label htmlFor={dialog.identifier}>Berapa Persen</Label>
-                <Input
-                  id={dialog.identifier}
-                  type="number"
-                  placeholder="0"
-                  value={tempAdmin[dialog.identifier]}
-                  onChange={(e) => {
-                    setTempAdmin((prev) => ({
-                      ...prev,
-                      [dialog.identifier]: e.target.value,
-                    }));
-                  }}
-                />
-              </Field>
-            </FieldGroup>
+            <FieldSet>
+              <FieldGroup>
+                <Field>
+                  <Label htmlFor={dialog.identifier}>Berapa Persen</Label>
+                  <Input
+                    id={dialog.identifier}
+                    type="number"
+                    placeholder="0"
+                    value={tempAdmin[dialog.identifier]}
+                    onChange={(e) => {
+                      setTempAdmin((prev) => ({
+                        ...prev,
+                        [dialog.identifier]: e.target.value,
+                      }));
+                    }}
+                  />
+                </Field>
+              </FieldGroup>
+            </FieldSet>
             <DialogFooter>
               <DialogClose asChild>
                 <Button variant="outline">Batal</Button>

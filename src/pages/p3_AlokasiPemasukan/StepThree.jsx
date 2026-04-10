@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useCRUDBarang } from "@/context/CRUDBarangContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../components/LoadingOverlay";
@@ -68,19 +69,19 @@ const today = new Intl.DateTimeFormat("en-GB", {
 const StepThree = () => {
   // hooks
   const {
-    totalPenghasilan,
-    setTotalPenghasilan,
-    penghasilanHPP,
-    setPenghasilanHPP,
-    gajiHarian,
-    setGajiHarian,
-    totalTagihan,
-    setTotalTagihan,
-    tagihan,
-    setTagihan,
+    totalWithdraw,
+    setTotalWithdraw,
+    totalHPP,
+    setTotalHPP,
+    dailySalary,
+    setDailySalary,
+    totalBill,
+    setTotalBill,
+    bills,
+    setBills,
     isTikTok,
     setIsTikTok,
-    produkInArray,
+    modifiedSetorBarang,
     whichSupplier,
   } = useAlokasiPemasukan();
   const navigate = useNavigate();
@@ -97,16 +98,18 @@ const StepThree = () => {
     fetchAT,
     totalInitialFetch,
   } = useCatatanPenghasilan();
+  const { supplier } = useCRUDBarang();
 
   // State
   const [loadingSave, setLoadingSave] = useState(false);
   const [addBill, setAddBill] = useState(false);
   const [billName, setBillName] = useState("");
-  const [totalBill, setTotalBill] = useState("");
+  const [billPrice, setBillPrice] = useState("");
   const [sudahHitung, setSudahHitung] = useState(false);
   const [kerja, setKerja] = useState(day === 0 ? false : true);
   const [waktuKerja, setWaktuKerja] = useState("Satu Hari Full");
   const [simpleMode, setSimpleMode] = useState(true);
+  const supplierInfo = supplier.find((s) => s.id === whichSupplier);
 
   // Start
   const [komisiKotor, setKomisiKotor] = useState(0);
@@ -130,33 +133,33 @@ const StepThree = () => {
     if (kerja) {
       if (waktuKerja === "Satu Hari Full") {
         gajiHarianTemp = gajiPerHariFull;
-        setGajiHarian(gajiPerHariFull);
+        setDailySalary(gajiPerHariFull);
       } else {
         gajiHarianTemp = gajiPerHariHalf;
-        setGajiHarian(gajiPerHariHalf);
+        setDailySalary(gajiPerHariHalf);
       }
     } else {
       gajiHarianTemp = 0;
-      setGajiHarian(0);
+      setDailySalary(0);
     }
 
     // Komisi Kotor
-    const getKomisiKotor = raw(totalPenghasilan) - raw(penghasilanHPP);
+    const getKomisiKotor = raw(totalWithdraw) - raw(totalHPP);
     setKomisiKotor(getKomisiKotor);
 
     // Hitung Total Tagihan Lainnya
-    const totalTagihanLainnya = tagihan.reduce((acc, cur) => {
-      return acc + raw(cur.totalBill);
+    const totalTagihanLainnya = bills.reduce((acc, cur) => {
+      return acc + raw(cur.billPrice);
     }, 0);
-    setTotalTagihan(totalTagihanLainnya);
+    setTotalBill(totalTagihanLainnya);
 
     // Hitung Total Untuk Ade Siska
     let untukAdeSiska = 0;
     if (isTikTok) {
-      untukAdeSiska = raw(penghasilanHPP) - totalTagihanLainnya;
+      untukAdeSiska = raw(totalHPP) - totalTagihanLainnya;
     } else {
       untukAdeSiska =
-        raw(totalPenghasilan) -
+        raw(totalWithdraw) -
         (patunganUntukEma.uko + getKomisiKotor) -
         totalTagihanLainnya;
     }
@@ -227,21 +230,22 @@ const StepThree = () => {
         const updateTiktokDoc = async () => {
           // Data Penghasilan TikTok Yang Akan Di Simpan
           const penghasilanTikTok = {
-            totalPenghasilan: raw(totalPenghasilan),
-            penghasilanHPP: {
-              total: raw(penghasilanHPP),
-              produkTerjual: produkInArray.filter(
-                (produk) => produk.terjual > 0,
+            totalWithdraw: raw(totalWithdraw),
+            supplier: toCamelCase(supplierInfo.name),
+            totalHPP: {
+              total: raw(totalHPP),
+              soldProducts: modifiedSetorBarang.filter(
+                (produk) => produk.setor > 0,
               ),
             },
-            tagihan: {
-              listTagihan: tagihan,
-              totalTagihan,
+            bill: {
+              billList: bills,
+              totalBill,
             },
-            komisiAdi: {
+            profit: {
               total: komisiKotor,
             },
-            uangAdeSiska,
+            totalSetor: uangAdeSiska,
           };
 
           await createDocument(
@@ -261,8 +265,8 @@ const StepThree = () => {
 
           // Update All Time Document Tiktok
           const tiktokAllTime = {
-            penghasilanAT: penghasilanAT.tiktok + raw(totalPenghasilan),
-            tagihanAT: tagihanAT.tiktok + totalTagihan,
+            penghasilanAT: penghasilanAT.tiktok + raw(totalWithdraw),
+            tagihanAT: tagihanAT.tiktok + totalBill,
             setorAT: setorAT.tiktok + uangAdeSiska,
             untungAT: untungAT.tiktok + komisiKotor,
           };
@@ -278,23 +282,23 @@ const StepThree = () => {
         };
 
         const updateShopeeDoc = async () => {
-          2;
           // Data Penghasilan Shopee Yang Akan Di Simpan
           const penghasilanShopee = {
-            totalPenghasilan: raw(totalPenghasilan),
-            penghasilanHPP: {
-              total: raw(penghasilanHPP),
-              produkTerjual: produkInArray.filter(
-                (produk) => produk.terjual > 0,
+            totalWithdraw: raw(totalWithdraw),
+            supplier: toCamelCase(supplierInfo.name),
+            totalHPP: {
+              total: raw(totalHPP),
+              soldProducts: modifiedSetorBarang.filter(
+                (produk) => produk.setor > 0,
               ),
             },
-            tagihan: {
-              listTagihan: tagihan,
-              totalTagihan,
+            bill: {
+              billList: bills,
+              totalBill,
             },
-            uangAdeSiska,
+            totalSetor: uangAdeSiska,
             uangEmaIki,
-            komisiAdi: {
+            profit: {
               total: komisiKotor,
               komisiBersih,
               capital: uangCapital,
@@ -303,8 +307,8 @@ const StepThree = () => {
               uangInvestasi: uangInvestasi,
               sedekah: uangUntukSedekah,
             },
-            patunganUntukEma,
-            gajiAdi: gajiHarian,
+            splitBillEmaIki: patunganUntukEma,
+            gajiAdi: dailySalary,
           };
           await createDocument(
             "saveNotePenghasilanShopee",
@@ -323,8 +327,8 @@ const StepThree = () => {
 
           // Update All Time Document Shopee
           const shopeeAllTime = {
-            penghasilanAT: penghasilanAT.shopee + raw(totalPenghasilan),
-            tagihanAT: tagihanAT.shopee + totalTagihan,
+            penghasilanAT: penghasilanAT.shopee + raw(totalWithdraw),
+            tagihanAT: tagihanAT.shopee + totalBill,
             setorAT: setorAT.shopee + uangAdeSiska,
             untungAT: untungAT.shopee + komisiKotor,
           };
@@ -348,11 +352,11 @@ const StepThree = () => {
         // Optimistic Update
         setPenghasilanAT((prev) => ({
           ...prev,
-          [platform]: prev[platform] + raw(totalPenghasilan),
+          [platform]: prev[platform] + raw(totalWithdraw),
         }));
         setTagihanAT((prev) => ({
           ...prev,
-          [platform]: prev[platform] + totalTagihan,
+          [platform]: prev[platform] + totalBill,
         }));
         setSetorAT((prev) => ({
           ...prev,
@@ -405,7 +409,7 @@ const StepThree = () => {
   const handleAddBill = (e) => {
     e.preventDefault();
 
-    const cekIfBillNameExist = tagihan.some(
+    const cekIfBillNameExist = bills.some(
       (bill) => bill.identifier === toCamelCase(billName),
     );
 
@@ -416,13 +420,13 @@ const StepThree = () => {
       const newBill = {
         identifier: toCamelCase(billName),
         billName,
-        totalBill,
+        billPrice,
       };
 
-      setTagihan((prevBills) => [...prevBills, newBill]);
+      setBills((prevBills) => [...prevBills, newBill]);
 
       setBillName("");
-      setTotalBill("");
+      setBillPrice("");
       setAddBill(false);
       setSudahHitung(false);
     }
@@ -430,7 +434,7 @@ const StepThree = () => {
 
   useEffect(() => {
     if (isTikTok) {
-      setGajiHarian(0);
+      setDailySalary(0);
       setKerja(false);
       console.log("mode tiktok aktif, kini gaji jadi 0");
     }
@@ -462,70 +466,69 @@ const StepThree = () => {
               <DialogTrigger>
                 {/* Tombol Tambahkan Tagihan Lainnya */}
                 <CardAction>
-                  <Button
-                    size={"xs"}
-                    type="button"
+                  <div
+                    className="border px-2 py-[2px] text-[12px] rounded-sm bg-gray-900 text-white"
                     onClick={() => {
                       setAddBill(!addBill);
                     }}
                   >
                     + Bill
-                  </Button>
+                  </div>
                 </CardAction>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Tambah Tagihan Lainnya</DialogTitle>
-                  <FieldSet>
-                    <FieldGroup>
-                      <Field>
-                        <FieldLabel>Nama Tagihan</FieldLabel>
-                        <Input
-                          value={billName}
-                          required
-                          onChange={(e) => {
-                            setBillName(e.target.value);
-                          }}
-                        />
-                      </Field>
-                      <Field>
-                        <FieldLabel>Total Tagihan</FieldLabel>
-                        <Input
-                          value={totalBill}
-                          type="text"
-                          required
-                          onChange={(e) => {
-                            const number = validateNumber(e);
-                            if (!number) {
-                              setTotalBill("");
-                            } else {
-                              setTotalBill(formatNumber(number));
-                            }
-                          }}
-                        />
-                      </Field>
-                      <Field>
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              setAddBill(false);
-                            }}
-                          >
-                            Batal
-                          </Button>
-                          <Button
-                            type="button"
-                            onClick={handleAddBill}
-                            className="bg-sky-700"
-                          >
-                            Tambahkan
-                          </Button>
-                        </div>
-                      </Field>
-                    </FieldGroup>
-                  </FieldSet>
                 </DialogHeader>
+                <FieldSet>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel>Nama Tagihan</FieldLabel>
+                      <Input
+                        value={billName}
+                        required
+                        onChange={(e) => {
+                          setBillName(e.target.value);
+                        }}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel>Total Tagihan</FieldLabel>
+                      <Input
+                        value={billPrice}
+                        type="text"
+                        required
+                        onChange={(e) => {
+                          const number = validateNumber(e);
+                          if (!number) {
+                            setBillPrice("");
+                          } else {
+                            setBillPrice(formatNumber(number));
+                          }
+                        }}
+                      />
+                    </Field>
+                    <Field>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            setAddBill(false);
+                          }}
+                        >
+                          Batal
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={handleAddBill}
+                          className="bg-sky-700"
+                        >
+                          Tambahkan
+                        </Button>
+                      </div>
+                    </Field>
+                  </FieldGroup>
+                </FieldSet>
               </DialogContent>
             </Dialog>
           </CardHeader>
@@ -608,63 +611,55 @@ const StepThree = () => {
                     type="text"
                     required
                     placeholder="0"
-                    value={totalPenghasilan}
+                    value={totalWithdraw}
                     onChange={(e) => {
                       setSudahHitung(false);
                       const number = validateNumber(e);
                       if (!number) {
-                        setTotalPenghasilan("");
+                        setTotalWithdraw("");
                       } else {
-                        setTotalPenghasilan(formatNumber(number));
+                        setTotalWithdraw(formatNumber(number));
                       }
                     }}
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="penghasilanHPP">
+                  <FieldLabel htmlFor="totalHPP">
                     Total Penghasilan HPP
                   </FieldLabel>
                   <Input
-                    id="penghasilanHPP"
+                    id="totalHPP"
                     autoComplete="off"
                     type="text"
                     required
                     placeholder="0"
-                    value={penghasilanHPP}
-                    onChange={(e) => {
-                      setSudahHitung(false);
-                      const number = validateNumber(e);
-                      if (!number) {
-                        setPenghasilanHPP("");
-                      } else {
-                        setPenghasilanHPP(number);
-                      }
-                    }}
+                    value={totalHPP}
+                    disabled
                   />
                 </Field>
               </FieldGroup>
             </FieldSet>
 
             {/* Tagihan Lainnya */}
-            {tagihan.length > 0 && (
+            {bills.length > 0 && (
               <div className="input-components border rounded-md">
                 <FieldSet>
                   <FieldLegend>List Tagihan</FieldLegend>
                   <FieldGroup>
-                    {tagihan.map((bill, index) => (
+                    {bills.map((bill, index) => (
                       <Field>
                         <FieldLabel>{bill.billName}</FieldLabel>
                         <div className="flex gap-x-1">
                           <Input
-                            value={bill.totalBill}
+                            value={bill.billPrice}
                             placeholder="0"
                             onChange={(e) => {
                               setSudahHitung(false);
-                              setTagihan((prev) => {
+                              setBills((prev) => {
                                 const newBill = [...prev];
                                 newBill[index] = {
                                   ...newBill[index],
-                                  totalBill: e.target.value,
+                                  billPrice: e.target.value,
                                 };
                                 return newBill;
                               });
@@ -674,7 +669,7 @@ const StepThree = () => {
                             className="bi bi-trash"
                             onClick={() => {
                               setSudahHitung(false);
-                              setTagihan((prev) => {
+                              setBills((prev) => {
                                 return prev.filter((_, ind) => ind !== index);
                               });
                             }}
@@ -735,17 +730,17 @@ const StepThree = () => {
               <b className="text-lg">Ringkasan</b>
               <p>
                 Total Penghasilan Dari Shopee :{" "}
-                <b>{formatNumber(totalPenghasilan)}</b>
+                <b>{formatNumber(totalWithdraw)}</b>
               </p>
               <p>
-                Total Penghasilan HPP : <b>{formatNumber(penghasilanHPP)}</b>
+                Total Penghasilan HPP : <b>{formatNumber(totalHPP)}</b>
               </p>
-              {totalTagihan > 0 && (
+              {totalBill > 0 && (
                 <p>
-                  Tagihan Lainnya : <b>{formatNumber(totalTagihan)}</b>{" "}
+                  Tagihan Lainnya : <b>{formatNumber(totalBill)}</b>{" "}
                   {!simpleMode && (
                     <WordInBracket
-                      kalimat={tagihan.map((bill) => bill.billName).join(", ")}
+                      kalimat={bills.map((bill) => bill.billName).join(", ")}
                     />
                   )}
                 </p>
@@ -764,7 +759,7 @@ const StepThree = () => {
                   <WordInBracket
                     kalimat={`Total Penghasilan HPP - Patungan Ema Uko
                     ${kerja ? "- Gaji Per Hari" : ""} ${
-                      totalTagihan > 0 ? "- Total Tagihan Lainnya" : ""
+                      totalBill > 0 ? "- Total Tagihan Lainnya" : ""
                     }`}
                   />
                 )}
@@ -846,7 +841,7 @@ const StepThree = () => {
                         uangUntukSedekah +
                         patunganUntukEma.adi +
                         patunganUntukEma.uko +
-                        (kerja ? gajiHarian : 0),
+                        (kerja ? dailySalary : 0),
                     )}
                   </b>
                 </li>
@@ -915,7 +910,7 @@ const StepThree = () => {
                         <li>
                           Catat Pemasukan Uang Capital
                           <WordInBracket kalimat={"Gaji"} />
-                          Sebesar <b>{formatNumber(gajiHarian)}</b>
+                          Sebesar <b>{formatNumber(dailySalary)}</b>
                         </li>
                       )}
                       <li>
@@ -926,10 +921,10 @@ const StepThree = () => {
                           )}
                         </b>
                       </li>
-                      {totalTagihan > 0 && (
+                      {totalBill > 0 && (
                         <li>
                           Ada Uang Tagihan Lainnya Sebesar{" "}
-                          <b>{formatNumber(totalTagihan)}</b>
+                          <b>{formatNumber(totalBill)}</b>
                           <br />
                           Mau Di Transfer Ke Mana ?
                           <br />
@@ -975,7 +970,7 @@ const StepThree = () => {
                               <WordInBracket kalimat={"Gaji"} />
                             </span>
                             <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
-                            <b>{formatNumber(gajiHarian)}</b>
+                            <b>{formatNumber(dailySalary)}</b>
                           </li>
                         )}
                         <li>
@@ -987,11 +982,11 @@ const StepThree = () => {
                             )}
                           </b>
                         </li>
-                        {totalTagihan > 0 && (
+                        {totalBill > 0 && (
                           <li>
                             <span>
                               Ada Uang Tagihan Lainnya Sebesar{" "}
-                              <b>{formatNumber(totalTagihan)}</b>
+                              <b>{formatNumber(totalBill)}</b>
                               <br />
                               Mau Di Transfer Ke Mana ?
                             </span>
@@ -1067,24 +1062,24 @@ const StepThree = () => {
               <b className="text-lg">Ringkasan</b>
               <p>
                 Total Penghasilan Dari TikTok :{" "}
-                <b>{formatNumber(totalPenghasilan)}</b>
+                <b>{formatNumber(totalWithdraw)}</b>
               </p>
               <p>
-                Total Penghasilan HPP : <b>{formatNumber(penghasilanHPP)}</b>
+                Total Penghasilan HPP : <b>{formatNumber(totalHPP)}</b>
               </p>
-              {totalTagihan > 0 && (
+              {totalBill > 0 && (
                 <p>
-                  Tagihan Lainnya : <b>{formatNumber(totalTagihan)}</b>{" "}
+                  Tagihan Lainnya : <b>{formatNumber(totalBill)}</b>{" "}
                   {!simpleMode && (
                     <WordInBracket
-                      kalimat={tagihan.map((bill) => bill.billName).join(", ")}
+                      kalimat={bills.map((bill) => bill.billName).join(", ")}
                     />
                   )}
                 </p>
               )}
               <p>
                 Setor Untuk Ade Siska :{" "}
-                <b>{formatNumber(raw(penghasilanHPP) - totalTagihan)}</b>
+                <b>{formatNumber(raw(totalHPP) - totalBill)}</b>
               </p>
             </div>
 
@@ -1099,13 +1094,13 @@ const StepThree = () => {
                     // Simple Mode
                     <div>
                       Transfer Ke <b>SeaBank Ade Siska</b>{" "}
-                      <b>{formatNumber(raw(penghasilanHPP) - totalTagihan)}</b>
+                      <b>{formatNumber(raw(totalHPP) - totalBill)}</b>
                     </div>
                   ) : (
                     // Ribet Mode
                     <div>
                       Transfer Uang Ke <b>SeaBank Ade Siska</b> Sebesar{" "}
-                      <b>{formatNumber(raw(penghasilanHPP) - totalTagihan)}</b>
+                      <b>{formatNumber(raw(totalHPP) - totalBill)}</b>
                     </div>
                   )}
                 </li>
@@ -1125,10 +1120,10 @@ const StepThree = () => {
                         Catat Pemasukan Uang Capital Sebesar{" "}
                         <b>{formatNumber(komisiKotor)}</b>
                       </li>
-                      {totalTagihan > 0 && (
+                      {totalBill > 0 && (
                         <li>
                           Ada Uang Tagihan Lainnya Sebesar{" "}
-                          <b>{formatNumber(totalTagihan)}</b>
+                          <b>{formatNumber(totalBill)}</b>
                           <br />
                           Mau Di Transfer Ke Mana ?
                           <br />
@@ -1146,11 +1141,11 @@ const StepThree = () => {
                             <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
                             <b>{formatNumber(komisiKotor)}</b>
                           </li>
-                          {totalTagihan > 0 && (
+                          {totalBill > 0 && (
                             <li>
                               <span>
                                 Ada Uang Tagihan Lainnya Sebesar{" "}
-                                <b>{formatNumber(totalTagihan)}</b>
+                                <b>{formatNumber(totalBill)}</b>
                                 <br />
                                 Mau Di Transfer Ke Mana ?
                               </span>

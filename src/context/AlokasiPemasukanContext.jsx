@@ -1,12 +1,12 @@
+import { createContext, useContext, useState } from "react";
 import { listProduk } from "../lib/variables";
-import { createContext, useContext, useEffect, useState } from "react";
 
 const AlokasiPemasukanContext = createContext();
 
 export function AlokasiPemasukanProvider({ children }) {
   // All State
-  const [totalPenghasilan, setTotalPenghasilan] = useState("");
-  const [penghasilanHPP, setPenghasilanHPP] = useState("");
+  const [totalWithdraw, setTotalWithdraw] = useState("");
+  const [totalHPP, setTotalHPP] = useState("");
   const [produk, setProduk] = useState(listProduk);
   const produkInArray = Object.values(produk);
   const [isTikTok, setIsTikTok] = useState(false);
@@ -17,17 +17,18 @@ export function AlokasiPemasukanProvider({ children }) {
   const [submitOrder, setSubmitOrder] = useState(1);
 
   // summary Context
-  const [gajiHarian, setGajiHarian] = useState(0);
-  const [totalTagihan, setTotalTagihan] = useState(0);
-  const [tagihan, setTagihan] = useState([]);
+  const [dailySalary, setDailySalary] = useState(0);
+  const [totalBill, setTotalBill] = useState(0);
+  const [bills, setBills] = useState([]);
+  const [modifiedSetorBarang, setModifiedSetorBarang] = useState([]);
 
   return (
     <AlokasiPemasukanContext.Provider
       value={{
-        totalPenghasilan,
-        setTotalPenghasilan,
-        penghasilanHPP,
-        setPenghasilanHPP,
+        totalWithdraw,
+        setTotalWithdraw,
+        totalHPP,
+        setTotalHPP,
         produk,
         setProduk,
         produkInArray,
@@ -37,14 +38,16 @@ export function AlokasiPemasukanProvider({ children }) {
         setShowConclusion,
         submitOrder,
         setSubmitOrder,
-        gajiHarian,
-        setGajiHarian,
-        totalTagihan,
-        setTotalTagihan,
-        tagihan,
-        setTagihan,
+        dailySalary,
+        setDailySalary,
+        totalBill,
+        setTotalBill,
+        bills,
+        setBills,
         whichSupplier,
         setWhichSupplier,
+        modifiedSetorBarang,
+        setModifiedSetorBarang,
       }}
     >
       {children}

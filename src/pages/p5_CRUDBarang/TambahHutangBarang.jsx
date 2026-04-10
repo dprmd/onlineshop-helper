@@ -69,7 +69,18 @@ export default function TambahHutangBarang() {
     const choosed = cloneProduk.filter((p) => p.checked);
     const notChoosed = cloneProduk.filter((p) => !p.checked);
 
-    setChoosedProduk(choosed);
+    setChoosedProduk((prev) => {
+      return choosed.map((p) => {
+        const hasAddedBefore = prev.find(
+          (pc) => pc.identifier === p.identifier,
+        );
+        if (hasAddedBefore) {
+          return hasAddedBefore;
+        } else {
+          return p;
+        }
+      });
+    });
     setNotChoosedProduk(notChoosed);
     setDialogTambahBarang(false);
   };
@@ -90,9 +101,9 @@ export default function TambahHutangBarang() {
         identifier: produk.identifier,
         name: produk.name,
         hpp: produk.hpp,
-        terjual: Number(produk.terjual),
+        sold: Number(produk.sold),
       }))
-      .filter((produk) => produk.terjual > 0);
+      .filter((produk) => produk.sold > 0);
 
     if (hutang.length === 0) {
       alert("Mohon Masukan Jumlah Produk Yang Di Pinjam");
@@ -193,7 +204,7 @@ export default function TambahHutangBarang() {
                         <div>
                           <input
                             type="number"
-                            value={produk.terjual}
+                            value={produk.sold}
                             placeholder="0"
                             onChange={(e) => {
                               setChoosedProduk((prev) => {
@@ -201,7 +212,7 @@ export default function TambahHutangBarang() {
                                   if (p.identifier === produk.identifier) {
                                     return {
                                       ...produk,
-                                      terjual: e.target.value,
+                                      sold: e.target.value,
                                     };
                                   }
 
@@ -218,7 +229,11 @@ export default function TambahHutangBarang() {
                               setCloneProduk((prev) => {
                                 const notChoosed = prev.map((p) => {
                                   if (p.identifier === produk.identifier) {
-                                    return { ...produk, checked: false };
+                                    return {
+                                      ...produk,
+                                      checked: false,
+                                      terjual: 0,
+                                    };
                                   }
 
                                   return p;
@@ -262,47 +277,49 @@ export default function TambahHutangBarang() {
                     <DialogHeader>
                       <DialogTitle>Tambah Barang</DialogTitle>
                     </DialogHeader>
-                    <div>
-                      {notChoosedProduk.map((produk) => (
-                        <Field
-                          key={produk.identifier}
-                          orientation="horizontal"
-                          className="my-1 border py-3 px-2 rounded-md"
-                        >
-                          <Checkbox
-                            id={produk.identifier}
-                            name={produk.identifier}
-                            checked={produk.checked}
-                            onCheckedChange={(e) => {
-                              setCloneProduk((prev) => {
-                                return prev.map((p) => {
-                                  if (p.identifier === produk.identifier) {
-                                    return { ...produk, checked: e };
-                                  }
+                    <FieldSet>
+                      <FieldGroup className="flex gap-y-1">
+                        {notChoosedProduk.map((produk) => (
+                          <Field
+                            key={produk.identifier}
+                            orientation="horizontal"
+                            className="border py-3 px-2 rounded-md"
+                          >
+                            <Checkbox
+                              id={produk.identifier}
+                              name={produk.identifier}
+                              checked={produk.checked}
+                              onCheckedChange={(e) => {
+                                setCloneProduk((prev) => {
+                                  return prev.map((p) => {
+                                    if (p.identifier === produk.identifier) {
+                                      return { ...produk, checked: e };
+                                    }
 
-                                  return p;
+                                    return p;
+                                  });
                                 });
-                              });
-                              setNotChoosedProduk((prev) => {
-                                return prev.map((p) => {
-                                  if (p.identifier === produk.identifier) {
-                                    return { ...produk, checked: e };
-                                  }
+                                setNotChoosedProduk((prev) => {
+                                  return prev.map((p) => {
+                                    if (p.identifier === produk.identifier) {
+                                      return { ...produk, checked: e };
+                                    }
 
-                                  return p;
+                                    return p;
+                                  });
                                 });
-                              });
-                            }}
-                          />
-                          <FieldLabel htmlFor={produk.identifier}>
-                            {produk.name}
-                            <span className="text-[10px] text-gray-400">
-                              {formatNumber(produk.hpp)}
-                            </span>
-                          </FieldLabel>
-                        </Field>
-                      ))}
-                    </div>
+                              }}
+                            />
+                            <FieldLabel htmlFor={produk.identifier}>
+                              {produk.name}
+                              <span className="text-[10px] text-gray-400">
+                                {formatNumber(produk.hpp)}
+                              </span>
+                            </FieldLabel>
+                          </Field>
+                        ))}
+                      </FieldGroup>
+                    </FieldSet>
                     <DialogFooter>
                       <DialogClose asChild>
                         <Button variant="outline">Batal</Button>
@@ -353,10 +370,10 @@ export default function TambahHutangBarang() {
                             <div>
                               <div>
                                 {choosedProduk
-                                  .filter((p) => p.terjual > 0)
+                                  .filter((p) => p.sold > 0)
                                   .map((p) => (
                                     <div key={p.identifier}>
-                                      {p.name} x {p.terjual}
+                                      {p.name} x {p.sold}
                                     </div>
                                   ))}
                               </div>

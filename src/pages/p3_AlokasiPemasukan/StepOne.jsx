@@ -24,12 +24,8 @@ import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
 import { formatNumber, validateNumber } from "../../utils/generalFunction";
 
 export default function () {
-  const {
-    totalPenghasilan,
-    setTotalPenghasilan,
-    whichSupplier,
-    setWhichSupplier,
-  } = useAlokasiPemasukan();
+  const { totalWithdraw, setTotalWithdraw, whichSupplier, setWhichSupplier } =
+    useAlokasiPemasukan();
   const { supplier, getSupplierList, initialFetch } = useCRUDBarang();
 
   const [errorSupplier, setErrorSupplier] = useState(false);
@@ -91,15 +87,15 @@ export default function () {
                 <FieldLabel>Total Penarikan Dana</FieldLabel>
                 <Input
                   type="text"
-                  value={totalPenghasilan}
+                  value={totalWithdraw}
                   placeholder="0"
                   autoComplete="off"
                   onChange={(e) => {
                     const number = validateNumber(e);
                     if (!number) {
-                      setTotalPenghasilan("");
+                      setTotalWithdraw("");
                     } else {
-                      setTotalPenghasilan(formatNumber(number));
+                      setTotalWithdraw(formatNumber(number));
                     }
                   }}
                   required

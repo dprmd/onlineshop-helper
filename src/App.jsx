@@ -15,6 +15,7 @@ import TotalPenghasilan from "./pages/p4_Penghasilan/TotalPenghasilan";
 import CRUDBarang from "./pages/p5_CRUDBarang/CRUDBarang";
 import Supplier from "./pages/p5_CRUDBarang/Supplier";
 import TambahHutangBarang from "./pages/p5_CRUDBarang/TambahHutangBarang";
+import Products from "./pages/p5_CRUDBarang/Products";
 
 const router = createHashRouter([
   {
@@ -54,6 +55,7 @@ const router = createHashRouter([
           { index: true, element: <CRUDBarang /> },
           { path: "supplier", element: <Supplier /> },
           { path: "tambahHutangBarang", element: <TambahHutangBarang /> },
+          { path: "products", element: <Products /> },
         ],
       },
 

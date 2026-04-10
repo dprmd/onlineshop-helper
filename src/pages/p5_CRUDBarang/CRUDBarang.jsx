@@ -57,6 +57,16 @@ export default function CRUDBarang() {
             Tambah Hutang Barang
           </Button>
         </li>
+        <li>
+          <Button
+            size="lg"
+            onClick={() => {
+              navigate("/crudBarang/products");
+            }}
+          >
+            Produk
+          </Button>
+        </li>
       </ul>
     </div>
   );

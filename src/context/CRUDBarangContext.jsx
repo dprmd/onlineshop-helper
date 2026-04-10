@@ -14,6 +14,7 @@ export function CRUDBarangProvider({ children }) {
   const [initialFetch, setInitialFetch] = useState(true);
   const [supplier, setSupplier] = useState([]);
   const [error, setError] = useState(null);
+  const [products, setProducts] = useState([]);
 
   const getSupplierList = async () => {
     setLoading(true);
@@ -97,6 +98,8 @@ export function CRUDBarangProvider({ children }) {
     setLoading(false);
   };
 
+  const getProductList = async () => {};
+
   return (
     <CRUDBarangContext.Provider
       value={{
@@ -110,6 +113,9 @@ export function CRUDBarangProvider({ children }) {
         getSupplierList,
         initialFetch,
         tambahHutangBarang,
+        products,
+        setProducts,
+        getProductList,
       }}
     >
       {children}

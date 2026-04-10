@@ -13,8 +13,12 @@ import PenghasilanShopeeCard from "./PenghasilanShopeeCard";
 import { useEffect } from "react";
 
 export default function RiwayatPenghasilanShopee() {
-  const { penghasilanShopee, fetchPenghasilan, shopeeInitialFetch } =
-    useCatatanPenghasilan();
+  const {
+    penghasilanShopee,
+    penghasilanTikTok,
+    fetchPenghasilan,
+    shopeeInitialFetch,
+  } = useCatatanPenghasilan();
 
   useEffect(() => {
     if (shopeeInitialFetch) {

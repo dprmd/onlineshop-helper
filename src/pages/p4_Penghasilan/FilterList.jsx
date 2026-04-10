@@ -66,28 +66,28 @@ export default function FilterList({ platform }) {
   useEffect(() => {
     // Perhitungan Setor
     const setorShopee = penghasilanShopee.reduce((acc, cur) => {
-      return acc + cur.uangAdeSiska;
+      return acc + cur.totalSetor;
     }, 0);
     const setorTiktok = penghasilanTikTok.reduce((acc, cur) => {
-      return acc + cur.uangAdeSiska;
+      return acc + cur.totalSetor;
     }, 0);
     setSetor({ tiktok: setorTiktok, shopee: setorShopee });
 
     // Perhitungan Untung
     const untungShopee = penghasilanShopee.reduce((acc, cur) => {
-      return acc + cur.komisiAdi.total;
+      return acc + cur.profit.total;
     }, 0);
     const untungTiktok = penghasilanTikTok.reduce((acc, cur) => {
-      return acc + cur.komisiAdi.total;
+      return acc + cur.profit.total;
     }, 0);
     setUntung({ tiktok: untungTiktok, shopee: untungShopee });
 
     // Perhitungan Penghasilan HPP
     const penghasilanHPPATShopee = penghasilanShopee.reduce((acc, cur) => {
-      return acc + cur.totalPenghasilan;
+      return acc + cur.totalWithdraw;
     }, 0);
     const penghasilanHPPATTiktok = penghasilanTikTok.reduce((acc, cur) => {
-      return acc + cur.totalPenghasilan;
+      return acc + cur.totalWithdraw;
     }, 0);
     setPenghasilanAT({
       shopee: penghasilanHPPATShopee,
@@ -96,10 +96,10 @@ export default function FilterList({ platform }) {
 
     // Perhitungan Tagihan
     const tagihanATShopee = penghasilanShopee.reduce((acc, cur) => {
-      return acc + cur.tagihan.totalTagihan;
+      return acc + cur.bill.totalBill;
     }, 0);
     const tagihanATTiktok = penghasilanTikTok.reduce((acc, cur) => {
-      return acc + cur.tagihan.totalTagihan;
+      return acc + cur.bill.totalBill;
     }, 0);
     setTagihanAT({
       shopee: tagihanATShopee,

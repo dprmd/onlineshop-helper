@@ -14,18 +14,20 @@ import { useNavigate } from "react-router-dom";
 import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
 import { formatNumber } from "../../utils/generalFunction";
 
-const StepTwo = () => {
+export default function StepTwo() {
   const {
-    penghasilanHPP,
-    setPenghasilanHPP,
+    totalHPP,
+    setTotalHPP,
     showConclusion,
     setShowConclusion,
     submitOrder,
     setSubmitOrder,
     whichSupplier,
+    modifiedSetorBarang,
+    setModifiedSetorBarang,
   } = useAlokasiPemasukan();
-  const { supplier } = useCRUDBarang();
   const navigate = useNavigate();
+  const { supplier } = useCRUDBarang();
   const choosedSupplier = supplier.find((s) => s.id === whichSupplier);
   const listBarang = useMemo(() => {
     return choosedSupplier?.hutangBarang.map((p) => ({
@@ -38,7 +40,7 @@ const StepTwo = () => {
   // Function
   const handleReset = () => {
     setSetorBarang(listBarang);
-    setPenghasilanHPP("");
+    setTotalHPP("");
     setSubmitOrder(1);
     setShowConclusion(false);
   };
@@ -49,7 +51,7 @@ const StepTwo = () => {
     const total = setorBarang.reduce((acc, curr) => {
       return acc + Number(curr.setor) * curr.hpp;
     }, 0);
-    setPenghasilanHPP(formatNumber(total));
+    setTotalHPP(formatNumber(total));
 
     if (total === 0) {
       alert("Masukkan jumlah produk terjual terlebih dahulu!");
@@ -57,6 +59,7 @@ const StepTwo = () => {
       return;
     }
 
+    setModifiedSetorBarang([...setorBarang]);
     setShowConclusion(true);
     setSubmitOrder(2);
   };
@@ -64,6 +67,10 @@ const StepTwo = () => {
   useEffect(() => {
     if (!whichSupplier) {
       navigate("/alokasiPemasukan");
+    }
+
+    if (modifiedSetorBarang.length > 0) {
+      setSetorBarang([...modifiedSetorBarang]);
     }
   }, []);
 
@@ -78,11 +85,11 @@ const StepTwo = () => {
           <FieldDescription>Masukan Barang Yang Akan Di Setor</FieldDescription>
           <FieldGroup>
             {listBarang?.map((p, i) => (
-              <Field>
+              <Field key={p.identifier}>
                 <FieldLabel htmlFor={p.identifier}>
                   <span>{p.name}</span>
                   <span className="text-[10px] text-gray-400">
-                    Sisa {p.terjual}
+                    Sisa {p.sold}
                   </span>
                 </FieldLabel>
                 <Input
@@ -96,6 +103,9 @@ const StepTwo = () => {
                     setSetorBarang((prev) => {
                       return prev.map((prod) => {
                         if (prod.identifier === p.identifier) {
+                          if (Number(e.target.value) > p.sold) {
+                            return { ...prod, setor: p.sold };
+                          }
                           return { ...prod, setor: e.target.value };
                         } else {
                           return prod;
@@ -112,7 +122,7 @@ const StepTwo = () => {
                   {setorBarang.map((barang) => {
                     if (Number(barang.setor > 0)) {
                       return (
-                        <p>
+                        <p key={barang.identifier}>
                           {barang.name} {barang.setor} x{" "}
                           {formatNumber(barang.hpp)} ={" "}
                           {formatNumber(barang.hpp * barang.setor)}
@@ -120,7 +130,7 @@ const StepTwo = () => {
                       );
                     }
                   })}
-                  Total Setor : {formatNumber(penghasilanHPP)}
+                  Total Setor : {formatNumber(totalHPP)}
                 </div>
               </Field>
             )}
@@ -150,82 +160,7 @@ const StepTwo = () => {
             </Field>
           </FieldGroup>
         </FieldSet>
-        {/* {choosedSupplier?.hutangBarang.map((item, index) => ( */}
-        {/* <Terjual
-          // key={index}
-          // namaProduk={item.name}
-          // setShowConclusion={setShowConclusion}
-          // setSubmitOrder={setSubmitOrder}
-          // state={item.terjual}
-          // setState={(value) => {
-          //   setProduk((prev) => ({
-          //     ...prev,
-          //     [item.identifier]: {
-          //       ...prev[item.identifier],
-          //       terjual: value,
-          //     },
-          //   }));
-          // }}
-        /> */}
-        {/* ))} */}
       </form>
     </div>
   );
-};
-
-const Terjual = ({ daftarBarang }) => {
-  return (
-    <></>
-    // <div className="input-components">
-    //   <label htmlFor={namaProduk} className="block text-lg font-semibold">
-    //     {namaProduk}
-    //   </label>
-    //   <input
-    //     type="number"
-    //     id={namaProduk}
-    //     value={state}
-    //     className="max-w-[150px]"
-    //     placeholder="0"
-    //     onChange={(e) => {
-    //       setShowConclusion(false);
-    //       setSubmitOrder(1);
-    //       setState(e.target.value);
-    //     }}
-    //   />
-    //   <div className="inline-block">
-    //     <MyButton
-    //       buttonText={"-"}
-    //       buttonType={"button"}
-    //       onClick={() => {
-    //         if (state !== 0) {
-    //           setShowConclusion(false);
-    //           setSubmitOrder(1);
-    //           setState(Number(state) - 1);
-    //         }
-    //       }}
-    //       tailwindClass={"bg-slate-300 ml-2 mx-1 px-2 py-1"}
-    //     />
-    //     <MyButton
-    //       buttonText={"+"}
-    //       buttonType={"button"}
-    //       onClick={() => {
-    //         setShowConclusion(false);
-    //         setSubmitOrder(1);
-    //         setState(Number(state) + 1);
-    //       }}
-    //       tailwindClass={"bg-slate-300 mx-1 px-2 py-1"}
-    //     />
-    //     <MyButton
-    //       buttonText={"Reset"}
-    //       buttonType={"button"}
-    //       onClick={() => {
-    //         setState(0);
-    //       }}
-    //       tailwindClass={"bg-slate-300 mx-1 px-2 py-1"}
-    //     />
-    //   </div>
-    // </div>
-  );
-};
-
-export default StepTwo;
+}

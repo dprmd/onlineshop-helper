@@ -14,6 +14,33 @@ import {
 } from "firebase/firestore";
 import { db } from "./firebase";
 
+export const createDocumentById = async (
+  operationName,
+  collectionName,
+  docId,
+  document,
+  messageOnSucces,
+) => {
+  try {
+    console.log(
+      `Dev Only | Operation : Create To Replace , Operation Name : ${operationName}`,
+    );
+
+    await setDoc(doc(db, collectionName, docId), { ...document });
+
+    return {
+      success: true,
+      message: messageOnSucces,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+      error,
+    };
+  }
+};
+
 export const createDocument = async (
   operationName,
   collectionName,
