@@ -15,6 +15,14 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
+// Database Config
+export const collectionName = {
+  shopeeWithdrawals: "penghasilanJualanOnlineShopee",
+  tiktokWithdrawals: "penghasilanJualanOnlineTikTok",
+  allTime: "penghasilanAllTime",
+  allTimeDocId: "CatatanPenghasilanAllTime",
+};
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);

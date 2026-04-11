@@ -8,10 +8,10 @@ import ProfitCalculation from "./pages/p2_ProfitCalculation/ProfitCalculation";
 import StepOne from "./pages/p3_IncomeAllocation/StepOne";
 import StepThree from "./pages/p3_IncomeAllocation/StepThree";
 import StepTwo from "./pages/p3_IncomeAllocation/StepTwo";
-import Penghasilan from "./pages/p4_Penghasilan/Penghasilan";
-import RiwayatPenghasilanShopee from "./pages/p4_Penghasilan/RiwayatPenghasilanShopee";
-import RiwayatPenghasilanTikTok from "./pages/p4_Penghasilan/RiwayatPenghasilanTikTok";
-import TotalPenghasilan from "./pages/p4_Penghasilan/TotalPenghasilan";
+import Withdrawals from "./pages/p4_Income/Income";
+import ShopeeWithdrawalRecords from "./pages/p4_Income/ShopeeWithdrawalRecords";
+import TikTokWithdrawasRecords from "./pages/p4_Income/TikTokWithdrawalRecords";
+import IncomeTotal from "./pages/p4_Income/IncomeTotal";
 import CRUDBarang from "./pages/p5_CRUDBarang/CRUDBarang";
 import Products from "./pages/p5_CRUDBarang/Products";
 import Supplier from "./pages/p5_CRUDBarang/Supplier";
@@ -41,10 +41,10 @@ const router = createHashRouter([
       {
         path: "income",
         children: [
-          { index: true, element: <Penghasilan /> },
-          { path: "total", element: <TotalPenghasilan /> },
-          { path: "shopee", element: <RiwayatPenghasilanShopee /> },
-          { path: "tiktok", element: <RiwayatPenghasilanTikTok /> },
+          { index: true, element: <Withdrawals /> },
+          { path: "total", element: <IncomeTotal /> },
+          { path: "shopee", element: <ShopeeWithdrawalRecords /> },
+          { path: "tiktok", element: <TikTokWithdrawasRecords /> },
         ],
       },
 

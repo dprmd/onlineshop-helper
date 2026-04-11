@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function Penghasilan() {
+export default function Income() {
   const navigate = useNavigate();
 
   return (

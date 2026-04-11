@@ -6,6 +6,7 @@ import {
   getWithdrawalListByMonth,
   getDocument,
 } from "../services/firebase/docService";
+import { collectionName } from "@/services/firebase/firebase";
 
 const WithdrawalRecordsContext = createContext();
 
@@ -19,7 +20,7 @@ export function WithdrawalRecordsProvider({ children }) {
   const dummy = { shopee: 0, tiktok: 0 };
   const [ATWithdrawals, setATWithdrawals] = useState(dummy);
   const [ATBills, setATBills] = useState(dummy);
-  const [ATSetor, setSetorAT] = useState(dummy);
+  const [ATSetor, setATSetor] = useState(dummy);
   const [ATProfit, setATProfit] = useState(dummy);
 
   // Loading & Error & Initial Fetch
@@ -34,8 +35,8 @@ export function WithdrawalRecordsProvider({ children }) {
     setATInitialFetch(false);
     const { shopee, tiktok } = await getDocument(
       "Mengambil Document Catatan Penghasilan All Time",
-      "penghasilanAllTime",
-      "CatatanPenghasilanAllTime",
+      collectionName.allTime,
+      collectionName.allTimeDocId,
     ).then((data) => data.data);
 
     setATWithdrawals({
@@ -46,7 +47,7 @@ export function WithdrawalRecordsProvider({ children }) {
       shopee: shopee.ATBills,
       tiktok: tiktok.ATBills,
     });
-    setSetorAT({
+    setATSetor({
       shopee: shopee.ATSetor,
       tiktok: tiktok.ATSetor,
     });
@@ -150,7 +151,7 @@ export function WithdrawalRecordsProvider({ children }) {
         ATBills,
         setATBills,
         ATSetor,
-        setSetorAT,
+        setATSetor,
         ATProfit,
         setATProfit,
         fetchAT,

@@ -66,6 +66,7 @@ import {
   toCamelCase,
   validateNumber,
 } from "../../utils/generalFunction";
+import { collectionName } from "@/services/firebase/firebase";
 
 // additional function
 const date = new Date();
@@ -100,7 +101,7 @@ const StepThree = () => {
     ATBills,
     setATBills,
     ATSetor,
-    setSetorAT,
+    setATSetor,
     ATProfit,
     setATProfit,
     fetchAT,
@@ -232,8 +233,6 @@ const StepThree = () => {
   };
 
   const saveToFirebase = async () => {
-    const tiktokCollectionName = "penghasilanJualanOnlineTikTok";
-    const shopeeCollectionName = "penghasilanJualanOnlineShopee";
     const platform = isTikTok ? "tiktok" : "shopee";
     const lastSaveShopee = "shopeeLastSave";
     const lastSaveTiktok = "tiktokLastSave";
@@ -269,7 +268,7 @@ const StepThree = () => {
 
           await createDocument(
             "saveNotePenghasilanTikTok",
-            tiktokCollectionName,
+            collectionName.tiktokWithdrawals,
             tiktokWithdrawal,
             "Berhasil Menyimpan Note Penghasilan",
             true,
@@ -277,7 +276,7 @@ const StepThree = () => {
           );
           await updateDocument(
             "UpdateTikTokLastSave",
-            tiktokCollectionName,
+            collectionName.tiktokWithdrawals,
             lastSaveTiktok,
             { time: today },
             "Berhasil Update TikTok Last Save",
@@ -293,8 +292,8 @@ const StepThree = () => {
           };
           await updateDocument(
             "UpdateAllTimeDocument",
-            "penghasilanAllTime",
-            "CatatanPenghasilanAllTime",
+            collectionName.allTime,
+            collectionName.allTimeDocId,
             {
               tiktok: tiktokAllTime,
             },
@@ -333,7 +332,7 @@ const StepThree = () => {
           };
           await createDocument(
             "saveNotePenghasilanShopee",
-            "penghasilanJualanOnlineShopee",
+            collectionName.shopeeWithdrawals,
             shopeeWithdrawal,
             "Berhasil Menyimpan Note Penghasilan",
             true,
@@ -341,7 +340,7 @@ const StepThree = () => {
           );
           await updateDocument(
             "UpdateShopeeLastSave",
-            shopeeCollectionName,
+            collectionName.shopeeWithdrawals,
             lastSaveShopee,
             { time: today },
             "Berhasil Update Shopee Last Save",
@@ -357,8 +356,8 @@ const StepThree = () => {
           };
           await updateDocument(
             "UpdateAllTimeDocument",
-            "penghasilanAllTime",
-            "CatatanPenghasilanAllTime",
+            collectionName.allTime,
+            collectionName.allTimeDocId,
             {
               shopee: shopeeAllTime,
             },
@@ -381,7 +380,7 @@ const StepThree = () => {
           ...prev,
           [platform]: prev[platform] + totalBill,
         }));
-        setSetorAT((prev) => ({
+        setATSetor((prev) => ({
           ...prev,
           [platform]: prev[platform] + uangAdeSiska,
         }));
@@ -402,7 +401,7 @@ const StepThree = () => {
       if (isTikTok) {
         const tiktokLastSave = await getDocument(
           "Ambil Last Save TikTok",
-          tiktokCollectionName,
+          collectionName.tiktokWithdrawals,
           lastSaveTiktok,
         );
 
@@ -414,7 +413,7 @@ const StepThree = () => {
       } else {
         const shopeeLastSave = await getDocument(
           "Ambil Last Save Shopee",
-          shopeeCollectionName,
+          collectionName.shopeeWithdrawals,
           lastSaveShopee,
         );
 

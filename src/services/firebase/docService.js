@@ -13,7 +13,7 @@ import {
   Timestamp,
   where,
 } from "firebase/firestore";
-import { db } from "./firebase";
+import { collectionName, db } from "./firebase";
 
 export const createDocumentById = async (
   operationName,
@@ -173,13 +173,13 @@ export const getWithdrawalListByMonth = async (
       `Operation : Read , Operation Name : Get Daftar Penghasilan By Month ${platform}`,
     );
     const queryShopee = query(
-      collection(db, "penghasilanJualanOnlineShopee"),
+      collection(db, collectionName.shopeeWithdrawals),
       where("createdAtMs", ">=", startMonth),
       where("createdAtMs", "<", endMonth),
       orderBy("createdAtMs", orderChoice[order]),
     );
     const queryTikTok = query(
-      collection(db, "penghasilanJualanOnlineTikTok"),
+      collection(db, collectionName.tiktokWithdrawals),
       where("createdAtMs", ">=", startMonth),
       where("createdAtMs", "<", endMonth),
       orderBy("createdAtMs", orderChoice[order]),
@@ -224,13 +224,13 @@ export const getWithdrawalListByDate = async (platform, order, start, end) => {
       `Operation : Read , Operation Name : Get Daftar Penghasilan By Date ${platform}`,
     );
     const queryShopee = query(
-      collection(db, "penghasilanJualanOnlineShopee"),
+      collection(db, collectionName.shopeeWithdrawals),
       where("createdAtMs", ">=", startDate),
       where("createdAtMs", "<", endDate),
       orderBy("createdAtMs", orderChoice[order]),
     );
     const queryTikTok = query(
-      collection(db, "penghasilanJualanOnlineTikTok"),
+      collection(db, collectionName.tiktokWithdrawals),
       where("createdAtMs", ">=", startDate),
       where("createdAtMs", "<", endDate),
       orderBy("createdAtMs", orderChoice[order]),
@@ -268,12 +268,12 @@ export const getWithdrawalList = async (platform, order, limitOffPage) => {
       `Operation : Read , Operation Name : Get Daftar Penghasilan ${platform}`,
     );
     const queryShopee = query(
-      collection(db, "penghasilanJualanOnlineShopee"),
+      collection(db, collectionName.shopeeWithdrawals),
       orderBy("createdAtMs", orderChoice[order]),
       limit(limitOffPage),
     );
     const queryTikTok = query(
-      collection(db, "penghasilanJualanOnlineTikTok"),
+      collection(db, collectionName.tiktokWithdrawals),
       orderBy("createdAtMs", orderChoice[order]),
       limit(limitOffPage),
     );

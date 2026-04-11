@@ -12,11 +12,14 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { getDocuments, updateDocument } from "@/services/firebase/docService";
+import { collectionName } from "@/services/firebase/firebase";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Label, Pie, PieChart } from "recharts";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -25,10 +28,31 @@ import {
 } from "../../components/ui/card";
 import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import { formatNumber } from "../../utils/generalFunction";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
-export default function TotalPenghasilan() {
-  const { ATWithdrawals, ATBills, ATSetor, ATProfit, fetchAT, ATInitialFetch } =
-    useWithdrawalRecords();
+export default function IncomeTotal() {
+  const {
+    ATWithdrawals,
+    setATWithdrawals,
+    ATBills,
+    setATBills,
+    ATSetor,
+    setATSetor,
+    ATProfit,
+    setATProfit,
+    fetchAT,
+    ATInitialFetch,
+  } = useWithdrawalRecords();
 
   const [showUntung, setShowUntung] = useState(false);
 
@@ -60,6 +84,72 @@ export default function TotalPenghasilan() {
   const totalShopee = tempCalculateShopee + remainingShopee;
   const totalTiktok = tempCalculateTiktok + remainingTiktok;
 
+  const fixAlltimeData = async () => {
+    const { data: s } = await getDocuments(
+      "Ambil Semua Doc Withdraw Shopee",
+      collectionName.shopeeWithdrawals,
+      "newToOld",
+    );
+    const { data: t } = await getDocuments(
+      "Ambil Semua Doc Withdraw Tiktok",
+      collectionName.tiktokWithdrawals,
+      "newToOld",
+    );
+
+    const letMeCount = (arr, type) => {
+      const keyMap = {
+        withdraw: (item) => item.totalWithdraw,
+        setor: (item) => item.totalSetor,
+        profit: (item) => item.profit?.total,
+        bill: (item) => item.bill?.totalBill || 0,
+      };
+
+      const getter = keyMap[type];
+      if (!getter) return 0;
+
+      return arr.reduce((acc, curr) => acc + getter(curr), 0);
+    };
+
+    const sW = letMeCount(s, "withdraw");
+    const tW = letMeCount(t, "withdraw");
+    const sS = letMeCount(s, "setor");
+    const tS = letMeCount(t, "setor");
+    const sP = letMeCount(s, "profit");
+    const tP = letMeCount(t, "profit");
+    const sB = letMeCount(s, "bill");
+    const tB = letMeCount(t, "bill");
+
+    const fixed = {
+      shopee: {
+        ATWithdrawals: sW,
+        ATSetor: sS,
+        ATProfit: sP,
+        ATBills: sB,
+      },
+      tiktok: {
+        ATWithdrawals: tW,
+        ATSetor: tS,
+        ATProfit: tP,
+        ATBills: tB,
+      },
+    };
+
+    setATWithdrawals({ shopee: sW, tiktok: tW });
+    setATSetor({ shopee: sS, tiktok: tS });
+    setATProfit({ shopee: sP, tiktok: tP });
+    setATBills({ shopee: sB, tiktok: tB });
+
+    await updateDocument(
+      "Fix All Time Data",
+      collectionName.allTime,
+      collectionName.allTimeDocId,
+      fixed,
+      "Success Fix All Time Data",
+    );
+
+    alert("Berhasil Fix Data All Time");
+  };
+
   useEffect(() => {
     if (ATInitialFetch) {
       fetchAT();
@@ -90,6 +180,33 @@ export default function TotalPenghasilan() {
       <Card className="min-w-[350px]">
         <CardHeader>
           <CardTitle>DATA ALL TIME</CardTitle>
+          <CardAction>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size={"xs"}
+                  className="cursor-pointer hover:bg-gray-600"
+                >
+                  Fix Data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Kamu Yakin?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Operasi Ini Akan Memakan Kuota Read Yang Besar, Karena
+                    Membaca Semua Dokumen Penarikan Shopee & TikTok
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={fixAlltimeData}>
+                    Lanjutkan
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </CardAction>
         </CardHeader>
         <CardContent className="flex flex-col gap-y-2 pb-4">
           <div>

@@ -64,51 +64,32 @@ export default function FilterList({ platform }) {
   }, [customList]);
 
   useEffect(() => {
-    // Perhitungan Setor
-    const setorShopee = shopeeWithdrawals.reduce((acc, cur) => {
-      return acc + cur.totalSetor;
-    }, 0);
-    const setorTiktok = tiktokWithdrawals.reduce((acc, cur) => {
-      return acc + cur.totalSetor;
-    }, 0);
-    setSetor({ tiktok: setorTiktok, shopee: setorShopee });
+    const letMeCount = (arr, type) => {
+      const keyMap = {
+        withdraw: (item) => item.totalWithdraw,
+        setor: (item) => item.totalSetor,
+        profit: (item) => item.profit?.total,
+        bill: (item) => item.bill?.totalBill || 0,
+      };
 
-    // Perhitungan Untung
-    const untungShopee = shopeeWithdrawals.reduce((acc, cur) => {
-      return acc + cur.profit.total;
-    }, 0);
-    const untungTiktok = tiktokWithdrawals.reduce((acc, cur) => {
-      return acc + cur.profit.total;
-    }, 0);
-    setProfit({ tiktok: untungTiktok, shopee: untungShopee });
+      const getter = keyMap[type];
+      if (!getter) return 0;
 
-    // Perhitungan Penghasilan HPP
-    const penghasilanHPPATShopee = shopeeWithdrawals.reduce((acc, cur) => {
-      return acc + cur.totalWithdraw;
-    }, 0);
-    const penghasilanHPPATTiktok = tiktokWithdrawals.reduce((acc, cur) => {
-      return acc + cur.totalWithdraw;
-    }, 0);
-    setWithdrawals({
-      shopee: penghasilanHPPATShopee,
-      tiktok: penghasilanHPPATTiktok,
-    });
+      return arr.reduce((acc, curr) => acc + getter(curr), 0);
+    };
 
-    // Perhitungan Tagihan
-    const tagihanATShopee = shopeeWithdrawals.reduce((acc, cur) => {
-      return acc + cur.bill.totalBill;
-    }, 0);
-    const tagihanATTiktok = tiktokWithdrawals.reduce((acc, cur) => {
-      return acc + cur.bill.totalBill;
-    }, 0);
-    setBills({
-      shopee: tagihanATShopee,
-      tiktok: tagihanATTiktok,
-    });
-
-    tiktokWithdrawals.forEach((w) => {
-      console.log(w.bill);
-    });
+    const sW = letMeCount(shopeeWithdrawals, "withdraw");
+    const sS = letMeCount(shopeeWithdrawals, "setor");
+    const sP = letMeCount(shopeeWithdrawals, "profit");
+    const sB = letMeCount(shopeeWithdrawals, "bill");
+    const tW = letMeCount(tiktokWithdrawals, "withdraw");
+    const tS = letMeCount(tiktokWithdrawals, "setor");
+    const tP = letMeCount(tiktokWithdrawals, "profit");
+    const tB = letMeCount(tiktokWithdrawals, "bill");
+    setSetor({ tiktok: tS, shopee: sS });
+    setProfit({ tiktok: tP, shopee: sP });
+    setWithdrawals({ shopee: sW, tiktok: tW });
+    setBills({ shopee: sB, tiktok: tB });
   }, [shopeeWithdrawals, tiktokWithdrawals]);
 
   return (
