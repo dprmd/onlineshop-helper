@@ -31,7 +31,7 @@ export default function Penghasilan() {
         <Button
           size="lg"
           onClick={() => {
-            navigate("/penghasilan/totalPenghasilan");
+            navigate("/income/total");
           }}
         >
           Total Penghasilan
@@ -39,7 +39,7 @@ export default function Penghasilan() {
         <Button
           size="lg"
           onClick={() => {
-            navigate("/penghasilan/shopee");
+            navigate("/income/shopee");
           }}
         >
           Shopee
@@ -47,7 +47,7 @@ export default function Penghasilan() {
         <Button
           size="lg"
           onClick={() => {
-            navigate("/penghasilan/tiktok");
+            navigate("/income/tiktok");
           }}
         >
           TikTok

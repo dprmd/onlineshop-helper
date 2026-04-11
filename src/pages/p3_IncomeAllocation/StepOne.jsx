@@ -17,16 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useCRUD } from "@/context/CRUDContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
+import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { formatNumber, validateNumber } from "../../utils/generalFunction";
 
-export default function () {
+export default function StepOne() {
   const { totalWithdraw, setTotalWithdraw, whichSupplier, setWhichSupplier } =
-    useAlokasiPemasukan();
-  const { supplier, getSupplierList, initialFetch } = useCRUDBarang();
+    useIncomeAllocation();
+  const { supplier, getSupplierList, initialFetch } = useCRUD();
 
   const [errorSupplier, setErrorSupplier] = useState(false);
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ export default function () {
             onSubmit={(e) => {
               e.preventDefault();
               if (whichSupplier) {
-                navigate("/alokasiPemasukan/calculateHPP");
+                navigate("/incomeAllocation/calculateHPP");
               } else {
                 setErrorSupplier(true);
               }
@@ -131,7 +131,7 @@ export default function () {
           <Button
             type="button"
             onClick={() => {
-              navigate("/crudBarang/supplier");
+              navigate("/crud/supplier");
             }}
             className="my-2"
           >

@@ -50,7 +50,7 @@ export const listProduk = {
 };
 
 // Patungan Untuk Uang Harian Ema Iki
-export const patunganUntukEma = {
+export const splitBillEmaIki = {
   uko: 36000,
   adi: 36000,
 };
@@ -65,8 +65,8 @@ export const metode = {
 };
 
 // Gaji Harian Adi
-export const gajiPerHariFull = 50000;
-export const gajiPerHariHalf = 25000;
+export const fullDayWage = 50000;
+export const halfDayWage = 25000;
 
 // Additional function
 const now = new Date();

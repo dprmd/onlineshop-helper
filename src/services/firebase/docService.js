@@ -10,6 +10,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  Timestamp,
   where,
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -46,13 +47,17 @@ export const createDocument = async (
   collectionName,
   document,
   messageOnSucces,
+  customTime = false,
+  customMS = Date.now(),
 ) => {
   try {
     console.log(`Operation : Create , Operation Name : ${operationName}`);
     const docRef = await addDoc(collection(db, collectionName), {
       ...document,
-      createdAt: serverTimestamp(),
-      createdAtMs: Date.now(),
+      createdAt: customTime
+        ? Timestamp.fromMillis(customMS)
+        : serverTimestamp(),
+      createdAtMs: customTime ? customMS : Date.now(),
     });
 
     return {
@@ -149,7 +154,7 @@ export const getDocuments = async (operationName, collectionName, order) => {
   }
 };
 
-export const getDaftarPenghasilanByMonth = async (
+export const getWithdrawalListByMonth = async (
   platform,
   order,
   year,
@@ -201,12 +206,7 @@ export const getDaftarPenghasilanByMonth = async (
   }
 };
 
-export const getDaftarPenghasilanByDate = async (
-  platform,
-  order,
-  start,
-  end,
-) => {
+export const getWithdrawalListByDate = async (platform, order, start, end) => {
   const startDate = new Date(start).getTime();
   const input = end;
   const date = new Date(input);
@@ -257,7 +257,7 @@ export const getDaftarPenghasilanByDate = async (
   }
 };
 
-export const getDaftarPenghasilan = async (platform, order, limitOffPage) => {
+export const getWithdrawalList = async (platform, order, limitOffPage) => {
   const orderChoice = {
     newToOld: "desc",
     oldToNew: "asc",

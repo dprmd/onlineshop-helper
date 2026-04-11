@@ -7,13 +7,13 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useCRUD } from "@/context/CRUDContext";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function CRUDBarang() {
   const navigate = useNavigate();
-  const { getSupplierList, initialFetch } = useCRUDBarang();
+  const { getSupplierList, initialFetch } = useCRUD();
 
   useEffect(() => {
     if (initialFetch) {
@@ -41,7 +41,7 @@ export default function CRUDBarang() {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/crudBarang/supplier");
+              navigate("/crud/supplier");
             }}
           >
             Supplier
@@ -51,7 +51,7 @@ export default function CRUDBarang() {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/crudBarang/tambahHutangBarang");
+              navigate("/crud/addProductDebt");
             }}
           >
             Tambah Hutang Barang
@@ -61,7 +61,7 @@ export default function CRUDBarang() {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/crudBarang/products");
+              navigate("/crud/products");
             }}
           >
             Produk

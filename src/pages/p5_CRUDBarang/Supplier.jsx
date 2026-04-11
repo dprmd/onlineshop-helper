@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useCRUDBarang } from "../../context/CRUDBarangContext";
+import { useCRUD } from "../../context/CRUDContext";
 import { createDocument } from "../../services/firebase/docService";
 import { toCamelCase } from "../../utils/generalFunction";
 
@@ -33,7 +33,7 @@ export default function Supplier() {
     checkSupplierIfExist,
     getSupplierList,
     initialFetch,
-  } = useCRUDBarang();
+  } = useCRUD();
 
   const [supplierName, setSupplierName] = useState("");
   const [dialogAddSupplier, setDialogAddSupplier] = useState(false);
@@ -53,7 +53,7 @@ export default function Supplier() {
         {
           username: toCamelCase(supplierName),
           name: supplierName,
-          hutangBarang: [],
+          productDebt: [],
         },
         "Berhasil Menambahkan Supplier",
       );
@@ -63,7 +63,7 @@ export default function Supplier() {
           id: newSupplier.docId,
           name: supplierName,
           username: toCamelCase(supplierName),
-          hutangBarang: [],
+          productDebt: [],
         },
       ]);
       setSupplierName("");
@@ -90,7 +90,7 @@ export default function Supplier() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/crudBarang">CRUD</Link>
+              <Link to="/crud">CRUD</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -122,16 +122,16 @@ export default function Supplier() {
               <Card key={supplier.id} className="min-w-[380px]">
                 <CardHeader>
                   <p>Nama : {supplier.name}</p>
-                  {supplier.hutangBarang.length === 0 && (
+                  {supplier.productDebt.length === 0 && (
                     <p className="text-[12px] text-gray-400">
                       Anda Belum Mempunyai Hutang Ke Supplier Ini
                     </p>
                   )}
-                  {supplier.hutangBarang.length > 0 && (
+                  {supplier.productDebt.length > 0 && (
                     <>
                       <p className="text-gray-500">Daftar Hutang Barang</p>
                       <i className="bi bi-arrow-down text-[10px]"></i>
-                      {supplier.hutangBarang.map((barang) => (
+                      {supplier.productDebt.map((barang) => (
                         <p
                           className="text-[12px] text-gray-400"
                           key={barang.identifier}

@@ -14,7 +14,7 @@ const Home = () => {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/perhitunganProfit");
+              navigate("/profitCalculation");
             }}
           >
             Perhitungan Profit
@@ -24,7 +24,7 @@ const Home = () => {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/alokasiPemasukan");
+              navigate("/incomeAllocation");
             }}
           >
             Alokasi Pemasukan
@@ -34,7 +34,7 @@ const Home = () => {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/penghasilan");
+              navigate("/income");
             }}
           >
             Penghasilan
@@ -44,7 +44,7 @@ const Home = () => {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/crudBarang");
+              navigate("/crud");
             }}
           >
             CRUD Barang

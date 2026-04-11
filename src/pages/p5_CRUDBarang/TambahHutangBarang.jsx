@@ -45,14 +45,13 @@ import {
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCRUDBarang } from "../../context/CRUDBarangContext";
+import { useCRUD } from "../../context/CRUDContext";
 import { listProduk } from "../../lib/variables";
 import { formatNumber } from "../../utils/generalFunction";
 
 export default function TambahHutangBarang() {
   const navigate = useNavigate();
-  const { supplier, getSupplierList, initialFetch, tambahHutangBarang } =
-    useCRUDBarang();
+  const { supplier, getSupplierList, initialFetch, addProductDebt } = useCRUD();
   const [whichSupplier, setWhichSupplier] = useState("");
   const [dialogTambahBarang, setDialogTambahBarang] = useState(false);
   const [dialogTambahHutang, setDialogTambahHutang] = useState(false);
@@ -63,7 +62,7 @@ export default function TambahHutangBarang() {
   const [cloneProduk, setCloneProduk] = useState(produk);
   const [choosedProduk, setChoosedProduk] = useState([]);
   const [notChoosedProduk, setNotChoosedProduk] = useState(produk);
-  const [hutangBarang, setHutangBarang] = useState([]);
+  const [productDebt, setProductDebt] = useState([]);
 
   const handlePilihProduk = () => {
     const choosed = cloneProduk.filter((p) => p.checked);
@@ -101,9 +100,9 @@ export default function TambahHutangBarang() {
         identifier: produk.identifier,
         name: produk.name,
         hpp: produk.hpp,
-        sold: Number(produk.sold),
+        remaining: Number(produk.remaining),
       }))
-      .filter((produk) => produk.sold > 0);
+      .filter((produk) => produk.remaining > 0);
 
     if (hutang.length === 0) {
       alert("Mohon Masukan Jumlah Produk Yang Di Pinjam");
@@ -111,7 +110,7 @@ export default function TambahHutangBarang() {
     }
 
     setDialogTambahHutang(true);
-    setHutangBarang([...hutang]);
+    setProductDebt([...hutang]);
   };
 
   useEffect(() => {
@@ -132,7 +131,7 @@ export default function TambahHutangBarang() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/crudBarang">CRUD</Link>
+              <Link to="/crud">CRUD</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -152,7 +151,7 @@ export default function TambahHutangBarang() {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/crudBarang/supplier");
+              navigate("/crud/supplier");
             }}
           >
             Tambah Sekarang
@@ -204,7 +203,7 @@ export default function TambahHutangBarang() {
                         <div>
                           <input
                             type="number"
-                            value={produk.sold}
+                            value={produk.remaining}
                             placeholder="0"
                             onChange={(e) => {
                               setChoosedProduk((prev) => {
@@ -212,7 +211,7 @@ export default function TambahHutangBarang() {
                                   if (p.identifier === produk.identifier) {
                                     return {
                                       ...produk,
-                                      sold: e.target.value,
+                                      remaining: e.target.value,
                                     };
                                   }
 
@@ -370,10 +369,10 @@ export default function TambahHutangBarang() {
                             <div>
                               <div>
                                 {choosedProduk
-                                  .filter((p) => p.sold > 0)
+                                  .filter((p) => p.remaining > 0)
                                   .map((p) => (
                                     <div key={p.identifier}>
-                                      {p.name} x {p.sold}
+                                      {p.name} x {p.remaining}
                                     </div>
                                   ))}
                               </div>
@@ -384,7 +383,7 @@ export default function TambahHutangBarang() {
                           <AlertDialogCancel>Batal</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => {
-                              tambahHutangBarang(whichSupplier, hutangBarang);
+                              addProductDebt(whichSupplier, productDebt);
                               setChoosedProduk([]);
                               setNotChoosedProduk(produk);
                               setCloneProduk(produk);

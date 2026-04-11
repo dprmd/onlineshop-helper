@@ -1,14 +1,13 @@
 import { createContext, useContext, useState } from "react";
 import { listProduk } from "../lib/variables";
 
-const AlokasiPemasukanContext = createContext();
+const IncomeAllocationContext = createContext();
 
-export function AlokasiPemasukanProvider({ children }) {
+export function IncomeAllocationProvider({ children }) {
   // All State
   const [totalWithdraw, setTotalWithdraw] = useState("");
   const [totalHPP, setTotalHPP] = useState("");
   const [produk, setProduk] = useState(listProduk);
-  const produkInArray = Object.values(produk);
   const [isTikTok, setIsTikTok] = useState(false);
   const [whichSupplier, setWhichSupplier] = useState("");
 
@@ -17,13 +16,13 @@ export function AlokasiPemasukanProvider({ children }) {
   const [submitOrder, setSubmitOrder] = useState(1);
 
   // summary Context
-  const [dailySalary, setDailySalary] = useState(0);
+  const [dailyWage, setDailyWage] = useState(0);
   const [totalBill, setTotalBill] = useState(0);
   const [bills, setBills] = useState([]);
   const [modifiedSetorBarang, setModifiedSetorBarang] = useState([]);
 
   return (
-    <AlokasiPemasukanContext.Provider
+    <IncomeAllocationContext.Provider
       value={{
         totalWithdraw,
         setTotalWithdraw,
@@ -31,15 +30,14 @@ export function AlokasiPemasukanProvider({ children }) {
         setTotalHPP,
         produk,
         setProduk,
-        produkInArray,
         isTikTok,
         setIsTikTok,
         showConclusion,
         setShowConclusion,
         submitOrder,
         setSubmitOrder,
-        dailySalary,
-        setDailySalary,
+        dailyWage,
+        setDailyWage,
         totalBill,
         setTotalBill,
         bills,
@@ -51,8 +49,8 @@ export function AlokasiPemasukanProvider({ children }) {
       }}
     >
       {children}
-    </AlokasiPemasukanContext.Provider>
+    </IncomeAllocationContext.Provider>
   );
 }
 
-export const useAlokasiPemasukan = () => useContext(AlokasiPemasukanContext);
+export const useIncomeAllocation = () => useContext(IncomeAllocationContext);

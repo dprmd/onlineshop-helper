@@ -23,53 +23,45 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import { formatNumber } from "../../utils/generalFunction";
 
 export default function TotalPenghasilan() {
-  const {
-    penghasilanAT,
-    tagihanAT,
-    setorAT,
-    untungAT,
-    fetchAT,
-    totalInitialFetch,
-  } = useCatatanPenghasilan();
+  const { ATWithdrawals, ATBills, ATSetor, ATProfit, fetchAT, ATInitialFetch } =
+    useWithdrawalRecords();
 
   const [showUntung, setShowUntung] = useState(false);
 
   const totalPenghasilanAT = useMemo(() => {
-    return Object.values(penghasilanAT).reduce((acc, cur) => {
+    return Object.values(ATWithdrawals).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
   });
   const totalTagihanAT = useMemo(() => {
-    return Object.values(tagihanAT).reduce((acc, cur) => {
+    return Object.values(ATBills).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
   });
   const totalSetorAT = useMemo(() => {
-    return Object.values(setorAT).reduce((acc, cur) => {
+    return Object.values(ATSetor).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
   });
   const totalUntungAT = useMemo(() => {
-    return Object.values(untungAT).reduce((acc, cur) => {
+    return Object.values(ATProfit).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
   });
 
-  const tempCalculateShopee =
-    tagihanAT.shopee + setorAT.shopee + untungAT.shopee;
-  const tempCalculateTiktok =
-    tagihanAT.tiktok + setorAT.tiktok + untungAT.tiktok;
-  const remainingShopee = penghasilanAT.shopee - tempCalculateShopee;
-  const remainingTiktok = penghasilanAT.tiktok - tempCalculateTiktok;
+  const tempCalculateShopee = ATBills.shopee + ATSetor.shopee + ATProfit.shopee;
+  const tempCalculateTiktok = ATBills.tiktok + ATSetor.tiktok + ATProfit.tiktok;
+  const remainingShopee = ATWithdrawals.shopee - tempCalculateShopee;
+  const remainingTiktok = ATWithdrawals.tiktok - tempCalculateTiktok;
   const totalShopee = tempCalculateShopee + remainingShopee;
   const totalTiktok = tempCalculateTiktok + remainingTiktok;
 
   useEffect(() => {
-    if (totalInitialFetch) {
+    if (ATInitialFetch) {
       fetchAT();
     }
   }, []);
@@ -86,7 +78,7 @@ export default function TotalPenghasilan() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/penghasilan">Penghasilan</Link>
+              <Link to="/income">Penghasilan</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -117,8 +109,8 @@ export default function TotalPenghasilan() {
           </div>
           <SalesPieChart
             total={showUntung ? totalUntungAT : totalPenghasilanAT}
-            totalShopee={showUntung ? untungAT.shopee : totalShopee}
-            totalTiktok={showUntung ? untungAT.tiktok : totalTiktok}
+            totalShopee={showUntung ? ATProfit.shopee : totalShopee}
+            totalTiktok={showUntung ? ATProfit.tiktok : totalTiktok}
             showUntung={showUntung}
             setShowUntung={setShowUntung}
           />

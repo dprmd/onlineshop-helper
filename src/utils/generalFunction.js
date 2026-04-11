@@ -59,3 +59,12 @@ export const formatTanggal = (ms) => {
 
   return `${namaHari} ${tanggal} ${namaBulan} ${tahun}`;
 };
+
+export const combineDateTimeToMs = (date, time) => {
+  const [h, m, s = "0"] = time.split(":");
+
+  const result = new Date(date);
+  result.setHours(h, m, s, 0);
+
+  return result.getTime();
+};

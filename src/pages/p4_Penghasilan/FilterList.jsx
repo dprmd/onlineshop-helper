@@ -1,30 +1,30 @@
 import { useEffect, useState } from "react";
-import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import { formatNumber } from "../../utils/generalFunction";
 
 export default function FilterList({ platform }) {
   const {
-    fetchPenghasilan,
+    fetchWithdrawals,
     sortByLimitUnderSeven,
-    fetchPenghasilanByDate,
-    fetchPenghasilanByMonth,
-    penghasilanShopee,
-    penghasilanTikTok,
+    fetchWithdrawalsByDate,
+    fetchWithdrawalsByMonth,
+    shopeeWithdrawals,
+    tiktokWithdrawals,
     loading,
-  } = useCatatanPenghasilan();
+  } = useWithdrawalRecords();
   const [setor, setSetor] = useState({
     shopee: 0,
     tiktok: 0,
   });
-  const [untung, setUntung] = useState({
+  const [profit, setProfit] = useState({
     shopee: 0,
     tiktok: 0,
   });
-  const [penghasilanAT, setPenghasilanAT] = useState({
+  const [withdrawals, setWithdrawals] = useState({
     shopee: 0,
     tiktok: 0,
   });
-  const [tagihanAT, setTagihanAT] = useState({
+  const [bills, setBills] = useState({
     shopee: 0,
     tiktok: 0,
   });
@@ -41,19 +41,19 @@ export default function FilterList({ platform }) {
     if (limitOffPage <= 7) {
       sortByLimitUnderSeven(platform, Number(limitOffPage));
     } else {
-      await fetchPenghasilan(platform, Number(limitOffPage));
+      await fetchWithdrawals(platform, Number(limitOffPage));
     }
   };
 
   const handleShowByDate = async (e) => {
     e.preventDefault();
-    await fetchPenghasilanByDate(platform, startDate, endDate);
+    await fetchWithdrawalsByDate(platform, startDate, endDate);
   };
 
   const handleShowByMonth = async (e) => {
     e.preventDefault();
     const [year, month] = pickMonth.split("-");
-    await fetchPenghasilanByMonth(platform, Number(year), Number(month));
+    await fetchWithdrawalsByMonth(platform, Number(year), Number(month));
   };
 
   useEffect(() => {
@@ -65,62 +65,66 @@ export default function FilterList({ platform }) {
 
   useEffect(() => {
     // Perhitungan Setor
-    const setorShopee = penghasilanShopee.reduce((acc, cur) => {
+    const setorShopee = shopeeWithdrawals.reduce((acc, cur) => {
       return acc + cur.totalSetor;
     }, 0);
-    const setorTiktok = penghasilanTikTok.reduce((acc, cur) => {
+    const setorTiktok = tiktokWithdrawals.reduce((acc, cur) => {
       return acc + cur.totalSetor;
     }, 0);
     setSetor({ tiktok: setorTiktok, shopee: setorShopee });
 
     // Perhitungan Untung
-    const untungShopee = penghasilanShopee.reduce((acc, cur) => {
+    const untungShopee = shopeeWithdrawals.reduce((acc, cur) => {
       return acc + cur.profit.total;
     }, 0);
-    const untungTiktok = penghasilanTikTok.reduce((acc, cur) => {
+    const untungTiktok = tiktokWithdrawals.reduce((acc, cur) => {
       return acc + cur.profit.total;
     }, 0);
-    setUntung({ tiktok: untungTiktok, shopee: untungShopee });
+    setProfit({ tiktok: untungTiktok, shopee: untungShopee });
 
     // Perhitungan Penghasilan HPP
-    const penghasilanHPPATShopee = penghasilanShopee.reduce((acc, cur) => {
+    const penghasilanHPPATShopee = shopeeWithdrawals.reduce((acc, cur) => {
       return acc + cur.totalWithdraw;
     }, 0);
-    const penghasilanHPPATTiktok = penghasilanTikTok.reduce((acc, cur) => {
+    const penghasilanHPPATTiktok = tiktokWithdrawals.reduce((acc, cur) => {
       return acc + cur.totalWithdraw;
     }, 0);
-    setPenghasilanAT({
+    setWithdrawals({
       shopee: penghasilanHPPATShopee,
       tiktok: penghasilanHPPATTiktok,
     });
 
     // Perhitungan Tagihan
-    const tagihanATShopee = penghasilanShopee.reduce((acc, cur) => {
+    const tagihanATShopee = shopeeWithdrawals.reduce((acc, cur) => {
       return acc + cur.bill.totalBill;
     }, 0);
-    const tagihanATTiktok = penghasilanTikTok.reduce((acc, cur) => {
+    const tagihanATTiktok = tiktokWithdrawals.reduce((acc, cur) => {
       return acc + cur.bill.totalBill;
     }, 0);
-    setTagihanAT({
+    setBills({
       shopee: tagihanATShopee,
       tiktok: tagihanATTiktok,
     });
-  }, [penghasilanShopee, penghasilanTikTok]);
+
+    tiktokWithdrawals.forEach((w) => {
+      console.log(w.bill);
+    });
+  }, [shopeeWithdrawals, tiktokWithdrawals]);
 
   return (
     <div className="text-sm text-gray-400">
       <div className="py-2">
         <p className="font-bold text-md">
-          Total Penghasilan : {formatNumber(penghasilanAT[platform])}
+          Total Penghasilan : {formatNumber(withdrawals[platform])}
         </p>
         <p className="font-bold text-md">
-          Total Tagihan : {formatNumber(tagihanAT[platform])}
+          Total Tagihan : {formatNumber(bills[platform])}
         </p>
         <p className="font-bold text-md">
           Total Setor : {formatNumber(setor[platform])}
         </p>
         <p className="font-bold text-md">
-          Total Untung : {formatNumber(untung[platform])}
+          Total Untung : {formatNumber(profit[platform])}
         </p>
       </div>
 

@@ -8,10 +8,10 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useCRUD } from "@/context/CRUDContext";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
+import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { formatNumber } from "../../utils/generalFunction";
 
 export default function StepTwo() {
@@ -25,27 +25,28 @@ export default function StepTwo() {
     whichSupplier,
     modifiedSetorBarang,
     setModifiedSetorBarang,
-  } = useAlokasiPemasukan();
+  } = useIncomeAllocation();
   const navigate = useNavigate();
-  const { supplier } = useCRUDBarang();
-  const choosedSupplier = supplier.find((s) => s.id === whichSupplier);
-  const listBarang = useMemo(() => {
-    return choosedSupplier?.hutangBarang.map((p) => ({
-      ...p,
-      setor: 0,
-    }));
+  const { supplier } = useCRUD();
+  const productList = useMemo(() => {
+    return supplier
+      .find((s) => s.id === whichSupplier)
+      ?.productDebt.map((p) => ({
+        ...p,
+        setor: 0,
+      }));
   });
-  const [setorBarang, setSetorBarang] = useState(listBarang);
+  const [setorBarang, setSetorBarang] = useState(productList);
 
   // Function
   const handleReset = () => {
-    setSetorBarang(listBarang);
+    setSetorBarang(productList);
     setTotalHPP("");
     setSubmitOrder(1);
     setShowConclusion(false);
   };
 
-  const handlePerhitungan = (e) => {
+  const handleCalculateHPP = (e) => {
     e.preventDefault();
 
     const total = setorBarang.reduce((acc, curr) => {
@@ -66,7 +67,7 @@ export default function StepTwo() {
 
   useEffect(() => {
     if (!whichSupplier) {
-      navigate("/alokasiPemasukan");
+      navigate("/incomeAllocation");
     }
 
     if (modifiedSetorBarang.length > 0) {
@@ -77,19 +78,19 @@ export default function StepTwo() {
   return (
     <div className="flex justify-center items-center">
       <form
-        onSubmit={handlePerhitungan}
+        onSubmit={handleCalculateHPP}
         className="mt-4 border px-4 py-3 min-w-[380px] rounded-md"
       >
         <FieldSet>
           <FieldLegend>Setor Barang</FieldLegend>
           <FieldDescription>Masukan Barang Yang Akan Di Setor</FieldDescription>
           <FieldGroup>
-            {listBarang?.map((p, i) => (
+            {productList?.map((p, i) => (
               <Field key={p.identifier}>
                 <FieldLabel htmlFor={p.identifier}>
                   <span>{p.name}</span>
                   <span className="text-[10px] text-gray-400">
-                    Sisa {p.sold}
+                    Sisa {p.remaining}
                   </span>
                 </FieldLabel>
                 <Input
@@ -103,8 +104,8 @@ export default function StepTwo() {
                     setSetorBarang((prev) => {
                       return prev.map((prod) => {
                         if (prod.identifier === p.identifier) {
-                          if (Number(e.target.value) > p.sold) {
-                            return { ...prod, setor: p.sold };
+                          if (Number(e.target.value) > p.remaining) {
+                            return { ...prod, setor: p.remaining };
                           }
                           return { ...prod, setor: e.target.value };
                         } else {
@@ -138,7 +139,7 @@ export default function StepTwo() {
               <Button
                 type="button"
                 onClick={() => {
-                  navigate("/alokasiPemasukan");
+                  navigate("/incomeAllocation");
                 }}
               >
                 Kembali
@@ -151,7 +152,7 @@ export default function StepTwo() {
                 <Button
                   type="button"
                   onClick={() => {
-                    navigate("/alokasiPemasukan/summary");
+                    navigate("/incomeAllocation/summary");
                   }}
                 >
                   Selanjutnya

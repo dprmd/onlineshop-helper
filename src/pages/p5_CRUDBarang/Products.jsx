@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useCRUD } from "@/context/CRUDContext";
 import { useState } from "react";
 
 export default function Products() {
-  const { products } = useCRUDBarang();
+  const { products } = useCRUD();
 
   const [productName, setProductName] = useState("");
   return (

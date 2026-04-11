@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
   CardAction,
@@ -23,6 +24,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Select,
   SelectContent,
   SelectGroup,
@@ -31,20 +37,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCRUDBarang } from "@/context/CRUDBarangContext";
+import { useCRUD } from "@/context/CRUDContext";
+import { format } from "date-fns";
+import { ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingOverlay from "../../components/LoadingOverlay";
 import WordInBracket from "../../components/WordInBracket";
-import { useAlokasiPemasukan } from "../../context/AlokasiPemasukanContext";
-import { useCatatanPenghasilan } from "../../context/CatatanPenghasilanContext";
+import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
+import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import {
   day,
   dayName,
-  gajiPerHariFull,
-  gajiPerHariHalf,
+  fullDayWage,
+  halfDayWage,
   metode,
-  patunganUntukEma,
+  splitBillEmaIki,
 } from "../../lib/variables";
 import {
   createDocument,
@@ -73,8 +81,8 @@ const StepThree = () => {
     setTotalWithdraw,
     totalHPP,
     setTotalHPP,
-    dailySalary,
-    setDailySalary,
+    dailyWage,
+    setDailyWage,
     totalBill,
     setTotalBill,
     bills,
@@ -83,37 +91,52 @@ const StepThree = () => {
     setIsTikTok,
     modifiedSetorBarang,
     whichSupplier,
-  } = useAlokasiPemasukan();
+  } = useIncomeAllocation();
   const navigate = useNavigate();
   const {
-    fetchPenghasilan,
-    penghasilanAT,
-    setPenghasilanAT,
-    tagihanAT,
-    setTagihanAT,
-    setorAT,
+    fetchWithdrawals,
+    ATWithdrawals,
+    setATWithdrawals,
+    ATBills,
+    ATSetor,
     setSetorAT,
-    untungAT,
-    setUntungAT,
+    ATProfit,
+    setATProfit,
     fetchAT,
-    totalInitialFetch,
-  } = useCatatanPenghasilan();
-  const { supplier } = useCRUDBarang();
+    ATInitialFetch,
+  } = useWithdrawalRecords();
+  const { supplier } = useCRUD();
 
   // State
   const [loadingSave, setLoadingSave] = useState(false);
+
+  // Bill Temporary
   const [addBill, setAddBill] = useState(false);
   const [billName, setBillName] = useState("");
   const [billPrice, setBillPrice] = useState("");
-  const [sudahHitung, setSudahHitung] = useState(false);
-  const [kerja, setKerja] = useState(day === 0 ? false : true);
-  const [waktuKerja, setWaktuKerja] = useState("Satu Hari Full");
+
+  // Other
+  const [alreadyCalculated, setAlreadyCalculated] = useState(false);
+  const [work, setWork] = useState(day === 0 ? false : true);
+  const [workingTime, setWorkingTime] = useState("Full Day");
   const [simpleMode, setSimpleMode] = useState(true);
-  const supplierInfo = supplier.find((s) => s.id === whichSupplier);
+  const choosedSupplier = supplier.find((s) => s.id === whichSupplier);
+
+  // Time
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const now = new Date();
+  const getCurrentTime = () => {
+    const pad = (n) => String(n).padStart(2, "0");
+
+    return `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  };
+
+  const [time, setTime] = useState(getCurrentTime());
+  const [date, setDate] = useState(now);
 
   // Start
-  const [komisiKotor, setKomisiKotor] = useState(0);
-  const [komisiBersih, setKomisiBersih] = useState(0);
+  const [grossProfit, setGrossProfit] = useState(0);
+  const [netProfit, setNetProfit] = useState(0);
 
   // Variables
   const [uangAdeSiska, setUangAdeSiska] = useState(0);
@@ -125,91 +148,86 @@ const StepThree = () => {
   const [uangUntukSedekah, setUangUntukSedekah] = useState(0);
 
   // Function
-  const hitungSekarang = (e) => {
+  const calculateNow = (e) => {
     e.preventDefault();
 
     // hitung gaji harian
-    let gajiHarianTemp = 0;
-    if (kerja) {
-      if (waktuKerja === "Satu Hari Full") {
-        gajiHarianTemp = gajiPerHariFull;
-        setDailySalary(gajiPerHariFull);
+    let dailyWageTemp = 0;
+    if (work) {
+      if (workingTime === "Full Day") {
+        dailyWageTemp = fullDayWage;
+        setDailyWage(fullDayWage);
       } else {
-        gajiHarianTemp = gajiPerHariHalf;
-        setDailySalary(gajiPerHariHalf);
+        dailyWageTemp = halfDayWage;
+        setDailyWage(halfDayWage);
       }
     } else {
-      gajiHarianTemp = 0;
-      setDailySalary(0);
+      dailyWageTemp = 0;
+      setDailyWage(0);
     }
 
     // Komisi Kotor
-    const getKomisiKotor = raw(totalWithdraw) - raw(totalHPP);
-    setKomisiKotor(getKomisiKotor);
+    const getGrossProfit = raw(totalWithdraw) - raw(totalHPP);
+    setGrossProfit(getGrossProfit);
 
     // Hitung Total Tagihan Lainnya
-    const totalTagihanLainnya = bills.reduce((acc, cur) => {
+    const totalOtherBills = bills.reduce((acc, cur) => {
       return acc + raw(cur.billPrice);
     }, 0);
-    setTotalBill(totalTagihanLainnya);
+    setTotalBill(totalOtherBills);
 
     // Hitung Total Untuk Ade Siska
     let untukAdeSiska = 0;
     if (isTikTok) {
-      untukAdeSiska = raw(totalHPP) - totalTagihanLainnya;
+      untukAdeSiska = raw(totalHPP) - totalOtherBills;
     } else {
       untukAdeSiska =
         raw(totalWithdraw) -
-        (patunganUntukEma.uko + getKomisiKotor) -
-        totalTagihanLainnya;
+        (splitBillEmaIki.uko + getGrossProfit) -
+        totalOtherBills;
     }
-    if (kerja) {
-      setUangAdeSiska(untukAdeSiska - gajiHarianTemp);
+    if (work) {
+      setUangAdeSiska(untukAdeSiska - dailyWageTemp);
     } else {
       setUangAdeSiska(untukAdeSiska);
     }
 
     // Hitung Uang Untuk Ma Iki Dari Komisi Kotor
-    const uangUntukMaIki = patunganUntukEma.uko + patunganUntukEma.adi;
-    setUangEmaIki(uangUntukMaIki);
+    const moneyForEmaIki = splitBillEmaIki.uko + splitBillEmaIki.adi;
+    setUangEmaIki(moneyForEmaIki);
 
     // Hitung Sedekah
-    const sisaKomisiSemiBersih = getKomisiKotor - patunganUntukEma.adi;
-    const uangSedekah = Math.round(
-      (metode.sedekah / 100) * sisaKomisiSemiBersih,
-    );
+    const almostNetProfit = getGrossProfit - splitBillEmaIki.adi;
+    const uangSedekah = Math.round((metode.sedekah / 100) * almostNetProfit);
     setUangUntukSedekah(uangSedekah);
 
     // Total Komisi Bersih
-    const totalKomisiBersih =
-      getKomisiKotor - (patunganUntukEma.adi + uangSedekah);
-    setKomisiBersih(totalKomisiBersih);
+    const totalNetProfit = getGrossProfit - (splitBillEmaIki.adi + uangSedekah);
+    setNetProfit(totalNetProfit);
 
     // Pembagian Ke Rekening Yang Berbeda
-    const pembagian = {
-      uangCapital: Math.round(metode.capital / 100) * totalKomisiBersih,
-      uangDanaDarurat: Math.round(
-        (metode.danaDarurat / 100) * totalKomisiBersih,
-      ),
-      uangKeinginan: Math.round((metode.keinginan / 100) * totalKomisiBersih),
-      uangInvestasi: Math.round((metode.investasi / 100) * totalKomisiBersih),
+    const allocation = {
+      uangCapital: Math.round(metode.capital / 100) * totalNetProfit,
+      uangDanaDarurat: Math.round((metode.danaDarurat / 100) * totalNetProfit),
+      uangKeinginan: Math.round((metode.keinginan / 100) * totalNetProfit),
+      uangInvestasi: Math.round((metode.investasi / 100) * totalNetProfit),
     };
 
-    // Hitung uang sisa pembagian
-    const totalPembagian =
-      pembagian.uangCapital +
-      pembagian.uangDanaDarurat +
-      pembagian.uangKeinginan +
-      pembagian.uangInvestasi;
-    const sisaPembagian = totalKomisiBersih - totalPembagian;
+    // Hitung uang sisa allocation
+    const totalAllocation =
+      allocation.uangCapital +
+      allocation.uangDanaDarurat +
+      allocation.uangKeinginan +
+      allocation.uangInvestasi;
+    const sisaPembagian = totalNetProfit - totalAllocation;
 
-    setUangCapital(pembagian.uangCapital + sisaPembagian);
-    setUangDanaDarurat(pembagian.uangDanaDarurat);
-    setUangKeinginan(pembagian.uangKeinginan);
-    setUangInvestasi(pembagian.uangInvestasi);
+    setUangCapital(allocation.uangCapital + sisaPembagian);
+    setUangDanaDarurat(allocation.uangDanaDarurat);
+    setUangKeinginan(allocation.uangKeinginan);
+    setUangInvestasi(allocation.uangInvestasi);
 
     // Render
-    setSudahHitung(true);
+    setAlreadyCalculated(true);
   };
 
   const saveToFirebase = async () => {
@@ -220,18 +238,18 @@ const StepThree = () => {
     const lastSaveTiktok = "tiktokLastSave";
 
     const saveNow = async () => {
-      const konfirmasi = confirm(
+      const areYouSure = confirm(
         "Apakah Anda Yakin Menyimpan Dokumen Ke Firebase ?",
       );
 
       setLoadingSave(true);
 
-      if (konfirmasi) {
+      if (areYouSure) {
         const updateTiktokDoc = async () => {
           // Data Penghasilan TikTok Yang Akan Di Simpan
-          const penghasilanTikTok = {
+          const tiktokWithdrawal = {
             totalWithdraw: raw(totalWithdraw),
-            supplier: toCamelCase(supplierInfo.name),
+            supplier: toCamelCase(choosedSupplier.name),
             totalHPP: {
               total: raw(totalHPP),
               soldProducts: modifiedSetorBarang.filter(
@@ -243,7 +261,7 @@ const StepThree = () => {
               totalBill,
             },
             profit: {
-              total: komisiKotor,
+              total: grossProfit,
             },
             totalSetor: uangAdeSiska,
           };
@@ -251,8 +269,10 @@ const StepThree = () => {
           await createDocument(
             "saveNotePenghasilanTikTok",
             tiktokCollectionName,
-            penghasilanTikTok,
+            tiktokWithdrawal,
             "Berhasil Menyimpan Note Penghasilan",
+            true,
+            combineDateTimeToMs(date, time),
           );
           await updateDocument(
             "UpdateTikTokLastSave",
@@ -265,10 +285,10 @@ const StepThree = () => {
 
           // Update All Time Document Tiktok
           const tiktokAllTime = {
-            penghasilanAT: penghasilanAT.tiktok + raw(totalWithdraw),
-            tagihanAT: tagihanAT.tiktok + totalBill,
-            setorAT: setorAT.tiktok + uangAdeSiska,
-            untungAT: untungAT.tiktok + komisiKotor,
+            ATWithdrawals: ATWithdrawals.tiktok + raw(totalWithdraw),
+            ATBills: ATBills.tiktok + totalBill,
+            ATSetor: ATSetor.tiktok + uangAdeSiska,
+            ATProfit: ATProfit.tiktok + grossProfit,
           };
           await updateDocument(
             "UpdateAllTimeDocument",
@@ -283,9 +303,9 @@ const StepThree = () => {
 
         const updateShopeeDoc = async () => {
           // Data Penghasilan Shopee Yang Akan Di Simpan
-          const penghasilanShopee = {
+          const shopeeWithdrawal = {
             totalWithdraw: raw(totalWithdraw),
-            supplier: toCamelCase(supplierInfo.name),
+            supplier: toCamelCase(choosedSupplier.name),
             totalHPP: {
               total: raw(totalHPP),
               soldProducts: modifiedSetorBarang.filter(
@@ -299,22 +319,24 @@ const StepThree = () => {
             totalSetor: uangAdeSiska,
             uangEmaIki,
             profit: {
-              total: komisiKotor,
-              komisiBersih,
+              total: grossProfit,
+              netProfit,
               capital: uangCapital,
               danaDarurat: uangDanaDarurat,
               uangKeinginan: uangKeinginan,
               uangInvestasi: uangInvestasi,
               sedekah: uangUntukSedekah,
             },
-            splitBillEmaIki: patunganUntukEma,
-            gajiAdi: dailySalary,
+            splitBillEmaIki: splitBillEmaIki,
+            gajiAdi: dailyWage,
           };
           await createDocument(
             "saveNotePenghasilanShopee",
             "penghasilanJualanOnlineShopee",
-            penghasilanShopee,
+            shopeeWithdrawal,
             "Berhasil Menyimpan Note Penghasilan",
+            true,
+            combineDateTimeToMs(date, time),
           );
           await updateDocument(
             "UpdateShopeeLastSave",
@@ -327,10 +349,10 @@ const StepThree = () => {
 
           // Update All Time Document Shopee
           const shopeeAllTime = {
-            penghasilanAT: penghasilanAT.shopee + raw(totalWithdraw),
-            tagihanAT: tagihanAT.shopee + totalBill,
-            setorAT: setorAT.shopee + uangAdeSiska,
-            untungAT: untungAT.shopee + komisiKotor,
+            ATWithdrawals: ATWithdrawals.shopee + raw(totalWithdraw),
+            ATBills: ATBills.shopee + totalBill,
+            ATSetor: ATSetor.shopee + uangAdeSiska,
+            ATProfit: ATProfit.shopee + grossProfit,
           };
           await updateDocument(
             "UpdateAllTimeDocument",
@@ -350,11 +372,11 @@ const StepThree = () => {
         }
 
         // Optimistic Update
-        setPenghasilanAT((prev) => ({
+        setATWithdrawals((prev) => ({
           ...prev,
           [platform]: prev[platform] + raw(totalWithdraw),
         }));
-        setTagihanAT((prev) => ({
+        ATBills((prev) => ({
           ...prev,
           [platform]: prev[platform] + totalBill,
         }));
@@ -362,12 +384,12 @@ const StepThree = () => {
           ...prev,
           [platform]: prev[platform] + uangAdeSiska,
         }));
-        setUntungAT((prev) => ({
+        setATProfit((prev) => ({
           ...prev,
-          [platform]: prev[platform] + komisiKotor,
+          [platform]: prev[platform] + grossProfit,
         }));
 
-        fetchPenghasilan(platform, 7);
+        fetchWithdrawals(platform, 7);
         setLoadingSave(false);
         alert("Berhasil Menyimpan Dokumen");
       }
@@ -428,24 +450,24 @@ const StepThree = () => {
       setBillName("");
       setBillPrice("");
       setAddBill(false);
-      setSudahHitung(false);
+      setAlreadyCalculated(false);
     }
   };
 
   useEffect(() => {
     if (isTikTok) {
-      setDailySalary(0);
-      setKerja(false);
+      setDailyWage(0);
+      setWork(false);
       console.log("mode tiktok aktif, kini gaji jadi 0");
     }
   }, [isTikTok]);
 
   useEffect(() => {
     if (!whichSupplier) {
-      navigate("/alokasiPemasukan");
+      navigate("/incomeAllocation");
     }
 
-    if (totalInitialFetch) {
+    if (ATInitialFetch) {
       fetchAT();
     }
   }, []);
@@ -455,8 +477,8 @@ const StepThree = () => {
       <LoadingOverlay show={loadingSave} text="Loading . . ." />
       <form
         className="border-slate-400 rounded-md w-max mx-auto mt-3 max-w-[800px]"
-        onSubmit={hitungSekarang}
-        id="alokasiPemasukan"
+        onSubmit={calculateNow}
+        id="incomeAllocation"
       >
         <Card className="min-w-[380px]">
           <CardHeader>
@@ -545,7 +567,7 @@ const StepThree = () => {
                 checked={isTikTok}
                 onCheckedChange={() => {
                   setIsTikTok(!isTikTok);
-                  setSudahHitung(false);
+                  setAlreadyCalculated(false);
                 }}
               />
             </div>
@@ -555,23 +577,24 @@ const StepThree = () => {
               <div className="flex items-center justify-between input-components">
                 <span>Kerja Hari Ini</span>
                 <Switch
-                  checked={kerja}
+                  checked={work}
                   onCheckedChange={() => {
-                    setKerja(!kerja);
-                    setSudahHitung(false);
+                    setWork(!work);
+                    setAlreadyCalculated(false);
                   }}
                 />
               </div>
             )}
 
-            {kerja && !isTikTok ? (
+            {/* Berapa Lama Kerja  */}
+            {work && !isTikTok ? (
               <div className="flex items-center justify-between input-components">
                 <span>Berapa Lama Kerja :</span>
                 <Select
-                  value={waktuKerja}
+                  value={workingTime}
                   onValueChange={(e) => {
-                    setWaktuKerja(e);
-                    setSudahHitung(false);
+                    setWorkingTime(e);
+                    setAlreadyCalculated(false);
                   }}
                 >
                   <SelectTrigger>
@@ -579,12 +602,8 @@ const StepThree = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="Satu Hari Full">
-                        Satu Hari Full
-                      </SelectItem>
-                      <SelectItem value="Setengah Hari">
-                        Setengah Hari
-                      </SelectItem>
+                      <SelectItem value="Full Day">Satu Hari Full</SelectItem>
+                      <SelectItem value="Half Day">Setengah Hari</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -600,7 +619,58 @@ const StepThree = () => {
             </div>
 
             <FieldSet className="input-components">
+              <FieldGroup className="mx-auto max-w-xs flex-row">
+                {/* Date Picker */}
+                <Field>
+                  <FieldLabel htmlFor="date-picker">Hari</FieldLabel>
+                  <Popover
+                    open={datePickerOpen}
+                    onOpenChange={setDatePickerOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        id="date-picker"
+                        className="w-32 justify-between font-normal border border-gray-600"
+                      >
+                        {date ? format(date, "PPP") : "Hari Apa ?"}
+                        <ChevronDownIcon />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-auto overflow-hidden p-0"
+                      align="start"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        captionLayout="dropdown"
+                        defaultMonth={date}
+                        onSelect={(date) => {
+                          setDate(date);
+                          setDatePickerOpen(false);
+                        }}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </Field>
+
+                {/* Time Picker */}
+                <Field className="w-32">
+                  <FieldLabel htmlFor="time-picker">Jam</FieldLabel>
+                  <Input
+                    type="time"
+                    id="time-picker"
+                    step="1"
+                    value={time}
+                    onChange={(e) => setTime(e.target.value)}
+                    className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                  />
+                </Field>
+              </FieldGroup>
+
               <FieldGroup>
+                {/* Total Withdraw */}
                 <Field>
                   <FieldLabel htmlFor="penarikanDana">
                     Total Penarikan Dana
@@ -613,7 +683,7 @@ const StepThree = () => {
                     placeholder="0"
                     value={totalWithdraw}
                     onChange={(e) => {
-                      setSudahHitung(false);
+                      setAlreadyCalculated(false);
                       const number = validateNumber(e);
                       if (!number) {
                         setTotalWithdraw("");
@@ -623,6 +693,8 @@ const StepThree = () => {
                     }}
                   />
                 </Field>
+
+                {/* Total HPP */}
                 <Field>
                   <FieldLabel htmlFor="totalHPP">
                     Total Penghasilan HPP
@@ -654,7 +726,7 @@ const StepThree = () => {
                             value={bill.billPrice}
                             placeholder="0"
                             onChange={(e) => {
-                              setSudahHitung(false);
+                              setAlreadyCalculated(false);
                               setBills((prev) => {
                                 const newBill = [...prev];
                                 newBill[index] = {
@@ -668,7 +740,7 @@ const StepThree = () => {
                           <Button
                             className="bi bi-trash"
                             onClick={() => {
-                              setSudahHitung(false);
+                              setAlreadyCalculated(false);
                               setBills((prev) => {
                                 return prev.filter((_, ind) => ind !== index);
                               });
@@ -689,7 +761,7 @@ const StepThree = () => {
               <Button
                 type="button"
                 onClick={() => {
-                  navigate("/alokasiPemasukan/calculateHPP");
+                  navigate("/incomeAllocation/calculateHPP");
                 }}
               >
                 Kembali
@@ -699,13 +771,13 @@ const StepThree = () => {
               <Button
                 type="submit"
                 className="bg-green-700"
-                form="alokasiPemasukan"
+                form="incomeAllocation"
               >
                 Hitung
               </Button>
 
               {/* Simpan Ke Firebase*/}
-              {sudahHitung && (
+              {alreadyCalculated && (
                 <Button
                   type="button"
                   onClick={saveToFirebase}
@@ -722,7 +794,7 @@ const StepThree = () => {
       {/* Tampilkan Saat Tombol Hitung Di Tekan */}
 
       {/* Shopee Conclusion */}
-      {sudahHitung && !isTikTok ? (
+      {alreadyCalculated && !isTikTok ? (
         <div className="flex flex-col max-w-[700px]">
           <div className="border border-gray-200 rounded-md p-4 mt-4 flex flex-col gap-y-4 mx-2">
             <div>
@@ -746,7 +818,7 @@ const StepThree = () => {
                 </p>
               )}
               <p>
-                Komisi Kotor : <b>{formatNumber(komisiKotor)}</b>
+                Komisi Kotor : <b>{formatNumber(grossProfit)}</b>
                 {!simpleMode && (
                   <WordInBracket
                     kalimat={`Total Penghasilan Dari Shopee - Total Penghasilan HPP`}
@@ -758,7 +830,7 @@ const StepThree = () => {
                 {!simpleMode && (
                   <WordInBracket
                     kalimat={`Total Penghasilan HPP - Patungan Ema Uko
-                    ${kerja ? "- Gaji Per Hari" : ""} ${
+                    ${work ? "- Gaji Per Hari" : ""} ${
                       totalBill > 0 ? "- Total Tagihan Lainnya" : ""
                     }`}
                   />
@@ -769,8 +841,8 @@ const StepThree = () => {
                 {!simpleMode && (
                   <WordInBracket
                     kalimat={`Uko ${formatNumber(
-                      patunganUntukEma.uko,
-                    )} + Adi ${formatNumber(patunganUntukEma.adi)}`}
+                      splitBillEmaIki.uko,
+                    )} + Adi ${formatNumber(splitBillEmaIki.adi)}`}
                   />
                 )}
               </p>
@@ -781,14 +853,14 @@ const StepThree = () => {
                     <span>(</span>
                     <span className="text-gray-400 text-sm inline-block mx-1">
                       {metode.sedekah}% x{" "}
-                      {formatNumber(komisiKotor - patunganUntukEma.adi)}
+                      {formatNumber(grossProfit - splitBillEmaIki.adi)}
                     </span>
                     <span>)</span>
                   </span>
                 )}
               </p>
               <p>
-                Komisi Bersih : <b>{formatNumber(komisiBersih)}</b>
+                Komisi Bersih : <b>{formatNumber(netProfit)}</b>
                 {!simpleMode && (
                   <WordInBracket
                     kalimat={
@@ -827,7 +899,7 @@ const StepThree = () => {
                   {!simpleMode && (
                     <WordInBracket
                       kalimat={`Capital + Dana Darurat + Keinginan + Investasi + Sedekah + Uang Ema Iki ${
-                        kerja ? " + Gaji Perhari" : ""
+                        work ? " + Gaji Perhari" : ""
                       }`}
                     />
                   )}{" "}
@@ -839,9 +911,9 @@ const StepThree = () => {
                         uangInvestasi +
                         uangKeinginan +
                         uangUntukSedekah +
-                        patunganUntukEma.adi +
-                        patunganUntukEma.uko +
-                        (kerja ? dailySalary : 0),
+                        splitBillEmaIki.adi +
+                        splitBillEmaIki.uko +
+                        (work ? dailyWage : 0),
                     )}
                   </b>
                 </li>
@@ -857,7 +929,7 @@ const StepThree = () => {
                         {!simpleMode && (
                           <WordInBracket
                             kalimat={`${metode.capital}% x ${formatNumber(
-                              komisiKotor - patunganUntukEma.adi,
+                              grossProfit - splitBillEmaIki.adi,
                             )}`}
                           />
                         )}
@@ -868,7 +940,7 @@ const StepThree = () => {
                         {!simpleMode && (
                           <WordInBracket
                             kalimat={`${metode.danaDarurat}% x ${formatNumber(
-                              komisiKotor - patunganUntukEma.adi,
+                              grossProfit - splitBillEmaIki.adi,
                             )}`}
                           />
                         )}
@@ -879,7 +951,7 @@ const StepThree = () => {
                         {!simpleMode && (
                           <WordInBracket
                             kalimat={`${metode.keinginan}% x ${formatNumber(
-                              komisiKotor - patunganUntukEma.adi,
+                              grossProfit - splitBillEmaIki.adi,
                             )}`}
                           />
                         )}
@@ -890,7 +962,7 @@ const StepThree = () => {
                         {!simpleMode && (
                           <WordInBracket
                             kalimat={`${metode.investasi}% x ${formatNumber(
-                              komisiKotor - patunganUntukEma.adi,
+                              grossProfit - splitBillEmaIki.adi,
                             )}`}
                           />
                         )}
@@ -901,23 +973,23 @@ const StepThree = () => {
                         {!simpleMode && (
                           <WordInBracket
                             kalimat={`${metode.sedekah}% x ${formatNumber(
-                              komisiKotor - patunganUntukEma.adi,
+                              grossProfit - splitBillEmaIki.adi,
                             )}`}
                           />
                         )}
                       </li>
-                      {kerja && (
+                      {work && (
                         <li>
                           Catat Pemasukan Uang Capital
                           <WordInBracket kalimat={"Gaji"} />
-                          Sebesar <b>{formatNumber(dailySalary)}</b>
+                          Sebesar <b>{formatNumber(dailyWage)}</b>
                         </li>
                       )}
                       <li>
                         Edit Rekening Ema Iki Dengan Menambahkan Nominal Sebesar{" "}
                         <b>
                           {formatNumber(
-                            patunganUntukEma.uko + patunganUntukEma.adi,
+                            splitBillEmaIki.uko + splitBillEmaIki.adi,
                           )}
                         </b>
                       </li>
@@ -963,14 +1035,14 @@ const StepThree = () => {
                           <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
                           <b>{formatNumber(uangUntukSedekah)}</b>
                         </li>
-                        {kerja && (
+                        {work && (
                           <li>
                             <span>
                               Rekening Capital
                               <WordInBracket kalimat={"Gaji"} />
                             </span>
                             <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
-                            <b>{formatNumber(dailySalary)}</b>
+                            <b>{formatNumber(dailyWage)}</b>
                           </li>
                         )}
                         <li>
@@ -978,7 +1050,7 @@ const StepThree = () => {
                           <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
                           <b>
                             {formatNumber(
-                              patunganUntukEma.uko + patunganUntukEma.adi,
+                              splitBillEmaIki.uko + splitBillEmaIki.adi,
                             )}
                           </b>
                         </li>
@@ -1000,7 +1072,7 @@ const StepThree = () => {
                 {/* Catat Komisi Bersih */}
                 <li>
                   Catat Komisi Bersih Ke <b>Excel</b> Sebesar{" "}
-                  <b>{formatNumber(komisiBersih)}</b>
+                  <b>{formatNumber(netProfit)}</b>
                 </li>
               </ol>
             </div>
@@ -1011,22 +1083,21 @@ const StepThree = () => {
                 <span>Patungan Untuk Ema</span>
                 <ol className="list-inside px-2">
                   <li>
-                    UKO : <b>{formatNumber(patunganUntukEma.uko)}</b>
+                    UKO : <b>{formatNumber(splitBillEmaIki.uko)}</b>
                   </li>
                   <li>
-                    ADI : <b>{formatNumber(patunganUntukEma.adi)}</b>
+                    ADI : <b>{formatNumber(splitBillEmaIki.adi)}</b>
                   </li>
                 </ol>
                 <span>
-                  {waktuKerja === "Satu Hari Full" && (
+                  {workingTime === "Full Day" && (
                     <span>
-                      Gaji Full Hari : <b>{formatNumber(gajiPerHariFull)}</b>
+                      Gaji Full Hari : <b>{formatNumber(fullDayWage)}</b>
                     </span>
                   )}
-                  {waktuKerja === "Setengah Hari" && (
+                  {workingTime === "Half Day" && (
                     <span>
-                      Gaji Setengah Hari :{" "}
-                      <b>{formatNumber(gajiPerHariHalf)}</b>
+                      Gaji Setengah Hari : <b>{formatNumber(halfDayWage)}</b>
                     </span>
                   )}
                 </span>
@@ -1054,7 +1125,7 @@ const StepThree = () => {
       )}
 
       {/* TikTok Conclusion */}
-      {sudahHitung && isTikTok ? (
+      {alreadyCalculated && isTikTok ? (
         <div className="flex flex-col max-w-[700px]">
           <div className="border border-gray-400 rounded-md p-4 mt-4 flex flex-col gap-y-4 mx-2">
             <div>
@@ -1109,7 +1180,7 @@ const StepThree = () => {
                 <li>
                   {simpleMode ? "Transfer" : "Transfer Uang"} Ke{" "}
                   <b>SeaBank Adi Permadi</b> Sebesar{" "}
-                  <b>{formatNumber(komisiKotor)}</b>
+                  <b>{formatNumber(grossProfit)}</b>
                 </li>
 
                 {/* Catat Pemasukan Ke Dana Darurat */}
@@ -1118,7 +1189,7 @@ const StepThree = () => {
                     <>
                       <li>
                         Catat Pemasukan Uang Capital Sebesar{" "}
-                        <b>{formatNumber(komisiKotor)}</b>
+                        <b>{formatNumber(grossProfit)}</b>
                       </li>
                       {totalBill > 0 && (
                         <li>
@@ -1139,7 +1210,7 @@ const StepThree = () => {
                           <li>
                             <span>Rekening Capital</span>{" "}
                             <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
-                            <b>{formatNumber(komisiKotor)}</b>
+                            <b>{formatNumber(grossProfit)}</b>
                           </li>
                           {totalBill > 0 && (
                             <li>
@@ -1157,7 +1228,7 @@ const StepThree = () => {
                       <br />
                       <li>
                         Catat Komisi Bersih Ke <b>Excel</b> Sebesar{" "}
-                        <b>{formatNumber(komisiKotor)}</b>
+                        <b>{formatNumber(grossProfit)}</b>
                       </li>
                     </>
                   )}

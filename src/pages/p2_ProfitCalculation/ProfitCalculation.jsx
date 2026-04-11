@@ -19,10 +19,10 @@ const percentFrom = (percent, total) => {
   return (percent / 100) * total;
 };
 
-export default function PerhitunganProfit() {
+export default function ProfitCalculation() {
   // State
   const navigate = useNavigate();
-  const [sudahHitung, setSudahHitung] = useState(false);
+  const [alreadyCalculated, setAlreadyCalculated] = useState(false);
 
   // Admin Shopee
   const biayaPerPesanan = 1250;
@@ -81,7 +81,7 @@ export default function PerhitunganProfit() {
     setTotalKomisiAMS(totalKomisiAMSDidapat);
     setTotalKomisiSayaDipotongAMS(hargaFinal - totalKomisiAMSDidapat);
     setTotalKomisiSayaDipotongAMSBaru(hargaFinal - totalKomisiAMSDidapat / 2);
-    setSudahHitung(true);
+    setAlreadyCalculated(true);
   };
 
   const localStorageInit = (
@@ -333,7 +333,7 @@ export default function PerhitunganProfit() {
         </div>
       </form>
 
-      {sudahHitung && (
+      {alreadyCalculated && (
         <div className="border border-gray-400 rounded-md p-4">
           <div className="flex flex-col text-gray-500 text-[12px]">
             <small>

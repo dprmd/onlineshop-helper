@@ -1,15 +1,15 @@
 import { useUI } from "@/context/UIContext";
+import { createContext, useContext, useState } from "react";
 import {
   getDocument,
   getDocuments,
   updateDocument,
 } from "../services/firebase/docService";
 import { toCamelCase } from "../utils/generalFunction";
-import { createContext, useContext, useEffect, useState } from "react";
 
-const CRUDBarangContext = createContext();
+const CRUDContext = createContext();
 
-export function CRUDBarangProvider({ children }) {
+export function CRUDProvider({ children }) {
   const { loading, setLoading } = useUI();
   const [initialFetch, setInitialFetch] = useState(true);
   const [supplier, setSupplier] = useState([]);
@@ -42,7 +42,7 @@ export function CRUDBarangProvider({ children }) {
     return exist ? true : false;
   };
 
-  const tambahHutangBarang = async (supplierId, hutangBarang) => {
+  const addProductDebt = async (supplierId, productDebt) => {
     setLoading(true);
     const { data: supplierObject } = await getDocument(
       "Mengambil Data Supplier",
@@ -50,25 +50,25 @@ export function CRUDBarangProvider({ children }) {
       supplierId,
     );
 
-    const hutangBarangBefore = supplierObject.hutangBarang;
+    const previousDebt = supplierObject.productDebt;
 
-    const merged = hutangBarang.map((barang) => {
-      const sameBarang = hutangBarangBefore.find(
-        (b) => b.identifier === barang.identifier,
+    const merged = productDebt.map((debt) => {
+      const sameDebt = previousDebt.find(
+        (b) => b.identifier === debt.identifier,
       );
 
-      if (sameBarang) {
-        return { ...sameBarang, terjual: sameBarang.terjual + barang.terjual };
+      if (sameDebt) {
+        return { ...sameDebt, terjual: sameDebt.terjual + debt.terjual };
       } else {
-        return barang;
+        return debt;
       }
     });
 
-    let barangNotEdited = [];
+    let unmondifiedDebt = [];
 
-    hutangBarangBefore.forEach((barang) => {
-      if (!merged.find((p) => p.identifier === barang.identifier)) {
-        barangNotEdited.push(barang);
+    previousDebt.forEach((debt) => {
+      if (!merged.find((d) => d.identifier === debt.identifier)) {
+        unmondifiedDebt.push(debt);
       }
     });
 
@@ -78,7 +78,7 @@ export function CRUDBarangProvider({ children }) {
       supplierId,
       {
         ...supplierObject,
-        hutangBarang: [...barangNotEdited, ...merged],
+        productDebt: [...unmondifiedDebt, ...merged],
       },
       "Berhasil Mengupdate Supplier",
     );
@@ -87,7 +87,7 @@ export function CRUDBarangProvider({ children }) {
         if (s.id === supplierId) {
           return {
             ...s,
-            hutangBarang: [...barangNotEdited, ...merged],
+            productDebt: [...unmondifiedDebt, ...merged],
           };
         } else {
           return s;
@@ -101,7 +101,7 @@ export function CRUDBarangProvider({ children }) {
   const getProductList = async () => {};
 
   return (
-    <CRUDBarangContext.Provider
+    <CRUDContext.Provider
       value={{
         loading,
         setLoading,
@@ -112,15 +112,15 @@ export function CRUDBarangProvider({ children }) {
         checkSupplierIfExist,
         getSupplierList,
         initialFetch,
-        tambahHutangBarang,
+        addProductDebt,
         products,
         setProducts,
         getProductList,
       }}
     >
       {children}
-    </CRUDBarangContext.Provider>
+    </CRUDContext.Provider>
   );
 }
 
-export const useCRUDBarang = () => useContext(CRUDBarangContext);
+export const useCRUD = () => useContext(CRUDContext);

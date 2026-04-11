@@ -1,21 +1,21 @@
 import { UIProvider } from "@/context/UIContext";
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { AlokasiPemasukanProvider } from "./context/AlokasiPemasukanContext";
-import { CatatanPenghasilanProvider } from "./context/CatatanPenghasilanContext";
-import { CRUDBarangProvider } from "./context/CRUDBarangContext";
+import { CRUDProvider } from "./context/CRUDContext";
+import { IncomeAllocationProvider } from "./context/IncomeAllocationContext";
+import { WithdrawalRecordsProvider } from "./context/WithdrawalRecordsContext";
 import Home from "./pages/p1_Home/Home";
-import PerhitunganProfit from "./pages/p2_PerhitunganProfit/PerhitunganProfit";
-import StepOne from "./pages/p3_AlokasiPemasukan/StepOne";
-import StepThree from "./pages/p3_AlokasiPemasukan/StepThree";
-import StepTwo from "./pages/p3_AlokasiPemasukan/StepTwo";
+import ProfitCalculation from "./pages/p2_ProfitCalculation/ProfitCalculation";
+import StepOne from "./pages/p3_IncomeAllocation/StepOne";
+import StepThree from "./pages/p3_IncomeAllocation/StepThree";
+import StepTwo from "./pages/p3_IncomeAllocation/StepTwo";
 import Penghasilan from "./pages/p4_Penghasilan/Penghasilan";
 import RiwayatPenghasilanShopee from "./pages/p4_Penghasilan/RiwayatPenghasilanShopee";
 import RiwayatPenghasilanTikTok from "./pages/p4_Penghasilan/RiwayatPenghasilanTikTok";
 import TotalPenghasilan from "./pages/p4_Penghasilan/TotalPenghasilan";
 import CRUDBarang from "./pages/p5_CRUDBarang/CRUDBarang";
+import Products from "./pages/p5_CRUDBarang/Products";
 import Supplier from "./pages/p5_CRUDBarang/Supplier";
 import TambahHutangBarang from "./pages/p5_CRUDBarang/TambahHutangBarang";
-import Products from "./pages/p5_CRUDBarang/Products";
 
 const router = createHashRouter([
   {
@@ -25,11 +25,11 @@ const router = createHashRouter([
       { index: true, element: <Home /> },
 
       // Page 2
-      { path: "perhitunganProfit", element: <PerhitunganProfit /> },
+      { path: "profitCalculation", element: <ProfitCalculation /> },
 
       // Page 3
       {
-        path: "alokasiPemasukan",
+        path: "incomeAllocation",
         children: [
           { index: true, element: <StepOne /> },
           { path: "calculateHPP", element: <StepTwo /> },
@@ -39,10 +39,10 @@ const router = createHashRouter([
 
       // Page 4
       {
-        path: "penghasilan",
+        path: "income",
         children: [
           { index: true, element: <Penghasilan /> },
-          { path: "totalPenghasilan", element: <TotalPenghasilan /> },
+          { path: "total", element: <TotalPenghasilan /> },
           { path: "shopee", element: <RiwayatPenghasilanShopee /> },
           { path: "tiktok", element: <RiwayatPenghasilanTikTok /> },
         ],
@@ -50,11 +50,11 @@ const router = createHashRouter([
 
       // Page 5
       {
-        path: "crudBarang",
+        path: "crud",
         children: [
           { index: true, element: <CRUDBarang /> },
           { path: "supplier", element: <Supplier /> },
-          { path: "tambahHutangBarang", element: <TambahHutangBarang /> },
+          { path: "addProductDebt", element: <TambahHutangBarang /> },
           { path: "products", element: <Products /> },
         ],
       },
@@ -74,13 +74,13 @@ const router = createHashRouter([
 export default function App() {
   return (
     <UIProvider>
-      <CRUDBarangProvider>
-        <CatatanPenghasilanProvider>
-          <AlokasiPemasukanProvider>
+      <CRUDProvider>
+        <WithdrawalRecordsProvider>
+          <IncomeAllocationProvider>
             <RouterProvider router={router} />
-          </AlokasiPemasukanProvider>
-        </CatatanPenghasilanProvider>
-      </CRUDBarangProvider>
+          </IncomeAllocationProvider>
+        </WithdrawalRecordsProvider>
+      </CRUDProvider>
     </UIProvider>
   );
 }
