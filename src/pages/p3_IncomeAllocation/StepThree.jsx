@@ -631,7 +631,7 @@ const StepThree = () => {
                       <Button
                         variant="outline"
                         id="date-picker"
-                        className="w-32 justify-between font-normal border border-gray-600"
+                        className="w-32 justify-between font-normal border border-gray-500"
                       >
                         {date ? format(date, "PPP") : "Hari Apa ?"}
                         <ChevronDownIcon />
