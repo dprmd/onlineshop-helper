@@ -81,7 +81,6 @@ const StepThree = () => {
     totalWithdraw,
     setTotalWithdraw,
     totalHPP,
-    setTotalHPP,
     dailyWage,
     setDailyWage,
     totalBill,
@@ -99,6 +98,7 @@ const StepThree = () => {
     ATWithdrawals,
     setATWithdrawals,
     ATBills,
+    setATBills,
     ATSetor,
     setSetorAT,
     ATProfit,
@@ -377,7 +377,7 @@ const StepThree = () => {
           ...prev,
           [platform]: prev[platform] + raw(totalWithdraw),
         }));
-        ATBills((prev) => ({
+        setATBills((prev) => ({
           ...prev,
           [platform]: prev[platform] + totalBill,
         }));
