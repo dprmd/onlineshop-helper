@@ -11,7 +11,7 @@ import { useCRUD } from "@/context/CRUDContext";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-export default function CRUDBarang() {
+export default function CRUD() {
   const navigate = useNavigate();
   const { getSupplierList, initialFetch } = useCRUD();
 

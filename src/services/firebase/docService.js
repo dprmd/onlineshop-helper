@@ -160,8 +160,8 @@ export const getWithdrawalListByMonth = async (
   year,
   month,
 ) => {
-  const startMonth = new Date(year, month - 1, 1).getTime();
-  const endMonth = new Date(year, month, 0).getTime();
+  const startMonth = new Date(year, month, 1).getTime();
+  const endMonth = new Date(year, month + 1, 1).getTime();
 
   const orderChoice = {
     newToOld: "desc",
@@ -207,10 +207,9 @@ export const getWithdrawalListByMonth = async (
 };
 
 export const getWithdrawalListByDate = async (platform, order, start, end) => {
-  const startDate = new Date(start).getTime();
-  const input = end;
-  const date = new Date(input);
-  date.setDate(date.getDate() + 1);
+  const startDate = start.getTime();
+  const date = new Date(end);
+  date.setDate(date.getDate() + 2);
   const result = date.toISOString().slice(0, 10);
   const endDate = new Date(result).getTime();
 

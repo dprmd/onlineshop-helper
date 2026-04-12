@@ -1,6 +1,25 @@
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
+import MonthPicker from "@/components/ui/month-picker";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { formatNumber } from "@/utils/generalFunction";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
-import { formatNumber } from "../../utils/generalFunction";
 
 export default function FilterList({ platform }) {
   const {
@@ -32,9 +51,13 @@ export default function FilterList({ platform }) {
   const [customShow, setCustomShow] = useState(false);
   const [customList, setCustomList] = useState("default");
   const [limitOffPage, setLimitOffPage] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [pickMonth, setPickMonth] = useState("");
+  const now = new Date();
+  const [date, setDate] = useState({
+    from: new Date(now.getFullYear(), now.getMonth(), now.getDay()),
+    to: "",
+  });
+  const [datePicker, setDatePicker] = useState(false);
 
   const handleShowByLastDay = async (e) => {
     e.preventDefault();
@@ -47,13 +70,13 @@ export default function FilterList({ platform }) {
 
   const handleShowByDate = async (e) => {
     e.preventDefault();
-    await fetchWithdrawalsByDate(platform, startDate, endDate);
+    await fetchWithdrawalsByDate(platform, date.from, date.to);
   };
 
   const handleShowByMonth = async (e) => {
     e.preventDefault();
-    const [year, month] = pickMonth.split("-");
-    await fetchWithdrawalsByMonth(platform, Number(year), Number(month));
+    const [year, month] = [pickMonth.getFullYear(), pickMonth.getMonth()];
+    await fetchWithdrawalsByMonth(platform, year, month);
   };
 
   useEffect(() => {
@@ -93,66 +116,77 @@ export default function FilterList({ platform }) {
   }, [shopeeWithdrawals, tiktokWithdrawals]);
 
   return (
-    <div className="text-sm text-gray-400">
-      <div className="py-2">
-        <p className="font-bold text-md">
-          Total Penghasilan : {formatNumber(withdrawals[platform])}
-        </p>
-        <p className="font-bold text-md">
-          Total Tagihan : {formatNumber(bills[platform])}
-        </p>
-        <p className="font-bold text-md">
-          Total Setor : {formatNumber(setor[platform])}
-        </p>
-        <p className="font-bold text-md">
-          Total Untung : {formatNumber(profit[platform])}
-        </p>
-      </div>
+    <div className="max-w-[400px]">
+      {shopeeWithdrawals.length > 0 || tiktokWithdrawals.length > 0 ? (
+        <div className="py-2">
+          <p className="font-bold text-md">
+            Total Penghasilan : {formatNumber(withdrawals[platform])}
+          </p>
+          <p className="font-bold text-md">
+            Total Tagihan : {formatNumber(bills[platform])}
+          </p>
+          <p className="font-bold text-md">
+            Total Setor : {formatNumber(setor[platform])}
+          </p>
+          <p className="font-bold text-md">
+            Total Untung : {formatNumber(profit[platform])}
+          </p>
+        </div>
+      ) : null}
 
       {/* Selector Filter */}
       {customShow && customList !== "default" && (
-        <div className="my-2">
-          <label htmlFor="customList">Tampilkan : </label>
-          <select
-            name="customList"
-            id="customList"
-            value={customList}
-            onChange={(e) => {
-              setCustomList(e.target.value);
-            }}
-            className="outline-1 outline-black rounded-md mx-2"
-          >
-            <option value="default">Default</option>
-            <option value="byDay">Berdasarkan Hari</option>
-            <option value="byDate">Berdasarkan Tanggal</option>
-            <option value="byMonth">Berdasarkan Bulan</option>
-          </select>
-        </div>
+        <FieldSet className="max-w-[300px]">
+          <FieldGroup>
+            <Field className="flex flex-row">
+              <FieldLabel>Tampilkan</FieldLabel>
+              <Select
+                className="flex-1"
+                value={customList}
+                onValueChange={setCustomList}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Default" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="default">Default</SelectItem>
+                    <SelectItem value="byDay">Berdasarkan Hari</SelectItem>
+                    <SelectItem value="byDate">Berdasarkan Tanggal</SelectItem>
+                    <SelectItem value="byMonth">Berdasarkan Bulan</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+          </FieldGroup>
+        </FieldSet>
       )}
 
       {/* Default Filter */}
       {customList === "default" && (
         <div>
           <span className="block">Hanya Menampilkan 7 Data Terbaru</span>
-          <button
-            className="bg-gray-500 text-white px-[4px] rounded-md block"
+          <Button
             onClick={() => {
               setCustomShow(true);
               setCustomList("byDay");
             }}
           >
             Show Other Filter
-          </button>
+          </Button>
         </div>
       )}
 
       {/* Sort By Day */}
       {customShow && customList === "byDay" && (
-        <div className="flex">
-          <form onSubmit={handleShowByLastDay}>
+        <div className="flex my-2">
+          <form
+            onSubmit={handleShowByLastDay}
+            className="flex justify-between min-w-[300px] items-center"
+          >
             <input
               type="text"
-              className="border-1 border-black w-10 text-center px-[4px] focus:outline-none mx-2 text-sm"
+              className="border-1 border-black w-10 text-center px-[4px] focus:outline-none text-sm"
               value={limitOffPage}
               onChange={(e) => {
                 setLimitOffPage(e.target.value);
@@ -161,91 +195,95 @@ export default function FilterList({ platform }) {
               placeholder="0"
             />
             <span>Hari Terakhir</span>
-            <button
-              className="bg-gray-500 rounded-md text-white mx-2 px-[4px] py-[2px]"
-              type="submit"
-              disabled={loading ? true : false}
-            >
+            <Button type="submit" disabled={loading ? true : false}>
               Tampilkan
-            </button>
+            </Button>
           </form>
         </div>
       )}
 
       {/* Sort By Start date & End date */}
       {customShow && customList === "byDate" && (
-        <div className="flex">
-          <form onSubmit={handleShowByDate}>
-            <div className="flex flex-col gap-y-2">
-              <div>
-                <label htmlFor="startDate" className="font-bold">
-                  Dari :{" "}
-                </label>
-                <input
-                  type="date"
-                  id="startDate"
-                  value={startDate}
-                  onChange={(e) => {
-                    setStartDate(e.target.value);
-                  }}
-                  className="outline-1 outline-black rounded-md mx-2"
-                  required
-                />
-              </div>
-              <div>
-                <label htmlFor="endDate" className="font-bold">
-                  Ke :{" "}
-                </label>
-                <input
-                  type="date"
-                  id="endDate"
-                  value={endDate}
-                  onChange={(e) => {
-                    setEndDate(e.target.value);
-                  }}
-                  className="outline-1 outline-black rounded-md mx-2"
-                  required
-                />
-              </div>
-            </div>
-            <button
-              className="bg-gray-500 rounded-md text-white my-1 px-[4px] py-[2px]"
-              type="submit"
-              disabled={loading ? true : false}
-            >
-              Tampilkan
-            </button>
-          </form>
-        </div>
+        <form onSubmit={handleShowByDate} className="my-2">
+          <FieldSet className="max-w-[300px]">
+            <FieldGroup>
+              <Field>
+                <Popover open={datePicker} onOpenChange={setDatePicker}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      id="date-picker-range"
+                      className="justify-center px-2.5 font-normal"
+                    >
+                      <CalendarIcon />
+                      {date?.from ? (
+                        date.to ? (
+                          <>
+                            {format(date.from, "dd LLL y")} -{" "}
+                            {format(date.to, "dd LLL y")}
+                          </>
+                        ) : (
+                          format(date.from, "dd LLL y")
+                        )
+                      ) : (
+                        <span>Pilih Tanggal</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto mx-5 p-2">
+                    <Calendar
+                      mode="range"
+                      defaultMonth={date?.from}
+                      selected={date}
+                      onSelect={setDate}
+                      numberOfMonths={2}
+                    />
+                    <Field className="flex flex-row justify-end items-end">
+                      <Button
+                        size={"xs"}
+                        className="max-w-fit"
+                        onClick={(e) => {
+                          setDatePicker(false);
+                          handleShowByDate(e);
+                        }}
+                      >
+                        Pilih Waktu
+                      </Button>
+                    </Field>
+                  </PopoverContent>
+                </Popover>
+                <Button type="submit" disabled={loading ? true : false}>
+                  Tampilkan
+                </Button>
+              </Field>
+            </FieldGroup>
+          </FieldSet>
+        </form>
       )}
 
       {/* Sort By Month */}
       {customShow && customList === "byMonth" && (
         <div className="flex flex-col">
           <form onSubmit={handleShowByMonth}>
-            <div>
-              <div>
-                <label htmlFor="month" className="font-bold">
-                  Bulan :{" "}
-                </label>
-                <input
-                  type="month"
-                  id="month"
-                  value={pickMonth}
-                  onChange={(e) => {
-                    setPickMonth(e.target.value);
-                  }}
-                  className="outline-1 outline-black rounded-md mx-2"
-                  required
-                />
-              </div>
-            </div>
-            <button
-              className="bg-gray-500 rounded-md text-white my-1 px-[4px] py-[2px]"
-              type="submit"
-            >
-              Tampilkan
-            </button>
+            <FieldSet className="max-w-[300px] my-2">
+              <FieldGroup>
+                <Field>
+                  <MonthPicker
+                    value={pickMonth}
+                    onChange={setPickMonth}
+                    className="w-[300px]"
+                  />
+                  <Button
+                    type="submit"
+                    onClick={() => {
+                      console.log(pickMonth);
+                    }}
+                  >
+                    Tampilkan
+                  </Button>
+                </Field>
+              </FieldGroup>
+            </FieldSet>
           </form>
         </div>
       )}

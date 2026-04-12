@@ -136,7 +136,7 @@ export default function Supplier() {
                           className="text-[12px] text-gray-400"
                           key={barang.identifier}
                         >
-                          {barang.name} {barang.sold} Pcs
+                          {barang.name} {barang.remaining} Pcs
                         </p>
                       ))}
                     </>

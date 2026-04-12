@@ -45,11 +45,17 @@ export default function TikTokWithdrawalRecords() {
 
       <FilterList platform={"tiktok"} />
 
-      <div className="flex flex-wrap gap-4 py-3">
-        {tiktokWithdrawals.map((data) => (
-          <PenghasilanTikTokCard data={data} key={data.id} />
-        ))}
-      </div>
+      {tiktokWithdrawals.length > 0 && (
+        <div className="flex flex-wrap gap-4 py-3">
+          {tiktokWithdrawals.map((data) => (
+            <PenghasilanTikTokCard data={data} key={data.id} />
+          ))}
+        </div>
+      )}
+
+      {tiktokWithdrawals.length === 0 && (
+        <p className="text-xl text-gray-500">Kosong</p>
+      )}
     </div>
   );
 }

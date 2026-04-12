@@ -45,11 +45,17 @@ export default function ShopeeWithdrawalRecords() {
 
       <FilterList platform={"shopee"} />
 
-      <div className="flex flex-wrap gap-4 py-3">
-        {shopeeWithdrawals.map((data) => (
-          <PenghasilanShopeeCard data={data} key={data.id} />
-        ))}
-      </div>
+      {shopeeWithdrawals.length > 0 && (
+        <div className="flex flex-wrap gap-4 py-3">
+          {shopeeWithdrawals.map((data) => (
+            <PenghasilanShopeeCard data={data} key={data.id} />
+          ))}
+        </div>
+      )}
+
+      {shopeeWithdrawals.length === 0 && (
+        <p className="text-xl text-gray-500">Kosong</p>
+      )}
     </div>
   );
 }
