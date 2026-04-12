@@ -25,6 +25,7 @@ import { Link } from "react-router-dom";
 import { useCRUD } from "../../context/CRUDContext";
 import { createDocument } from "../../services/firebase/docService";
 import { toCamelCase } from "../../utils/generalFunction";
+import { toast } from "sonner";
 
 export default function Supplier() {
   const {
@@ -45,7 +46,7 @@ export default function Supplier() {
     const checkedSupplierName = checkSupplierIfExist(supplierName);
 
     if (checkedSupplierName) {
-      alert("Nama Supplier Telah Ada");
+      toast.error("Nama Supplier Telah Ada");
     } else {
       const newSupplier = await createDocument(
         "Menambahkan Supplier Baru",
@@ -68,7 +69,7 @@ export default function Supplier() {
       ]);
       setSupplierName("");
       setDialogAddSupplier(false);
-      alert("Berhasil Menyimpan Supplier");
+      toast.success("Berhasil Menyimpan Supplier");
     }
   };
 
@@ -79,7 +80,7 @@ export default function Supplier() {
   }, []);
 
   return (
-    <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
+    <div className=" flex flex-col justify-center items-center gap-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

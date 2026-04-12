@@ -58,7 +58,7 @@ export function CRUDProvider({ children }) {
       );
 
       if (sameDebt) {
-        return { ...sameDebt, terjual: sameDebt.terjual + debt.terjual };
+        return { ...sameDebt, remaining: sameDebt.remaining + debt.remaining };
       } else {
         return debt;
       }

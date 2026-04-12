@@ -144,7 +144,7 @@ export default function ProfitCalculation() {
   ];
 
   return (
-    <div className="flex justify-center items-center flex-col gap-y-3 py-3 mx-2">
+    <div className="flex justify-center items-center flex-col gap-y-3 mx-2">
       {/* Dialog Ubah Admin shopee */}
       <Dialog
         open={dialogOpen}

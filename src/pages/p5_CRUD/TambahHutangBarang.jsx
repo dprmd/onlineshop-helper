@@ -48,6 +48,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCRUD } from "../../context/CRUDContext";
 import { listProduk } from "../../lib/variables";
 import { formatNumber } from "../../utils/generalFunction";
+import { toast } from "sonner";
 
 export default function TambahHutangBarang() {
   const navigate = useNavigate();
@@ -58,6 +59,7 @@ export default function TambahHutangBarang() {
   const produk = Object.entries(listProduk).map((v) => ({
     ...v[1],
     checked: false,
+    remaining: 0,
   }));
   const [cloneProduk, setCloneProduk] = useState(produk);
   const [choosedProduk, setChoosedProduk] = useState([]);
@@ -87,10 +89,10 @@ export default function TambahHutangBarang() {
   const handleTambahHutangSekarang = () => {
     // validasi
     if (choosedProduk.length === 0) {
-      alert("Mohon Tambah Barang Terlebih Dahulu");
+      toast.info("Mohon Tambah Barang Terlebih Dahulu");
       return;
     } else if (!whichSupplier) {
-      alert("Mohon Pilih Supplier Terlebih Dahulu");
+      toast.info("Mohon Pilih Supplier Terlebih Dahulu");
       return;
     }
 
@@ -105,7 +107,7 @@ export default function TambahHutangBarang() {
       .filter((produk) => produk.remaining > 0);
 
     if (hutang.length === 0) {
-      alert("Mohon Masukan Jumlah Produk Yang Di Pinjam");
+      toast.info("Mohon Masukan Jumlah Produk Yang Di Pinjam");
       return;
     }
 
@@ -120,7 +122,7 @@ export default function TambahHutangBarang() {
   }, []);
 
   return (
-    <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
+    <div className=" flex flex-col justify-center items-center gap-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -231,7 +233,7 @@ export default function TambahHutangBarang() {
                                     return {
                                       ...produk,
                                       checked: false,
-                                      terjual: 0,
+                                      remaining: 0,
                                     };
                                   }
 
@@ -356,8 +358,8 @@ export default function TambahHutangBarang() {
                           </AlertDialogTitle>
                         </AlertDialogHeader>
                         <AlertDialogDescription>
-                          <div>
-                            <div>
+                          <span className="block">
+                            <span className="block">
                               Supplier :{" "}
                               <span>
                                 {
@@ -365,19 +367,19 @@ export default function TambahHutangBarang() {
                                     ?.name
                                 }
                               </span>
-                            </div>
-                            <div>
-                              <div>
+                            </span>
+                            <span>
+                              <span className="block">
                                 {choosedProduk
                                   .filter((p) => p.remaining > 0)
                                   .map((p) => (
-                                    <div key={p.identifier}>
+                                    <span key={p.identifier} className="block">
                                       {p.name} x {p.remaining}
-                                    </div>
+                                    </span>
                                   ))}
-                              </div>
-                            </div>
-                          </div>
+                              </span>
+                            </span>
+                          </span>
                         </AlertDialogDescription>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Batal</AlertDialogCancel>
@@ -387,6 +389,9 @@ export default function TambahHutangBarang() {
                               setChoosedProduk([]);
                               setNotChoosedProduk(produk);
                               setCloneProduk(produk);
+                              toast.success(
+                                "Berhasil Menambahkan Hutang Produk",
+                              );
                             }}
                           >
                             Lanjutkan

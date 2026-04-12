@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function IncomeTotal() {
   const {
@@ -147,7 +148,7 @@ export default function IncomeTotal() {
       "Success Fix All Time Data",
     );
 
-    alert("Berhasil Fix Data All Time");
+    toast.success("Berhasil Fix Data All Time");
   };
 
   useEffect(() => {
@@ -157,7 +158,7 @@ export default function IncomeTotal() {
   }, []);
 
   return (
-    <div className="px-4 py-3 flex flex-col justify-center items-center gap-y-4">
+    <div className=" flex flex-col justify-center items-center gap-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

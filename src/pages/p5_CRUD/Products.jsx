@@ -19,7 +19,7 @@ export default function Products() {
 
   const [productName, setProductName] = useState("");
   return (
-    <div className="px-4 py-3">
+    <div className="">
       {products.length === 0 && (
         <div className="text-center">
           <h3>Produk Masih Kosong , Tambah Terlebih Dahulu</h3>

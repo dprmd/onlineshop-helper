@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { useCRUD } from "@/context/CRUDContext";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { formatNumber } from "../../utils/generalFunction";
 
@@ -44,6 +45,7 @@ export default function StepTwo() {
     setTotalHPP("");
     setSubmitOrder(1);
     setShowConclusion(false);
+    setModifiedSetorBarang(productList);
   };
 
   const handleCalculateHPP = (e) => {
@@ -55,7 +57,7 @@ export default function StepTwo() {
     setTotalHPP(formatNumber(total));
 
     if (total === 0) {
-      alert("Masukkan jumlah produk terjual terlebih dahulu!");
+      toast.info("Masukkan jumlah produk terjual terlebih dahulu!");
       setShowConclusion(false);
       return;
     }
