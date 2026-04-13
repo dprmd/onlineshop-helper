@@ -21,6 +21,7 @@ export const collectionName = {
   tiktokWithdrawals: "penghasilanJualanOnlineTikTok",
   allTime: "penghasilanAllTime",
   allTimeDocId: "CatatanPenghasilanAllTime",
+  products: "produk",
 };
 
 // Initialize Firebase

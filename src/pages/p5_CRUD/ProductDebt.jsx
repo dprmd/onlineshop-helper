@@ -49,23 +49,30 @@ import { useCRUD } from "../../context/CRUDContext";
 import { listProduk } from "../../lib/variables";
 import { formatNumber } from "../../utils/generalFunction";
 import { toast } from "sonner";
+import { useMemo } from "react";
+import { useUI } from "@/context/UIContext";
 
-export default function TambahHutangBarang() {
+export default function ProductDebt() {
   const navigate = useNavigate();
-  const { supplier, getSupplierList, initialFetch, addProductDebt } = useCRUD();
+  const {
+    supplier,
+    getSupplierList,
+    supplierInitialFetch,
+    addProductDebt,
+    products,
+    productsInitialFetch,
+    getProductList,
+  } = useCRUD();
   const [whichSupplier, setWhichSupplier] = useState("");
-  const [dialogTambahBarang, setDialogTambahBarang] = useState(false);
-  const [dialogTambahHutang, setDialogTambahHutang] = useState(false);
-  const produk = Object.entries(listProduk).map((v) => ({
-    ...v[1],
-    checked: false,
-    remaining: 0,
-  }));
-  const [cloneProduk, setCloneProduk] = useState(produk);
+  const [addItemDialog, setAddItemDialog] = useState(false);
+  const [addDebtDialog, setAddDebtDialog] = useState(false);
+  const produk = useMemo(() => {
+    return products.map((p) => ({ ...p, checked: false, remaining: 0 }));
+  });
+  const [cloneProduk, setCloneProduk] = useState([]);
   const [choosedProduk, setChoosedProduk] = useState([]);
-  const [notChoosedProduk, setNotChoosedProduk] = useState(produk);
+  const [notChoosedProduk, setNotChoosedProduk] = useState([]);
   const [productDebt, setProductDebt] = useState([]);
-
   const handlePilihProduk = () => {
     const choosed = cloneProduk.filter((p) => p.checked);
     const notChoosed = cloneProduk.filter((p) => !p.checked);
@@ -83,7 +90,7 @@ export default function TambahHutangBarang() {
       });
     });
     setNotChoosedProduk(notChoosed);
-    setDialogTambahBarang(false);
+    setAddItemDialog(false);
   };
 
   const handleTambahHutangSekarang = () => {
@@ -111,18 +118,38 @@ export default function TambahHutangBarang() {
       return;
     }
 
-    setDialogTambahHutang(true);
+    setAddDebtDialog(true);
     setProductDebt([...hutang]);
   };
 
   useEffect(() => {
-    if (initialFetch) {
+    if (supplierInitialFetch) {
       getSupplierList();
+    }
+
+    if (productsInitialFetch) {
+      getProductList();
     }
   }, []);
 
+  useEffect(() => {
+    setCloneProduk([...products]);
+    setNotChoosedProduk([...products]);
+  }, [products]);
+
+  if (products.length === 0) {
+    return (
+      <div className="text-center">
+        <p className="text-lg font-bold my-2">Anda Belum Menambahkan Produk</p>
+        <Button onClick={() => navigate("/crud/products")}>
+          Tambah Sekarang
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className=" flex flex-col justify-center items-center gap-y-4">
+    <div className="flex flex-col justify-center items-center gap-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -265,10 +292,7 @@ export default function TambahHutangBarang() {
                 {choosedProduk.length === 0 && (
                   <FieldLabel>Pilih Barang</FieldLabel>
                 )}
-                <Dialog
-                  open={dialogTambahBarang}
-                  onOpenChange={setDialogTambahBarang}
-                >
+                <Dialog open={addItemDialog} onOpenChange={setAddItemDialog}>
                   {notChoosedProduk.length > 0 && (
                     <DialogTrigger asChild>
                       <Button className="my-2">Tambah Barang</Button>
@@ -348,8 +372,8 @@ export default function TambahHutangBarang() {
                   {/* peringatan sebelum menambahkan hutang barang */}
                   <div>
                     <AlertDialog
-                      open={dialogTambahHutang}
-                      onOpenChange={setDialogTambahHutang}
+                      open={addDebtDialog}
+                      onOpenChange={setAddDebtDialog}
                     >
                       <AlertDialogContent>
                         <AlertDialogHeader>

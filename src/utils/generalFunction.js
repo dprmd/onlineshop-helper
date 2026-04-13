@@ -24,6 +24,15 @@ export const toCamelCase = (str) => {
     .join("");
 };
 
+export const separateNumber = (e) => {
+  const number = validateNumber(e);
+  if (number) {
+    return formatNumber(number);
+  } else {
+    return "";
+  }
+};
+
 export const formatTanggal = (ms) => {
   const date = new Date(ms);
 

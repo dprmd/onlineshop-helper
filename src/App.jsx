@@ -14,9 +14,9 @@ import IncomeTotal from "./pages/p4_Income/IncomeTotal";
 import ShopeeWithdrawalRecords from "./pages/p4_Income/ShopeeWithdrawalRecords";
 import TikTokWithdrawasRecords from "./pages/p4_Income/TikTokWithdrawalRecords";
 import CRUD from "./pages/p5_CRUD/CRUD";
+import ProductDebt from "./pages/p5_CRUD/ProductDebt";
 import Products from "./pages/p5_CRUD/Products";
 import Supplier from "./pages/p5_CRUD/Supplier";
-import TambahHutangBarang from "./pages/p5_CRUD/TambahHutangBarang";
 
 const router = createHashRouter([
   {
@@ -56,7 +56,7 @@ const router = createHashRouter([
         children: [
           { index: true, element: <CRUD /> },
           { path: "supplier", element: <Supplier /> },
-          { path: "addProductDebt", element: <TambahHutangBarang /> },
+          { path: "productDebt", element: <ProductDebt /> },
           { path: "products", element: <Products /> },
         ],
       },

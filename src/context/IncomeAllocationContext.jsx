@@ -1,7 +1,7 @@
+import { useUI } from "@/context/UIContext";
 import { getDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import { createContext, useContext, useEffect, useState } from "react";
-import { listProduk } from "../lib/variables";
 const date = new Date();
 const today = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -13,9 +13,9 @@ const IncomeAllocationContext = createContext();
 
 export function IncomeAllocationProvider({ children }) {
   // All State
+  const { setLoading } = useUI();
   const [totalWithdraw, setTotalWithdraw] = useState("");
   const [totalHPP, setTotalHPP] = useState("");
-  const [produk, setProduk] = useState(listProduk);
   const [isTikTok, setIsTikTok] = useState(false);
   const [whichSupplier, setWhichSupplier] = useState("");
 
@@ -35,6 +35,8 @@ export function IncomeAllocationProvider({ children }) {
     const lastSaveShopee = "shopeeLastSave";
     const lastSaveTiktok = "tiktokLastSave";
 
+    setLoading(true);
+
     const tiktokLastSave = await getDocument(
       "Ambil Last Save TikTok",
       collectionName.tiktokWithdrawals,
@@ -42,7 +44,10 @@ export function IncomeAllocationProvider({ children }) {
     );
     if (tiktokLastSave.data.time === today) {
       setTiktokHasSaveToFirebase(true);
+    } else {
+      setTiktokHasSaveToFirebase(false);
     }
+
     const shopeeLastSave = await getDocument(
       "Ambil Last Save Shopee",
       collectionName.shopeeWithdrawals,
@@ -50,7 +55,11 @@ export function IncomeAllocationProvider({ children }) {
     );
     if (shopeeLastSave.data.time === today) {
       setShopeeHasSaveToFirebase(true);
+    } else {
+      setShopeeHasSaveToFirebase(false);
     }
+
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -64,8 +73,6 @@ export function IncomeAllocationProvider({ children }) {
         setTotalWithdraw,
         totalHPP,
         setTotalHPP,
-        produk,
-        setProduk,
         isTikTok,
         setIsTikTok,
         showConclusion,

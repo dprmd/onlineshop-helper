@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -43,6 +53,7 @@ import { format } from "date-fns";
 import { ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import LoadingOverlay from "../../components/LoadingOverlay";
 import WordInBracket from "../../components/WordInBracket";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
@@ -64,21 +75,9 @@ import {
   combineDateTimeToMs,
   formatNumber,
   raw,
+  separateNumber,
   toCamelCase,
-  validateNumber,
 } from "../../utils/generalFunction";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
 
 // additional function
 const date = new Date();
@@ -561,12 +560,8 @@ const StepThree = () => {
                         type="text"
                         required
                         onChange={(e) => {
-                          const number = validateNumber(e);
-                          if (!number) {
-                            setBillPrice("");
-                          } else {
-                            setBillPrice(formatNumber(number));
-                          }
+                          const value = separateNumber(e);
+                          setBillPrice(value);
                         }}
                       />
                     </Field>
@@ -724,12 +719,8 @@ const StepThree = () => {
                     value={totalWithdraw}
                     onChange={(e) => {
                       setAlreadyCalculated(false);
-                      const number = validateNumber(e);
-                      if (!number) {
-                        setTotalWithdraw("");
-                      } else {
-                        setTotalWithdraw(formatNumber(number));
-                      }
+                      const value = separateNumber(e);
+                      setTotalWithdraw(value);
                     }}
                   />
                 </Field>

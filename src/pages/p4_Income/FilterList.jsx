@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
+import { useUI } from "@/context/UIContext";
 
 export default function FilterList({ platform }) {
   const {
@@ -29,8 +30,9 @@ export default function FilterList({ platform }) {
     fetchWithdrawalsByMonth,
     shopeeWithdrawals,
     tiktokWithdrawals,
-    loading,
   } = useWithdrawalRecords();
+  const { loading } = useUI();
+
   const [setor, setSetor] = useState({
     shopee: 0,
     tiktok: 0,

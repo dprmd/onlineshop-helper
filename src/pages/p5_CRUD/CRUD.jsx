@@ -13,10 +13,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 export default function CRUD() {
   const navigate = useNavigate();
-  const { getSupplierList, initialFetch } = useCRUD();
+  const { getSupplierList, supplierInitialFetch } = useCRUD();
 
   useEffect(() => {
-    if (initialFetch) {
+    if (supplierInitialFetch) {
       getSupplierList();
     }
   }, []);
@@ -51,7 +51,7 @@ export default function CRUD() {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/crud/addProductDebt");
+              navigate("/crud/productDebt");
             }}
           >
             Tambah Hutang Barang

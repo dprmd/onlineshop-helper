@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatNumber, raw, validateNumber } from "../../utils/generalFunction";
+import { formatNumber, raw, separateNumber } from "../../utils/generalFunction";
 
 // Helper Function
 const percentFrom = (percent, total) => {
@@ -61,13 +61,15 @@ export default function ProfitCalculation() {
     useState(0);
 
   const hitung = (e) => {
+    console.log(admin);
+    console.log(tempAdmin);
     e.preventDefault();
     const totalAdmin =
       Math.round(
         percentFrom(
-          tempAdmin.adminShopee +
-            tempAdmin.adminPromoExtra +
-            tempAdmin.adminGratisOngkirExtra,
+          Number(admin.adminShopee) +
+            Number(admin.adminPromoExtra) +
+            Number(admin.adminGratisOngkirExtra),
           raw(hargaJual),
         ),
       ) +
@@ -283,12 +285,8 @@ export default function ProfitCalculation() {
             className="max-w-[200px]"
             placeholder="Isi Harga Jual . . ."
             onChange={(e) => {
-              const number = validateNumber(e);
-              if (!number) {
-                setHargaJual("");
-              } else {
-                setHargaJual(formatNumber(number));
-              }
+              const value = separateNumber(e);
+              setHargaJual(value);
             }}
           />
         </div>
@@ -303,12 +301,8 @@ export default function ProfitCalculation() {
             className="max-w-[200px]"
             placeholder="Masukan Voucher . . ."
             onChange={(e) => {
-              const number = validateNumber(e);
-              if (!number) {
-                setVoucher("");
-              } else {
-                setVoucher(formatNumber(number));
-              }
+              const value = separateNumber(e);
+              setVoucher(value);
             }}
           />
         </div>

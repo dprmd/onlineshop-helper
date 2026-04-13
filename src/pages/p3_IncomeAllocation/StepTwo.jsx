@@ -52,7 +52,7 @@ export default function StepTwo() {
     e.preventDefault();
 
     const total = setorBarang.reduce((acc, curr) => {
-      return acc + Number(curr.setor) * curr.hpp;
+      return acc + Number(curr.setor) * Number(curr.hpp);
     }, 0);
     setTotalHPP(formatNumber(total));
 

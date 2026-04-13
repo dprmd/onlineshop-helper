@@ -21,18 +21,18 @@ import { useCRUD } from "@/context/CRUDContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
-import { formatNumber, validateNumber } from "../../utils/generalFunction";
+import { separateNumber } from "../../utils/generalFunction";
 
 export default function StepOne() {
   const { totalWithdraw, setTotalWithdraw, whichSupplier, setWhichSupplier } =
     useIncomeAllocation();
-  const { supplier, getSupplierList, initialFetch } = useCRUD();
+  const { supplier, getSupplierList, supplierInitialFetch } = useCRUD();
 
   const [errorSupplier, setErrorSupplier] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (initialFetch) {
+    if (supplierInitialFetch) {
       getSupplierList();
     }
   }, []);
@@ -94,12 +94,8 @@ export default function StepOne() {
                     placeholder="0"
                     autoComplete="off"
                     onChange={(e) => {
-                      const number = validateNumber(e);
-                      if (!number) {
-                        setTotalWithdraw("");
-                      } else {
-                        setTotalWithdraw(formatNumber(number));
-                      }
+                      const value = separateNumber(e);
+                      setTotalWithdraw(value);
                     }}
                     required
                   />

@@ -33,7 +33,7 @@ export default function Supplier() {
     setSupplier,
     checkSupplierIfExist,
     getSupplierList,
-    initialFetch,
+    supplierInitialFetch,
   } = useCRUD();
 
   const [supplierName, setSupplierName] = useState("");
@@ -74,7 +74,7 @@ export default function Supplier() {
   };
 
   useEffect(() => {
-    if (initialFetch) {
+    if (supplierInitialFetch) {
       getSupplierList();
     }
   }, []);
