@@ -1,7 +1,9 @@
 import { useUI } from "@/context/UIContext";
+import { config } from "@/lib/variables";
 import { getDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import { createContext, useContext, useEffect, useState } from "react";
+import { toast } from "sonner";
 const date = new Date();
 const today = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -32,34 +34,48 @@ export function IncomeAllocationProvider({ children }) {
   const [tiktokHasSaveToFirebase, setTiktokHasSaveToFirebase] = useState(false);
 
   const sinkronLastSave = async () => {
-    const lastSaveShopee = "shopeeLastSave";
-    const lastSaveTiktok = "tiktokLastSave";
+    if (config.sinkronLastSave) {
+      const lastSaveShopee = "shopeeLastSave";
+      const lastSaveTiktok = "tiktokLastSave";
 
-    setLoading(true);
+      setLoading(true);
 
-    const tiktokLastSave = await getDocument(
-      "Ambil Last Save TikTok",
-      collectionName.tiktokWithdrawals,
-      lastSaveTiktok,
-    );
-    if (tiktokLastSave.data.time === today) {
-      setTiktokHasSaveToFirebase(true);
-    } else {
-      setTiktokHasSaveToFirebase(false);
+      const tiktokLastSave = await getDocument(
+        "Ambil Last Save TikTok",
+        collectionName.tiktokWithdrawals,
+        lastSaveTiktok,
+      );
+      if (tiktokLastSave.success) {
+        if (tiktokLastSave.data.time === today) {
+          setTiktokHasSaveToFirebase(true);
+        } else {
+          setTiktokHasSaveToFirebase(false);
+        }
+        setLoading(false);
+      } else {
+        toast.error(tiktokLastSave.message);
+        console.log(tiktokLastSave.error);
+        setLoading(false);
+      }
+
+      const shopeeLastSave = await getDocument(
+        "Ambil Last Save Shopee",
+        collectionName.shopeeWithdrawals,
+        lastSaveShopee,
+      );
+      if (shopeeLastSave.success) {
+        if (shopeeLastSave.data.time === today) {
+          setShopeeHasSaveToFirebase(true);
+        } else {
+          setShopeeHasSaveToFirebase(false);
+        }
+        setLoading(false);
+      } else {
+        toast.error(shopeeLastSave.message);
+        console.log(shopeeLastSave.error);
+        setLoading(false);
+      }
     }
-
-    const shopeeLastSave = await getDocument(
-      "Ambil Last Save Shopee",
-      collectionName.shopeeWithdrawals,
-      lastSaveShopee,
-    );
-    if (shopeeLastSave.data.time === today) {
-      setShopeeHasSaveToFirebase(true);
-    } else {
-      setShopeeHasSaveToFirebase(false);
-    }
-
-    setLoading(false);
   };
 
   useEffect(() => {

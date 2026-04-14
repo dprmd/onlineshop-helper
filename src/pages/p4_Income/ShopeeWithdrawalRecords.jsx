@@ -146,7 +146,7 @@ function PenghasilanShopeeCard({ data }) {
             <span>Pembagian Komisi Bersih :</span>
             <div className="flex flex-col px-2">
               <span>
-                Capital : <b>{formatNumber(data.profit.capital)}</b>
+                Uang Saya : <b>{formatNumber(data.profit.uangSaya)}</b>
               </span>
               <span>
                 Dana Darurat : <b>{formatNumber(data.profit.danaDarurat)}</b>
@@ -156,7 +156,7 @@ function PenghasilanShopeeCard({ data }) {
                 <b>{formatNumber(data.profit.uangKeinginan)}</b>
               </span>
               <span>
-                Investasi : <b>{formatNumber(data.profit.uangInvestasi)}</b>
+                Modal : <b>{formatNumber(data.profit.modal)}</b>
               </span>
             </div>
           </div>

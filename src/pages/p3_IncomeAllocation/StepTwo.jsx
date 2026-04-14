@@ -34,7 +34,7 @@ export default function StepTwo() {
       .find((s) => s.id === whichSupplier)
       ?.productDebt.map((p) => ({
         ...p,
-        setor: 0,
+        sold: 0,
       }));
   });
   const [setorBarang, setSetorBarang] = useState(productList);
@@ -52,7 +52,7 @@ export default function StepTwo() {
     e.preventDefault();
 
     const total = setorBarang.reduce((acc, curr) => {
-      return acc + Number(curr.setor) * Number(curr.hpp);
+      return acc + Number(curr.sold) * Number(curr.hpp);
     }, 0);
     setTotalHPP(formatNumber(total));
 
@@ -99,7 +99,7 @@ export default function StepTwo() {
                   id={p.identifier}
                   autoComplete="off"
                   placeholder="0"
-                  value={setorBarang[i].setor}
+                  value={setorBarang[i].sold}
                   onChange={(e) => {
                     setSubmitOrder(1);
                     setShowConclusion(false);
@@ -107,9 +107,9 @@ export default function StepTwo() {
                       return prev.map((prod) => {
                         if (prod.identifier === p.identifier) {
                           if (Number(e.target.value) > p.remaining) {
-                            return { ...prod, setor: p.remaining };
+                            return { ...prod, sold: p.remaining };
                           }
-                          return { ...prod, setor: e.target.value };
+                          return { ...prod, sold: e.target.value };
                         } else {
                           return prod;
                         }
@@ -123,12 +123,12 @@ export default function StepTwo() {
               <Field>
                 <div className="border p-2 rounded-md text-center text-[12px]">
                   {setorBarang.map((barang) => {
-                    if (Number(barang.setor > 0)) {
+                    if (Number(barang.sold > 0)) {
                       return (
                         <p key={barang.identifier}>
-                          {barang.name} {barang.setor} x{" "}
+                          {barang.name} {barang.sold} x{" "}
                           {formatNumber(barang.hpp)} ={" "}
-                          {formatNumber(barang.hpp * barang.setor)}
+                          {formatNumber(barang.hpp * barang.sold)}
                         </p>
                       );
                     }

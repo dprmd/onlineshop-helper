@@ -43,14 +43,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCRUD } from "../../context/CRUDContext";
-import { listProduk } from "../../lib/variables";
-import { formatNumber } from "../../utils/generalFunction";
 import { toast } from "sonner";
-import { useMemo } from "react";
-import { useUI } from "@/context/UIContext";
+import { useCRUD } from "../../context/CRUDContext";
+import { formatNumber } from "../../utils/generalFunction";
 
 export default function ProductDebt() {
   const navigate = useNavigate();
@@ -73,7 +70,8 @@ export default function ProductDebt() {
   const [choosedProduk, setChoosedProduk] = useState([]);
   const [notChoosedProduk, setNotChoosedProduk] = useState([]);
   const [productDebt, setProductDebt] = useState([]);
-  const handlePilihProduk = () => {
+
+  const handleChooseProduct = () => {
     const choosed = cloneProduk.filter((p) => p.checked);
     const notChoosed = cloneProduk.filter((p) => !p.checked);
 
@@ -93,7 +91,7 @@ export default function ProductDebt() {
     setAddItemDialog(false);
   };
 
-  const handleTambahHutangSekarang = () => {
+  const handleAddDebtNow = () => {
     // validasi
     if (choosedProduk.length === 0) {
       toast.info("Mohon Tambah Barang Terlebih Dahulu");
@@ -104,7 +102,7 @@ export default function ProductDebt() {
     }
 
     // sort terlebih dahulu
-    const hutang = choosedProduk
+    const debt = choosedProduk
       .map((produk) => ({
         identifier: produk.identifier,
         name: produk.name,
@@ -113,13 +111,13 @@ export default function ProductDebt() {
       }))
       .filter((produk) => produk.remaining > 0);
 
-    if (hutang.length === 0) {
+    if (debt.length === 0) {
       toast.info("Mohon Masukan Jumlah Produk Yang Di Pinjam");
       return;
     }
 
     setAddDebtDialog(true);
-    setProductDebt([...hutang]);
+    setProductDebt([...debt]);
   };
 
   useEffect(() => {
@@ -349,7 +347,7 @@ export default function ProductDebt() {
                       <DialogClose asChild>
                         <Button variant="outline">Batal</Button>
                       </DialogClose>
-                      <Button type="button" onClick={handlePilihProduk}>
+                      <Button type="button" onClick={handleChooseProduct}>
                         Simpan
                       </Button>
                     </DialogFooter>
@@ -363,7 +361,7 @@ export default function ProductDebt() {
                     <Button
                       type="button"
                       className="bg-green-700"
-                      onClick={handleTambahHutangSekarang}
+                      onClick={handleAddDebtNow}
                     >
                       Tambah Hutang Sekarang
                     </Button>

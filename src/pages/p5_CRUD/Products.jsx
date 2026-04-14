@@ -46,9 +46,9 @@ export default function Products() {
   const [product, setProduct] = useState({
     name: "",
     hpp: "",
-    sold: 0,
   });
   const [idPToRemove, setIdPToRemove] = useState("");
+  const [idPToEdit, setIdPToEdit] = useState("");
   const [dialog, setDialog] = useState({
     title: "",
     open: false,
@@ -60,22 +60,15 @@ export default function Products() {
     e.preventDefault();
 
     if (dialog.dialogMotive === "addProduct") {
-      const addNow = await addProduct(product);
-      if (addNow.success) {
-        toast.success("Berhasil Menambahkan Produk");
-      } else {
-        toast.error("Gagal Menambahkan Produk");
-      }
+      await addProduct(product);
+      // Reset State Produk
       setProduct((prev) => ({ ...prev, name: "", hpp: "" }));
     }
 
     if (dialog.dialogMotive === "editProduct") {
-      const editNow = await editProduct(product);
-      if (editNow.success) {
-        toast.success("Berhasil Mengedit Produk");
-      } else {
-        toast.error("Gagal Mengedit Produk");
-      }
+      await editProduct(idPToEdit, product);
+      // Reset State Produk
+      setProduct({ name: "", hpp: "" });
     }
 
     setDialog((prev) => ({ ...prev, open: false }));
@@ -249,9 +242,9 @@ export default function Products() {
                     setProduct((prev) => ({
                       ...prev,
                       name: prod.name,
-                      hpp: prod.hpp,
-                      id: prod.id,
+                      hpp: formatNumber(prod.hpp),
                     }));
+                    setIdPToEdit(prod.id);
                     setDialog((prev) => ({
                       ...prev,
                       title: "Edit Produk",

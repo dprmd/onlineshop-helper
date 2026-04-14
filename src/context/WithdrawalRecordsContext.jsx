@@ -7,6 +7,7 @@ import {
   getDocument,
 } from "../services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
+import { toast } from "sonner";
 
 const WithdrawalRecordsContext = createContext();
 
@@ -25,14 +26,13 @@ export function WithdrawalRecordsProvider({ children }) {
 
   // Loading & Error & Initial Fetch
   const { setLoading } = useUI();
-  const [error, setError] = useState(null);
   const [ATInitialFetch, setATInitialFetch] = useState(true);
   const [shopeeInitialFetch, setShopeeInitialFetch] = useState(true);
   const [tiktokInitialFetch, setTiktokInitialFetch] = useState(true);
 
   const fetchAT = async () => {
     setLoading(true);
-    const { data, error, success } = await getDocument(
+    const { data, error, success, message } = await getDocument(
       "Mengambil Document Catatan Penghasilan All Time",
       collectionName.allTime,
       collectionName.allTimeDocId,
@@ -58,7 +58,7 @@ export function WithdrawalRecordsProvider({ children }) {
         tiktok: tiktok.ATProfit,
       });
     } else {
-      setError(error);
+      console.log(message);
       console.log(error);
     }
 
@@ -71,6 +71,7 @@ export function WithdrawalRecordsProvider({ children }) {
       data: withdrawalList,
       success,
       error,
+      message,
     } = await getWithdrawalList(platform, "newToOld", limit);
     if (success) {
       if (platform === "shopee") {
@@ -83,7 +84,7 @@ export function WithdrawalRecordsProvider({ children }) {
         setTiktokWithdrawals_temp(withdrawalList);
       }
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
@@ -96,7 +97,9 @@ export function WithdrawalRecordsProvider({ children }) {
       data: withdrawalList,
       success,
       error,
+      message,
     } = await getWithdrawalListByDate(platform, "newToOld", start, end);
+
     if (success) {
       if (platform === "shopee") {
         setShopeeWithdrawals(withdrawalList);
@@ -104,7 +107,7 @@ export function WithdrawalRecordsProvider({ children }) {
         setTiktokWithdrawals(withdrawalList);
       }
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
@@ -117,7 +120,9 @@ export function WithdrawalRecordsProvider({ children }) {
       data: withdrawalList,
       success,
       error,
+      message,
     } = await getWithdrawalListByMonth(platform, "newToOld", year, month);
+
     if (success) {
       if (platform === "shopee") {
         setShopeeWithdrawals(withdrawalList);
@@ -125,7 +130,7 @@ export function WithdrawalRecordsProvider({ children }) {
         setTiktokWithdrawals(withdrawalList);
       }
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
@@ -149,7 +154,6 @@ export function WithdrawalRecordsProvider({ children }) {
         tiktokWithdrawals,
         setShopeeWithdrawals,
         setTiktokWithdrawals,
-        error,
         fetchWithdrawals,
         sortByLimitUnderSeven,
         fetchWithdrawalsByDate,

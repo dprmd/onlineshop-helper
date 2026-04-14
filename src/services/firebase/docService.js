@@ -149,6 +149,7 @@ export const getDocuments = async (operationName, collectionName, order) => {
   } catch (error) {
     return {
       success: false,
+      message: error.message,
       error,
     };
   }
@@ -201,6 +202,7 @@ export const getWithdrawalListByMonth = async (
   } catch (error) {
     return {
       success: false,
+      message: error.message,
       error,
     };
   }
@@ -251,6 +253,7 @@ export const getWithdrawalListByDate = async (platform, order, start, end) => {
   } catch (error) {
     return {
       success: false,
+      message: error.message,
       error,
     };
   }
@@ -293,6 +296,7 @@ export const getWithdrawalList = async (platform, order, limitOffPage) => {
   } catch (error) {
     return {
       success: false,
+      message: error.message,
       error,
     };
   }
@@ -326,4 +330,16 @@ export const getDocument = async (
       error,
     };
   }
+};
+
+export const deleteCollection = async (collectionName) => {
+  const colRef = collection(db, collectionName);
+  const snapshot = await getDocs(colRef);
+
+  const deletePromises = snapshot.docs.map((document) =>
+    deleteDoc(doc(db, collectionName, document.id)),
+  );
+
+  await Promise.all(deletePromises);
+  console.log("Collection berhasil dihapus");
 };

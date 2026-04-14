@@ -1,8 +1,14 @@
 import { Button } from "@/components/ui/button";
+import { deleteCollection } from "@/services/firebase/docService";
 import { useNavigate } from "react-router-dom";
 
-const Home = () => {
+export default function Home() {
   const navigate = useNavigate();
+
+  const handleClickMe = async () => {
+    deleteCollection("penghasilanJualanOnlineShopee");
+    deleteCollection("penghasilanJualanOnlineTikTok");
+  };
 
   return (
     <div>
@@ -50,9 +56,11 @@ const Home = () => {
             CRUD Barang
           </Button>
         </li>
+
+        <li>
+          <Button onClick={handleClickMe}>Click Me</Button>
+        </li>
       </ul>
     </div>
   );
-};
-
-export default Home;
+}

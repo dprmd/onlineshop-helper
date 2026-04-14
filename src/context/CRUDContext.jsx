@@ -9,16 +9,21 @@ import {
 } from "../services/firebase/docService";
 import { raw, toCamelCase } from "../utils/generalFunction";
 import { collectionName } from "@/services/firebase/firebase";
+import { toast } from "sonner";
+import { isEqual } from "lodash";
 
 const CRUDContext = createContext();
 
 export function CRUDProvider({ children }) {
   const { setLoading } = useUI();
-  const [supplierInitialFetch, setSupplierInitialFetch] = useState(true);
-  const [productsInitialFetch, setProductsInitalFetch] = useState(true);
+
+  // Supplier
   const [supplier, setSupplier] = useState([]);
-  const [error, setError] = useState(null);
+  const [supplierInitialFetch, setSupplierInitialFetch] = useState(true);
+
+  // Products
   const [products, setProducts] = useState([]);
+  const [productsInitialFetch, setProductsInitalFetch] = useState(true);
 
   const getSupplierList = async () => {
     setLoading(true);
@@ -26,13 +31,14 @@ export function CRUDProvider({ children }) {
       data: supplierList,
       success,
       error,
+      message,
     } = await getDocuments("Ambil List Supplier", "supplier", "newToOld");
 
     if (success) {
       setSupplierInitialFetch(false);
       setSupplier([...supplierList]);
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
@@ -90,6 +96,7 @@ export function CRUDProvider({ children }) {
         },
         "Berhasil Mengupdate Supplier",
       );
+
       // Optimistic Update
       setSupplier((prev) => {
         return prev.map((s) => {
@@ -104,7 +111,7 @@ export function CRUDProvider({ children }) {
         });
       });
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
@@ -117,6 +124,7 @@ export function CRUDProvider({ children }) {
       data: productList,
       success,
       error,
+      message,
     } = await getDocuments(
       "Ambil List Produk",
       collectionName.products,
@@ -127,7 +135,7 @@ export function CRUDProvider({ children }) {
       setProductsInitalFetch(false);
       setProducts(productList);
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
@@ -136,86 +144,91 @@ export function CRUDProvider({ children }) {
 
   const addProduct = async (product) => {
     setLoading(true);
-    console.log(product);
 
-    const { docId, success, error } = await createDocument(
+    const newProduct = {
+      ...product,
+      identifier: toCamelCase(product.name),
+      hpp: raw(product.hpp),
+    };
+
+    const { docId, success, error, message } = await createDocument(
       "Menambahkan Produk Baru",
       collectionName.products,
-      {
-        ...product,
-        identifier: toCamelCase(product.name),
-        hpp: raw(product.hpp),
-      },
+      newProduct,
       "Berhasil Menambahkan Produk",
     );
 
     if (success) {
+      // Optimistic Updates
       setProducts((prev) => {
         return [
           {
-            ...product,
+            ...newProduct,
             id: docId,
-            hpp: raw(product.hpp),
-            identifier: toCamelCase(product.name),
           },
           ...prev,
         ];
       });
+      toast.success(message);
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
     setLoading(false);
-
-    return { success };
   };
 
-  const editProduct = async (editedProduct) => {
+  const editProduct = async (productId, product) => {
     setLoading(true);
-    const docId = editedProduct.id;
-    delete editedProduct.id;
 
-    const { success, error } = await updateDocument(
+    console.log(products);
+
+    const productBefore = products.find((p) => p.id === productId);
+    const editedProduct = {
+      ...productBefore,
+      name: product.name,
+      identifier: toCamelCase(product.name),
+      hpp: raw(product.hpp),
+    };
+
+    if (isEqual({ ...editedProduct, id: productId }, productBefore)) {
+      toast.info("Produk Tidak Di Edit");
+      setLoading(false);
+      return;
+    }
+
+    const { success, error, message } = await updateDocument(
       "Edit Produk",
       collectionName.products,
-      docId,
-      {
-        ...editedProduct,
-        identifier: toCamelCase(editedProduct.name),
-        hpp: raw(editedProduct.hpp),
-      },
+      productId,
+      product,
       "Berhasil Edit Produk",
     );
 
     if (success) {
+      // Optimistic Update
       setProducts((prev) => {
         return prev.map((p) => {
-          if (p.id === docId) {
-            return {
-              ...editedProduct,
-              identifier: toCamelCase(editedProduct.name),
-              hpp: raw(editedProduct.hpp),
-            };
+          if (p.id === productId) {
+            return { ...editedProduct, id: productId };
           } else {
-            return prev;
+            return p;
           }
         });
       });
+      toast.success(message);
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
     setLoading(false);
-
-    return { success };
   };
 
   const deleteProduct = async (docId) => {
     setLoading(true);
 
-    const { success, error } = await deleteDocument(
+    const { success, error, message } = await deleteDocument(
       "Menghapus Produk",
       collectionName.products,
       docId,
@@ -226,21 +239,18 @@ export function CRUDProvider({ children }) {
       setProducts((prev) => {
         return prev.filter((p) => p.id !== docId);
       });
+      toast.success(message);
     } else {
-      setError(error);
+      toast.error(message);
       console.log(error);
     }
 
     setLoading(false);
-
-    return { success };
   };
 
   return (
     <CRUDContext.Provider
       value={{
-        error,
-        setError,
         supplier,
         setSupplier,
         checkSupplierIfExist,

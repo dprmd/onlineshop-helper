@@ -135,7 +135,7 @@ export default function StepOne() {
             }}
             className="my-2"
           >
-            Tambah Barang
+            Tambah Supplier
           </Button>
         </div>
       )}

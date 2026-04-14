@@ -59,6 +59,7 @@ import WordInBracket from "../../components/WordInBracket";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import {
+  config,
   day,
   dayName,
   fullDayWage,
@@ -161,10 +162,10 @@ const StepThree = () => {
   // Variables
   const [uangAdeSiska, setUangAdeSiska] = useState(0);
   const [uangEmaIki, setUangEmaIki] = useState(0);
-  const [uangCapital, setUangCapital] = useState(0);
+  const [uangSaya, setUangSaya] = useState(0);
   const [uangDanaDarurat, setUangDanaDarurat] = useState(0);
   const [uangKeinginan, setUangKeinginan] = useState(0);
-  const [uangInvestasi, setUangInvestasi] = useState(0);
+  const [uangModal, setUangModal] = useState(0);
   const [uangUntukSedekah, setUangUntukSedekah] = useState(0);
 
   // Function
@@ -227,58 +228,62 @@ const StepThree = () => {
 
     // Pembagian Ke Rekening Yang Berbeda
     const allocation = {
-      uangCapital: Math.round(metode.capital / 100) * totalNetProfit,
+      uangSaya: Math.round(metode.uangSaya / 100) * totalNetProfit,
       uangDanaDarurat: Math.round((metode.danaDarurat / 100) * totalNetProfit),
       uangKeinginan: Math.round((metode.keinginan / 100) * totalNetProfit),
-      uangInvestasi: Math.round((metode.investasi / 100) * totalNetProfit),
+      uangModal: Math.round((metode.modal / 100) * totalNetProfit),
     };
 
     // Hitung uang sisa allocation
     const totalAllocation =
-      allocation.uangCapital +
+      allocation.uangSaya +
       allocation.uangDanaDarurat +
       allocation.uangKeinginan +
-      allocation.uangInvestasi;
+      allocation.uangModal;
     const sisaPembagian = totalNetProfit - totalAllocation;
 
-    setUangCapital(allocation.uangCapital + sisaPembagian);
+    setUangSaya(allocation.uangSaya + sisaPembagian);
     setUangDanaDarurat(allocation.uangDanaDarurat);
     setUangKeinginan(allocation.uangKeinginan);
-    setUangInvestasi(allocation.uangInvestasi);
+    setUangModal(allocation.uangModal);
 
     // Render
     setAlreadyCalculated(true);
   };
 
   const sinkronLastSave = async () => {
-    if (isTikTok) {
-      const tiktokLastSave = await getDocument(
-        "Ambil Last Save TikTok",
-        collectionName.tiktokWithdrawals,
-        lastSaveTiktok,
-      );
-
-      if (tiktokLastSave.data.time === today) {
-        toast.error(
-          "Kamu Sudah Menyimpan Dokument Penarikan TikTok Hari Ini, Kembali Lah Besok",
+    if (config.sinkronLastSave) {
+      if (isTikTok) {
+        const tiktokLastSave = await getDocument(
+          "Ambil Last Save TikTok",
+          collectionName.tiktokWithdrawals,
+          lastSaveTiktok,
         );
+
+        if (tiktokLastSave.data.time === today) {
+          toast.error(
+            "Kamu Sudah Menyimpan Dokument Penarikan TikTok Hari Ini, Kembali Lah Besok",
+          );
+        } else {
+          setConfirmSave(true);
+        }
       } else {
-        setConfirmSave(true);
+        const shopeeLastSave = await getDocument(
+          "Ambil Last Save Shopee",
+          collectionName.shopeeWithdrawals,
+          lastSaveShopee,
+        );
+
+        if (shopeeLastSave.data.time === today) {
+          toast.error(
+            "Kamu Sudah Menyimpan Withdraw Shopee Hari Ini, Kembali Lah Besok",
+          );
+        } else {
+          setConfirmSave(true);
+        }
       }
     } else {
-      const shopeeLastSave = await getDocument(
-        "Ambil Last Save Shopee",
-        collectionName.shopeeWithdrawals,
-        lastSaveShopee,
-      );
-
-      if (shopeeLastSave.data.time === today) {
-        toast.error(
-          "Kamu Sudah Menyimpan Withdraw Shopee Hari Ini, Kembali Lah Besok",
-        );
-      } else {
-        setConfirmSave(true);
-      }
+      setConfirmSave(true);
     }
   };
 
@@ -292,9 +297,15 @@ const StepThree = () => {
         supplier: toCamelCase(choosedSupplier.name),
         totalHPP: {
           total: raw(totalHPP),
-          soldProducts: modifiedSetorBarang.filter(
-            (produk) => produk.setor > 0,
-          ),
+          soldProducts: modifiedSetorBarang
+            .map((p) => {
+              delete p.remaining;
+              return {
+                ...p,
+                sold: Number(p.sold),
+              };
+            })
+            .filter((p) => p.sold > 0),
         },
         bill: {
           billList: bills,
@@ -348,9 +359,15 @@ const StepThree = () => {
         supplier: toCamelCase(choosedSupplier.name),
         totalHPP: {
           total: raw(totalHPP),
-          soldProducts: modifiedSetorBarang.filter(
-            (produk) => produk.setor > 0,
-          ),
+          soldProducts: modifiedSetorBarang
+            .map((p) => {
+              delete p.remaining;
+              return {
+                ...p,
+                sold: Number(p.sold),
+              };
+            })
+            .filter((p) => p.sold > 0),
         },
         bill: {
           billList: bills,
@@ -361,10 +378,10 @@ const StepThree = () => {
         profit: {
           total: grossProfit,
           netProfit,
-          capital: uangCapital,
+          uangSaya: uangSaya,
           danaDarurat: uangDanaDarurat,
           uangKeinginan: uangKeinginan,
-          uangInvestasi: uangInvestasi,
+          modal: uangModal,
           sedekah: uangUntukSedekah,
         },
         splitBillEmaIki: splitBillEmaIki,
@@ -432,9 +449,13 @@ const StepThree = () => {
     fetchWithdrawals(platform, 7);
     setLoadingSave(false);
     if (isTikTok) {
-      setTiktokHasSaveToFirebase(true);
+      if (config.sinkronLastSave) {
+        setTiktokHasSaveToFirebase(true);
+      }
     } else {
-      setShopeeHasSaveToFirebase(true);
+      if (config.sinkronLastSave) {
+        setShopeeHasSaveToFirebase(true);
+      }
     }
 
     toast.success("Berhasil Menyimpan Penarikan Dana");
@@ -933,12 +954,12 @@ const StepThree = () => {
                   )}
                 </li>
 
-                {/* Transfer Uang Capital + Dana Darurat + Keinginan + Investasi + Sedekah + Ema Iki*/}
+                {/* Transfer Uang Saya + Dana Darurat + Keinginan + Modal + Sedekah + Ema Iki*/}
                 <li>
                   {simpleMode ? "Transfer" : "Transfer Uang"}{" "}
                   {!simpleMode && (
                     <WordInBracket
-                      kalimat={`Capital + Dana Darurat + Keinginan + Investasi + Sedekah + Uang Ema Iki ${
+                      kalimat={`Uang Saya + Dana Darurat + Keinginan + Modal + Sedekah + Uang Ema Iki ${
                         work ? " + Gaji Perhari" : ""
                       }`}
                     />
@@ -946,9 +967,9 @@ const StepThree = () => {
                   Ke <b>SeaBank Adi Permadi</b> Sebesar{" "}
                   <b>
                     {formatNumber(
-                      uangCapital +
+                      uangSaya +
                         uangDanaDarurat +
-                        uangInvestasi +
+                        uangModal +
                         uangKeinginan +
                         uangUntukSedekah +
                         splitBillEmaIki.adi +
@@ -964,11 +985,11 @@ const StepThree = () => {
                   {!simpleMode && (
                     <>
                       <li>
-                        Catat Pemasukan Uang Capital Sebesar{" "}
-                        <b>{formatNumber(uangCapital)}</b>
+                        Catat Pemasukan Uang Saya Sebesar{" "}
+                        <b>{formatNumber(uangSaya)}</b>
                         {!simpleMode && (
                           <WordInBracket
-                            kalimat={`${metode.capital}% x ${formatNumber(
+                            kalimat={`${metode.uangSaya}% x ${formatNumber(
                               grossProfit - splitBillEmaIki.adi,
                             )}`}
                           />
@@ -997,11 +1018,11 @@ const StepThree = () => {
                         )}
                       </li>
                       <li>
-                        Catat Pemasukan Uang Investasi Sebesar{" "}
-                        <b>{formatNumber(uangInvestasi)}</b>
+                        Catat Pemasukan Uang Modal Sebesar{" "}
+                        <b>{formatNumber(uangModal)}</b>
                         {!simpleMode && (
                           <WordInBracket
-                            kalimat={`${metode.investasi}% x ${formatNumber(
+                            kalimat={`${metode.modal}% x ${formatNumber(
                               grossProfit - splitBillEmaIki.adi,
                             )}`}
                           />
@@ -1020,7 +1041,7 @@ const StepThree = () => {
                       </li>
                       {work && (
                         <li>
-                          Catat Pemasukan Uang Capital
+                          Catat Pemasukan Uang Saya
                           <WordInBracket kalimat={"Gaji"} />
                           Sebesar <b>{formatNumber(dailyWage)}</b>
                         </li>
@@ -1051,9 +1072,9 @@ const StepThree = () => {
                       Catat Ke Aplikasi Keuangan :
                       <ol className="simplemodetransfer list-inside">
                         <li>
-                          <span>Rekening Capital</span>{" "}
+                          <span>Rekening Uang Saya</span>{" "}
                           <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
-                          <b>{formatNumber(uangCapital)}</b>
+                          <b>{formatNumber(uangSaya)}</b>
                         </li>
                         <li>
                           <span>Rekening Dana Darurat</span>{" "}
@@ -1066,9 +1087,9 @@ const StepThree = () => {
                           <b>{formatNumber(uangKeinginan)}</b>
                         </li>
                         <li>
-                          <span>Rekening Investasi</span>
+                          <span>Rekening Modal</span>
                           <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
-                          <b>{formatNumber(uangInvestasi)}</b>
+                          <b>{formatNumber(uangModal)}</b>
                         </li>
                         <li>
                           <span>Rekening Sedekah</span>
@@ -1078,7 +1099,7 @@ const StepThree = () => {
                         {work && (
                           <li>
                             <span>
-                              Rekening Capital
+                              Rekening Uang Saya
                               <WordInBracket kalimat={"Gaji"} />
                             </span>
                             <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
@@ -1144,13 +1165,13 @@ const StepThree = () => {
                 <span>Metode Pembagian</span>
                 <ol className="list-inside px-2">
                   <li>
-                    Capital : <b>{metode.capital}%</b>
+                    Uang Saya : <b>{metode.uangSaya}%</b>
                   </li>
                   <li>
                     Dana Darurat : <b>{metode.danaDarurat}%</b>
                   </li>
                   <li>
-                    Investasi : <b>{metode.investasi}%</b>
+                    Modal : <b>{metode.modal}%</b>
                   </li>
                   <li>
                     Sedekah : <b>{metode.sedekah}%</b>
@@ -1228,7 +1249,7 @@ const StepThree = () => {
                   {!simpleMode && (
                     <>
                       <li>
-                        Catat Pemasukan Uang Capital Sebesar{" "}
+                        Catat Pemasukan Uang Saya Sebesar{" "}
                         <b>{formatNumber(grossProfit)}</b>
                       </li>
                       {totalBill > 0 && (
@@ -1248,7 +1269,7 @@ const StepThree = () => {
                         Catat Ke Aplikasi Keuangan :
                         <ol className="simplemodetransfer list-inside">
                           <li>
-                            <span>Rekening Capital</span>{" "}
+                            <span>Rekening Uang Saya</span>{" "}
                             <div className="bg-slate-900 flex-auto h-[2px] mx-1"></div>
                             <b>{formatNumber(grossProfit)}</b>
                           </li>

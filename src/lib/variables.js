@@ -1,52 +1,5 @@
-export const listProduk = {
-  keyra: {
-    identifier: "keyra",
-    name: "Keyra",
-    hpp: 50000,
-    sold: 0,
-  },
-  zize: {
-    identifier: "zize",
-    name: "Zize",
-    hpp: 50000,
-    sold: 0,
-  },
-  chea: {
-    identifier: "chea",
-    name: "Chea",
-    hpp: 60000,
-    sold: 0,
-  },
-  cheaKorneli: {
-    identifier: "cheaKorneli",
-    name: "Chea Korneli",
-    hpp: 75000,
-    sold: 0,
-  },
-  cheaJaguar: {
-    identifier: "cheaJaguar",
-    name: "Chea Jaguar",
-    hpp: 70000,
-    sold: 0,
-  },
-  azzura: {
-    identifier: "azzura",
-    name: "Azzura",
-    hpp: 70000,
-    sold: 0,
-  },
-  seraya: {
-    identifier: "seraya",
-    name: "Seraya",
-    hpp: 75000,
-    sold: 0,
-  },
-  aliza: {
-    identifier: "aliza",
-    name: "Aliza",
-    hpp: 60000,
-    sold: 0,
-  },
+export const config = {
+  sinkronLastSave: false,
 };
 
 // Patungan Untuk Uang Harian Ema Iki
@@ -57,9 +10,9 @@ export const splitBillEmaIki = {
 
 // Harus Ada Total 100
 export const metode = {
-  capital: 50,
+  uangSaya: 39,
   danaDarurat: 0,
-  investasi: 29,
+  modal: 40,
   sedekah: 1,
   keinginan: 20,
 };
