@@ -34,7 +34,7 @@ export function IncomeAllocationProvider({ children }) {
   const [tiktokHasSaveToFirebase, setTiktokHasSaveToFirebase] = useState(false);
 
   const sinkronLastSave = async () => {
-    if (config.sinkronLastSave) {
+    if (config.syncLastSave) {
       const lastSaveShopee = "shopeeLastSave";
       const lastSaveTiktok = "tiktokLastSave";
 
