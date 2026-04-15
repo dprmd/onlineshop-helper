@@ -57,9 +57,9 @@ export default function Home() {
           </Button>
         </li>
 
-        <li>
+        {/* <li>
           <Button onClick={handleClickMe}>Click Me</Button>
-        </li>
+        </li> */}
       </ul>
     </div>
   );
