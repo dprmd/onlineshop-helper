@@ -14,6 +14,14 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { formatNumber } from "../../utils/generalFunction";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function StepTwo() {
   const {
@@ -38,6 +46,11 @@ export default function StepTwo() {
       }));
   });
   const [setorBarang, setSetorBarang] = useState(productList);
+  const [dialog, setDialog] = useState({
+    open: false,
+    currentValue: 0,
+    newValue: 0,
+  });
 
   // Function
   const handleReset = () => {
@@ -77,6 +90,25 @@ export default function StepTwo() {
     }
   }, []);
 
+  const handleSumSold = () => {
+    const total = Number(dialog.newValue) + Number(dialog.currentValue);
+    setSetorBarang((prev) => {
+      return prev.map((prod) => {
+        if (prod.identifier === dialog.product.identifier) {
+          return { ...prod, sold: total };
+        } else {
+          return prod;
+        }
+      });
+    });
+    setDialog({
+      open: false,
+      currentValue: 0,
+      newValue: 0,
+      product: {},
+    });
+  };
+
   return (
     <div className="flex justify-center items-center">
       <form
@@ -95,28 +127,42 @@ export default function StepTwo() {
                     Sisa {p.remaining}
                   </span>
                 </FieldLabel>
-                <Input
-                  id={p.identifier}
-                  autoComplete="off"
-                  placeholder="0"
-                  value={setorBarang[i].sold}
-                  onChange={(e) => {
-                    setSubmitOrder(1);
-                    setShowConclusion(false);
-                    setSetorBarang((prev) => {
-                      return prev.map((prod) => {
-                        if (prod.identifier === p.identifier) {
-                          if (Number(e.target.value) > p.remaining) {
-                            return { ...prod, sold: p.remaining };
+                <div className="flex gap-x-2">
+                  <Input
+                    id={p.identifier}
+                    autoComplete="off"
+                    placeholder="0"
+                    value={setorBarang[i].sold}
+                    onChange={(e) => {
+                      setSubmitOrder(1);
+                      setShowConclusion(false);
+                      setSetorBarang((prev) => {
+                        return prev.map((prod) => {
+                          if (prod.identifier === p.identifier) {
+                            if (Number(e.target.value) > p.remaining) {
+                              return { ...prod, sold: p.remaining };
+                            }
+                            return { ...prod, sold: e.target.value };
+                          } else {
+                            return prod;
                           }
-                          return { ...prod, sold: e.target.value };
-                        } else {
-                          return prod;
-                        }
+                        });
                       });
-                    });
-                  }}
-                />
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setDialog({
+                        open: true,
+                        currentValue: setorBarang[i].sold,
+                        product: p,
+                      });
+                    }}
+                  >
+                    +
+                  </Button>
+                </div>
               </Field>
             ))}
             {showConclusion && (
@@ -163,6 +209,44 @@ export default function StepTwo() {
             </Field>
           </FieldGroup>
         </FieldSet>
+        <Dialog
+          open={dialog.open}
+          onOpenChange={(v) => {
+            setDialog({
+              open: v,
+            });
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tambah</DialogTitle>
+              <FieldSet>
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel>Terjual</FieldLabel>
+                    <Input
+                      value={dialog.newValue}
+                      onChange={(e) => {
+                        setDialog((prev) => ({
+                          ...prev,
+                          newValue: e.target.value,
+                        }));
+                      }}
+                    />
+                  </Field>
+                </FieldGroup>
+              </FieldSet>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button>Batal</Button>
+              </DialogClose>
+              <Button type="button" onClick={handleSumSold}>
+                Simpan
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </form>
     </div>
   );

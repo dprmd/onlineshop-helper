@@ -129,9 +129,15 @@ const StepThree = () => {
   const [loadingSave, setLoadingSave] = useState(false);
 
   // Bill Temporary
-  const [addBill, setAddBill] = useState(false);
-  const [billName, setBillName] = useState("");
-  const [billPrice, setBillPrice] = useState("");
+  const [dialogBill, setDialogBill] = useState({
+    open: false,
+    title: "",
+    purpose: "",
+    billName: "",
+    billPrice: "",
+    editedBillIndex: 0,
+    nextActionName: "",
+  });
 
   // Other
   const [alreadyCalculated, setAlreadyCalculated] = useState(false);
@@ -155,7 +161,7 @@ const StepThree = () => {
   const [time, setTime] = useState(getCurrentTime());
   const [date, setDate] = useState(now);
 
-  // Start
+  // Profit
   const [grossProfit, setGrossProfit] = useState(0);
   const [netProfit, setNetProfit] = useState(0);
 
@@ -251,8 +257,8 @@ const StepThree = () => {
     setAlreadyCalculated(true);
   };
 
-  const sinkronLastSave = async () => {
-    if (config.sinkronLastSave) {
+  const syncLastSave = async () => {
+    if (config.syncLastSave) {
       if (isTikTok) {
         const tiktokLastSave = await getDocument(
           "Ambil Last Save TikTok",
@@ -449,11 +455,11 @@ const StepThree = () => {
     fetchWithdrawals(platform, 7);
     setLoadingSave(false);
     if (isTikTok) {
-      if (config.sinkronLastSave) {
+      if (config.syncLastSave) {
         setTiktokHasSaveToFirebase(true);
       }
     } else {
-      if (config.sinkronLastSave) {
+      if (config.syncLastSave) {
         setShopeeHasSaveToFirebase(true);
       }
     }
@@ -463,28 +469,44 @@ const StepThree = () => {
     setLoadingSave(false);
   };
 
-  const handleAddBill = (e) => {
+  const handleChangeBill = (e) => {
     e.preventDefault();
-
     const cekIfBillNameExist = bills.some(
-      (bill) => bill.identifier === toCamelCase(billName),
+      (bill) => bill.identifier === toCamelCase(dialogBill.billName),
     );
 
     if (cekIfBillNameExist) {
-      toast.error("Maaf Tagihan Sudah Ada, Beri Nama Lain");
-      setBillName("");
+      toast.error("Nama Tagihan Sudah Ada, Beri Nama Lain");
     } else {
       const newBill = {
-        identifier: toCamelCase(billName),
-        billName,
-        billPrice,
+        identifier: toCamelCase(dialogBill.billName),
+        billName: dialogBill.billName,
+        billPrice: dialogBill.billPrice,
       };
 
-      setBills((prevBills) => [...prevBills, newBill]);
+      if (dialogBill.purpose === "addBill") {
+        setBills((prevBills) => [...prevBills, newBill]);
+      }
+      if (dialogBill.purpose === "editBill") {
+        setBills((prevBills) => {
+          return prevBills.map((b, i) => {
+            if (dialogBill.editedBillIndex === i) {
+              return newBill;
+            } else {
+              return b;
+            }
+          });
+        });
+      }
 
-      setBillName("");
-      setBillPrice("");
-      setAddBill(false);
+      setDialogBill((prev) => ({
+        ...prev,
+        purpose: "",
+        title: "",
+        open: false,
+        billName: "",
+        billPrice: "",
+      }));
       setAlreadyCalculated(false);
     }
   };
@@ -509,6 +531,7 @@ const StepThree = () => {
 
   return (
     <div className="flex justify-center items-center flex-col">
+      {/* Navigation */}
       <Button
         variant={"outline"}
         onClick={() => {
@@ -517,6 +540,8 @@ const StepThree = () => {
       >
         Home
       </Button>
+
+      {/* Confirm Save to Firebase */}
       <AlertDialog open={confirmSave} onOpenChange={setConfirmSave}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -534,81 +559,98 @@ const StepThree = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <LoadingOverlay show={loadingSave} text="Loading . . ." />
-      <form
-        className="border-slate-400 rounded-md w-max mx-auto mt-3 max-w-[800px]"
-        onSubmit={calculateNow}
-        id="incomeAllocation"
+
+      {/* Dialog Bill */}
+      <Dialog
+        open={dialogBill.open}
+        onOpenChange={(v) => setDialogBill((prev) => ({ ...prev, open: v }))}
       >
-        <Card className="min-w-[380px]">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dialogBill.title}</DialogTitle>
+          </DialogHeader>
+          <FieldSet>
+            <form onSubmit={handleChangeBill}>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel>Nama Tagihan</FieldLabel>
+                  <Input
+                    value={dialogBill.billName}
+                    required
+                    onChange={(e) => {
+                      setDialogBill((prev) => ({
+                        ...prev,
+                        billName: e.target.value,
+                      }));
+                    }}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Total Tagihan</FieldLabel>
+                  <Input
+                    value={dialogBill.billPrice}
+                    type="text"
+                    required
+                    onChange={(e) => {
+                      const value = separateNumber(e);
+                      setDialogBill((prev) => ({ ...prev, billPrice: value }));
+                    }}
+                  />
+                </Field>
+                <Field>
+                  <div className="flex justify-end gap-1">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setDialogBill((prev) => ({
+                          ...prev,
+                          open: false,
+                          billName: "",
+                          billPrice: "",
+                        }));
+                      }}
+                    >
+                      Batal
+                    </Button>
+                    <Button type="submit" className="bg-sky-700">
+                      {dialogBill.nextActionName}
+                    </Button>
+                  </div>
+                </Field>
+              </FieldGroup>
+            </form>
+          </FieldSet>
+        </DialogContent>
+      </Dialog>
+
+      {/* Loading */}
+      <LoadingOverlay show={loadingSave} text="Loading . . ." />
+
+      <Card className="min-w-[380px]">
+        <form
+          className="border-slate-400 rounded-md w-max mx-auto mt-3 max-w-[800px]"
+          onSubmit={calculateNow}
+          id="incomeAllocation"
+        >
           <CardHeader>
             <CardTitle>Alokasi Pemasukan</CardTitle>
-
-            <Dialog open={addBill} onOpenChange={setAddBill}>
-              <DialogTrigger>
-                {/* Tombol Tambahkan Tagihan Lainnya */}
-                <CardAction>
-                  <div
-                    className="border px-2 py-[2px] text-[12px] rounded-sm bg-gray-900 text-white"
-                    onClick={() => {
-                      setAddBill(!addBill);
-                    }}
-                  >
-                    + Bill
-                  </div>
-                </CardAction>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Tambah Tagihan Lainnya</DialogTitle>
-                </DialogHeader>
-                <FieldSet>
-                  <FieldGroup>
-                    <Field>
-                      <FieldLabel>Nama Tagihan</FieldLabel>
-                      <Input
-                        value={billName}
-                        required
-                        onChange={(e) => {
-                          setBillName(e.target.value);
-                        }}
-                      />
-                    </Field>
-                    <Field>
-                      <FieldLabel>Total Tagihan</FieldLabel>
-                      <Input
-                        value={billPrice}
-                        type="text"
-                        required
-                        onChange={(e) => {
-                          const value = separateNumber(e);
-                          setBillPrice(value);
-                        }}
-                      />
-                    </Field>
-                    <Field>
-                      <div className="flex justify-end gap-1">
-                        <Button
-                          type="button"
-                          onClick={() => {
-                            setAddBill(false);
-                          }}
-                        >
-                          Batal
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={handleAddBill}
-                          className="bg-sky-700"
-                        >
-                          Tambahkan
-                        </Button>
-                      </div>
-                    </Field>
-                  </FieldGroup>
-                </FieldSet>
-              </DialogContent>
-            </Dialog>
+            <CardAction>
+              <button
+                type="button"
+                className="border px-2 py-[2px] text-[12px] rounded-sm bg-gray-900 text-white"
+                onClick={() => {
+                  setDialogBill((prev) => ({
+                    ...prev,
+                    open: true,
+                    title: "Tambah Tagihan Lainnya",
+                    purpose: "addBill",
+                    nextActionName: "Tambahkan",
+                  }));
+                }}
+              >
+                + Bill
+              </button>
+            </CardAction>
           </CardHeader>
           <CardContent>
             {/* Nama Hari */}
@@ -779,18 +821,35 @@ const StepThree = () => {
                             placeholder="0"
                             onChange={(e) => {
                               setAlreadyCalculated(false);
+                              const value = separateNumber(e);
                               setBills((prev) => {
                                 const newBill = [...prev];
                                 newBill[index] = {
                                   ...newBill[index],
-                                  billPrice: e.target.value,
+                                  billPrice: value,
                                 };
                                 return newBill;
                               });
                             }}
                           />
                           <Button
-                            className="bi bi-trash"
+                            type="button"
+                            className="bi bi-pencil bg-green-800 hover:bg-green-700"
+                            onClick={() => {
+                              setDialogBill({
+                                open: true,
+                                purpose: "editBill",
+                                title: "Edit Bill",
+                                billName: bill.billName,
+                                billPrice: bill.billPrice,
+                                editedBillIndex: index,
+                                nextActionName: "Simpan",
+                              });
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            className="bi bi-trash bg-red-800 hover:bg-red-700"
                             onClick={() => {
                               setAlreadyCalculated(false);
                               setBills((prev) => {
@@ -832,7 +891,7 @@ const StepThree = () => {
               {alreadyCalculated && (
                 <Button
                   type="button"
-                  onClick={sinkronLastSave}
+                  onClick={syncLastSave}
                   className="bg-sky-700 cursor-d"
                   disabled={
                     isTikTok
@@ -849,8 +908,8 @@ const StepThree = () => {
               )}
             </CardAction>
           </CardFooter>
-        </Card>
-      </form>
+        </form>
+      </Card>
 
       {/* Tampilkan Saat Tombol Hitung Di Tekan */}
 
@@ -1150,18 +1209,20 @@ const StepThree = () => {
                     ADI : <b>{formatNumber(splitBillEmaIki.adi)}</b>
                   </li>
                 </ol>
-                <span>
-                  {workingTime === "Full Day" && (
-                    <span>
-                      Gaji Full Hari : <b>{formatNumber(fullDayWage)}</b>
-                    </span>
-                  )}
-                  {workingTime === "Half Day" && (
-                    <span>
-                      Gaji Setengah Hari : <b>{formatNumber(halfDayWage)}</b>
-                    </span>
-                  )}
-                </span>
+                {work && (
+                  <span>
+                    {workingTime === "Full Day" && (
+                      <span>
+                        Gaji Full Hari : <b>{formatNumber(fullDayWage)}</b>
+                      </span>
+                    )}
+                    {workingTime === "Half Day" && (
+                      <span>
+                        Gaji Setengah Hari : <b>{formatNumber(halfDayWage)}</b>
+                      </span>
+                    )}
+                  </span>
+                )}
                 <span>Metode Pembagian</span>
                 <ol className="list-inside px-2">
                   <li>
@@ -1169,6 +1230,9 @@ const StepThree = () => {
                   </li>
                   <li>
                     Dana Darurat : <b>{metode.danaDarurat}%</b>
+                  </li>
+                  <li>
+                    Uang Keinginan : <b>{metode.keinginan}%</b>
                   </li>
                   <li>
                     Modal : <b>{metode.modal}%</b>
