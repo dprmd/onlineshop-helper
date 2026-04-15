@@ -626,12 +626,12 @@ const StepThree = () => {
       {/* Loading */}
       <LoadingOverlay show={loadingSave} text="Loading . . ." />
 
-      <Card className="min-w-[380px]">
-        <form
-          className="border-slate-400 rounded-md w-max mx-auto mt-3 max-w-[800px]"
-          onSubmit={calculateNow}
-          id="incomeAllocation"
-        >
+      <form
+        className="border-slate-400 rounded-md w-max mx-auto mt-3 max-w-[800px]"
+        onSubmit={calculateNow}
+        id="incomeAllocation"
+      >
+        <Card className="min-w-[380px]">
           <CardHeader>
             <CardTitle>Alokasi Pemasukan</CardTitle>
             <CardAction>
@@ -908,8 +908,8 @@ const StepThree = () => {
               )}
             </CardAction>
           </CardFooter>
-        </form>
-      </Card>
+        </Card>
+      </form>
 
       {/* Tampilkan Saat Tombol Hitung Di Tekan */}
 
