@@ -32,7 +32,11 @@ export function CRUDProvider({ children }) {
       success,
       error,
       message,
-    } = await getDocuments("Ambil List Supplier", "supplier", "newToOld");
+    } = await getDocuments(
+      "Ambil List Supplier",
+      collectionName.supplier,
+      "newToOld",
+    );
 
     if (success) {
       setSupplierInitialFetch(false);
@@ -58,7 +62,11 @@ export function CRUDProvider({ children }) {
       data: supplierObject,
       error,
       success,
-    } = await getDocument("Mengambil Data Supplier", "supplier", supplierId);
+    } = await getDocument(
+      "Mengambil Data Supplier",
+      collectionName.supplier,
+      supplierId,
+    );
 
     if (success) {
       const previousDebt = supplierObject.productDebt;
@@ -88,7 +96,7 @@ export function CRUDProvider({ children }) {
 
       await updateDocument(
         "Update Supplier Data",
-        "supplier",
+        collectionName.supplier,
         supplierId,
         {
           ...supplierObject,

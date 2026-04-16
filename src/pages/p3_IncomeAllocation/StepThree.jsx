@@ -23,7 +23,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Field,
@@ -73,6 +72,7 @@ import {
   updateDocument,
 } from "../../services/firebase/docService";
 import {
+  capitalizeWords,
   combineDateTimeToMs,
   formatNumber,
   raw,
@@ -145,8 +145,10 @@ const StepThree = () => {
   const [workingTime, setWorkingTime] = useState("Full Day");
   const [simpleMode, setSimpleMode] = useState(true);
   const choosedSupplier = supplier.find((s) => s.id === whichSupplier);
-  const lastSaveShopee = "shopeeLastSave";
-  const lastSaveTiktok = "tiktokLastSave";
+  const lastSave = {
+    shopee: "shopeeLastSave",
+    tiktok: "tiktokLastSave",
+  };
   const [confirmSave, setConfirmSave] = useState(false);
 
   // Time
@@ -262,8 +264,8 @@ const StepThree = () => {
       if (isTikTok) {
         const tiktokLastSave = await getDocument(
           "Ambil Last Save TikTok",
-          collectionName.tiktokWithdrawals,
-          lastSaveTiktok,
+          collectionName.withdrawals.tiktok,
+          lastSave.tiktok,
         );
 
         if (tiktokLastSave.data.time === today) {
@@ -276,8 +278,8 @@ const StepThree = () => {
       } else {
         const shopeeLastSave = await getDocument(
           "Ambil Last Save Shopee",
-          collectionName.shopeeWithdrawals,
-          lastSaveShopee,
+          collectionName.withdrawals.shopee,
+          lastSave.shopee,
         );
 
         if (shopeeLastSave.data.time === today) {
@@ -296,6 +298,113 @@ const StepThree = () => {
   const saveToFirebase = async () => {
     const platform = isTikTok ? "tiktok" : "shopee";
     setLoadingSave(true);
+
+    const soldProducts = modifiedSetorBarang
+      .map((p) => {
+        delete p.remaining;
+        return {
+          ...p,
+          sold: Number(p.sold),
+        };
+      })
+      .filter((p) => p.sold > 0);
+
+    const updateDocNow = async (platform, withdrawal) => {
+      // Simpan Note Withdrawal
+      await createDocument(
+        `Save Nota Penghasilan ${capitalizeWords(platform)}`,
+        collectionName.withdrawals[platform],
+        withdrawal,
+        `Berhasil Menyimpan Note Penghasilan ${capitalizeWords(platform)}`,
+        true,
+        combineDateTimeToMs(date, time),
+      );
+
+      // Update Last Save
+      await updateDocument(
+        `Update Last ${capitalizeWords(platform)}`,
+        collectionName.withdrawals[platform],
+        lastSave[platform],
+        { time: today },
+        `Berhasil Update ${capitalizeWords(platform)} Last Save`,
+      );
+      localStorage.setItem(lastSave[platform], today);
+
+      // Update All Time
+      const allTimeDoc = {
+        ATWithdrawals: ATWithdrawals[platform] + raw(totalWithdraw),
+        ATBills: ATBills[platform] + totalBill,
+        ATSetor: ATSetor[platform] + uangAdeSiska,
+        ATProfit: ATProfit[platform] + grossProfit,
+      };
+      await updateDocument(
+        "Update All Time Document",
+        collectionName.allTime,
+        collectionName.allTimeDocId,
+        {
+          [platform]: allTimeDoc,
+        },
+        `Berhasil Mengupdate Document All Time ${capitalizeWords(platform)}`,
+      );
+
+      // Optimistic Update
+      setATWithdrawals((prev) => ({
+        ...prev,
+        [platform]: prev[platform] + raw(totalWithdraw),
+      }));
+      setATBills((prev) => ({
+        ...prev,
+        [platform]: prev[platform] + totalBill,
+      }));
+      setATSetor((prev) => ({
+        ...prev,
+        [platform]: prev[platform] + uangAdeSiska,
+      }));
+      setATProfit((prev) => ({
+        ...prev,
+        [platform]: prev[platform] + grossProfit,
+      }));
+
+      fetchWithdrawals(platform, 7);
+      setLoadingSave(false);
+      if (isTikTok) {
+        if (config.syncLastSave) {
+          setTiktokHasSaveToFirebase(true);
+        }
+      } else {
+        if (config.syncLastSave) {
+          setShopeeHasSaveToFirebase(true);
+        }
+      }
+
+      // Update Product Debt
+      if (config.updateProductDebt) {
+        const productDebt = choosedSupplier.productDebt;
+
+        const payDebt = productDebt.map((debt) => {
+          let tempDebt = debt;
+          soldProducts.forEach((product) => {
+            if (product.identifier === debt.identifier) {
+              tempDebt = {
+                ...debt,
+                remaining: debt.remaining - product.sold,
+              };
+            }
+          });
+
+          return tempDebt;
+        });
+
+        await updateDocument(
+          `Update Hutang Barang Ke ${capitalizeWords(choosedSupplier.name)} `,
+          collectionName.supplier,
+          choosedSupplier.id,
+          { ...choosedSupplier, productDebt: payDebt },
+          `Berhasil Update Catatan Hutang Barang Dari Supplier ${capitalizeWords(choosedSupplier.name)}`,
+        );
+      }
+    };
+
     const updateTiktokDoc = async () => {
       // Data Penghasilan TikTok Yang Akan Di Simpan
       const tiktokWithdrawal = {
@@ -303,15 +412,7 @@ const StepThree = () => {
         supplier: toCamelCase(choosedSupplier.name),
         totalHPP: {
           total: raw(totalHPP),
-          soldProducts: modifiedSetorBarang
-            .map((p) => {
-              delete p.remaining;
-              return {
-                ...p,
-                sold: Number(p.sold),
-              };
-            })
-            .filter((p) => p.sold > 0),
+          soldProducts,
         },
         bill: {
           billList: bills,
@@ -322,40 +423,7 @@ const StepThree = () => {
         },
         totalSetor: uangAdeSiska,
       };
-
-      await createDocument(
-        "saveNotePenghasilanTikTok",
-        collectionName.tiktokWithdrawals,
-        tiktokWithdrawal,
-        "Berhasil Menyimpan Note Penghasilan",
-        true,
-        combineDateTimeToMs(date, time),
-      );
-      await updateDocument(
-        "UpdateTikTokLastSave",
-        collectionName.tiktokWithdrawals,
-        lastSaveTiktok,
-        { time: today },
-        "Berhasil Update TikTok Last Save",
-      );
-      localStorage.setItem(lastSaveTiktok, today);
-
-      // Update All Time Document Tiktok
-      const tiktokAllTime = {
-        ATWithdrawals: ATWithdrawals.tiktok + raw(totalWithdraw),
-        ATBills: ATBills.tiktok + totalBill,
-        ATSetor: ATSetor.tiktok + uangAdeSiska,
-        ATProfit: ATProfit.tiktok + grossProfit,
-      };
-      await updateDocument(
-        "UpdateAllTimeDocument",
-        collectionName.allTime,
-        collectionName.allTimeDocId,
-        {
-          tiktok: tiktokAllTime,
-        },
-        "Berhasil Mengupdate Document All Time Shopee",
-      );
+      await updateDocNow("tiktok", tiktokWithdrawal);
     };
 
     const updateShopeeDoc = async () => {
@@ -365,15 +433,7 @@ const StepThree = () => {
         supplier: toCamelCase(choosedSupplier.name),
         totalHPP: {
           total: raw(totalHPP),
-          soldProducts: modifiedSetorBarang
-            .map((p) => {
-              delete p.remaining;
-              return {
-                ...p,
-                sold: Number(p.sold),
-              };
-            })
-            .filter((p) => p.sold > 0),
+          soldProducts,
         },
         bill: {
           billList: bills,
@@ -393,75 +453,13 @@ const StepThree = () => {
         splitBillEmaIki: splitBillEmaIki,
         gajiAdi: dailyWage,
       };
-      await createDocument(
-        "saveNotePenghasilanShopee",
-        collectionName.shopeeWithdrawals,
-        shopeeWithdrawal,
-        "Berhasil Menyimpan Note Penghasilan",
-        true,
-        combineDateTimeToMs(date, time),
-      );
-      await updateDocument(
-        "UpdateShopeeLastSave",
-        collectionName.shopeeWithdrawals,
-        lastSaveShopee,
-        { time: today },
-        "Berhasil Update Shopee Last Save",
-      );
-      localStorage.setItem(lastSaveShopee, today);
-
-      // Update All Time Document Shopee
-      const shopeeAllTime = {
-        ATWithdrawals: ATWithdrawals.shopee + raw(totalWithdraw),
-        ATBills: ATBills.shopee + totalBill,
-        ATSetor: ATSetor.shopee + uangAdeSiska,
-        ATProfit: ATProfit.shopee + grossProfit,
-      };
-      await updateDocument(
-        "UpdateAllTimeDocument",
-        collectionName.allTime,
-        collectionName.allTimeDocId,
-        {
-          shopee: shopeeAllTime,
-        },
-        "Berhasil Mengupdate Document All Time Shopee",
-      );
+      await updateDocNow("shopee", shopeeWithdrawal);
     };
 
     if (isTikTok) {
       await updateTiktokDoc();
     } else {
       await updateShopeeDoc();
-    }
-
-    // Optimistic Update
-    setATWithdrawals((prev) => ({
-      ...prev,
-      [platform]: prev[platform] + raw(totalWithdraw),
-    }));
-    setATBills((prev) => ({
-      ...prev,
-      [platform]: prev[platform] + totalBill,
-    }));
-    setATSetor((prev) => ({
-      ...prev,
-      [platform]: prev[platform] + uangAdeSiska,
-    }));
-    setATProfit((prev) => ({
-      ...prev,
-      [platform]: prev[platform] + grossProfit,
-    }));
-
-    fetchWithdrawals(platform, 7);
-    setLoadingSave(false);
-    if (isTikTok) {
-      if (config.syncLastSave) {
-        setTiktokHasSaveToFirebase(true);
-      }
-    } else {
-      if (config.syncLastSave) {
-        setShopeeHasSaveToFirebase(true);
-      }
     }
 
     toast.success("Berhasil Menyimpan Penarikan Dana");

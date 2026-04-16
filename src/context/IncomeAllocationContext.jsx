@@ -42,7 +42,7 @@ export function IncomeAllocationProvider({ children }) {
 
       const tiktokLastSave = await getDocument(
         "Ambil Last Save TikTok",
-        collectionName.tiktokWithdrawals,
+        collectionName.withdrawals.tiktok,
         lastSaveTiktok,
       );
       if (tiktokLastSave.success) {
@@ -60,7 +60,7 @@ export function IncomeAllocationProvider({ children }) {
 
       const shopeeLastSave = await getDocument(
         "Ambil Last Save Shopee",
-        collectionName.shopeeWithdrawals,
+        collectionName.withdrawals.shopee,
         lastSaveShopee,
       );
       if (shopeeLastSave.success) {

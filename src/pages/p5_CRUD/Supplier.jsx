@@ -26,6 +26,7 @@ import { useCRUD } from "../../context/CRUDContext";
 import { createDocument } from "../../services/firebase/docService";
 import { toCamelCase } from "../../utils/generalFunction";
 import { toast } from "sonner";
+import { collectionName } from "@/services/firebase/firebase";
 
 export default function Supplier() {
   const {
@@ -50,7 +51,7 @@ export default function Supplier() {
     } else {
       const newSupplier = await createDocument(
         "Menambahkan Supplier Baru",
-        "supplier",
+        collectionName.supplier,
         {
           username: toCamelCase(supplierName),
           name: supplierName,

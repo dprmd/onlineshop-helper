@@ -17,11 +17,14 @@ const firebaseConfig = {
 
 // Database Config
 export const collectionName = {
-  shopeeWithdrawals: "penghasilanJualanOnlineShopee",
-  tiktokWithdrawals: "penghasilanJualanOnlineTikTok",
+  withdrawals: {
+    shopee: "penghasilanJualanOnlineShopee",
+    tiktok: "penghasilanJualanOnlineTikTok",
+  },
   allTime: "penghasilanAllTime",
   allTimeDocId: "CatatanPenghasilanAllTime",
   products: "produk",
+  supplier: "supplier",
 };
 
 // Initialize Firebase

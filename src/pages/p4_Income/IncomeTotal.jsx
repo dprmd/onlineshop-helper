@@ -88,12 +88,12 @@ export default function IncomeTotal() {
   const fixAlltimeData = async () => {
     const { data: s } = await getDocuments(
       "Ambil Semua Doc Withdraw Shopee",
-      collectionName.shopeeWithdrawals,
+      collectionName.withdrawals.shopee,
       "newToOld",
     );
     const { data: t } = await getDocuments(
       "Ambil Semua Doc Withdraw Tiktok",
-      collectionName.tiktokWithdrawals,
+      collectionName.withdrawals.tiktok,
       "newToOld",
     );
 

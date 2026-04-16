@@ -174,13 +174,13 @@ export const getWithdrawalListByMonth = async (
       `Operation : Read , Operation Name : Get Daftar Penghasilan By Month ${platform}`,
     );
     const queryShopee = query(
-      collection(db, collectionName.shopeeWithdrawals),
+      collection(db, collectionName.withdrawals.shopee),
       where("createdAtMs", ">=", startMonth),
       where("createdAtMs", "<", endMonth),
       orderBy("createdAtMs", orderChoice[order]),
     );
     const queryTikTok = query(
-      collection(db, collectionName.tiktokWithdrawals),
+      collection(db, collectionName.withdrawals.tiktok),
       where("createdAtMs", ">=", startMonth),
       where("createdAtMs", "<", endMonth),
       orderBy("createdAtMs", orderChoice[order]),
@@ -225,13 +225,13 @@ export const getWithdrawalListByDate = async (platform, order, start, end) => {
       `Operation : Read , Operation Name : Get Daftar Penghasilan By Date ${platform}`,
     );
     const queryShopee = query(
-      collection(db, collectionName.shopeeWithdrawals),
+      collection(db, collectionName.withdrawals.shopee),
       where("createdAtMs", ">=", startDate),
       where("createdAtMs", "<", endDate),
       orderBy("createdAtMs", orderChoice[order]),
     );
     const queryTikTok = query(
-      collection(db, collectionName.tiktokWithdrawals),
+      collection(db, collectionName.withdrawals.tiktok),
       where("createdAtMs", ">=", startDate),
       where("createdAtMs", "<", endDate),
       orderBy("createdAtMs", orderChoice[order]),
@@ -270,12 +270,12 @@ export const getWithdrawalList = async (platform, order, limitOffPage) => {
       `Operation : Read , Operation Name : Get Daftar Penghasilan ${platform}`,
     );
     const queryShopee = query(
-      collection(db, collectionName.shopeeWithdrawals),
+      collection(db, collectionName.withdrawals.shopee),
       orderBy("createdAtMs", orderChoice[order]),
       limit(limitOffPage),
     );
     const queryTikTok = query(
-      collection(db, collectionName.tiktokWithdrawals),
+      collection(db, collectionName.withdrawals.tiktok),
       orderBy("createdAtMs", orderChoice[order]),
       limit(limitOffPage),
     );
