@@ -9,6 +9,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 
+const link = [
+  {
+    buttonName: "Total Penghasilan",
+    destination: "/income/total",
+  },
+  {
+    buttonName: "Shopee",
+    destination: "/income/shopee",
+  },
+  {
+    buttonName: "TikTok",
+    destination: "/income/tiktok",
+  },
+];
+
 export default function Income() {
   const navigate = useNavigate();
 
@@ -28,30 +43,18 @@ export default function Income() {
         </BreadcrumbList>
       </Breadcrumb>
       <ul className="text-center flex flex-col gap-y-2 justify-center items-center">
-        <Button
-          size="lg"
-          onClick={() => {
-            navigate("/income/total");
-          }}
-        >
-          Total Penghasilan
-        </Button>
-        <Button
-          size="lg"
-          onClick={() => {
-            navigate("/income/shopee");
-          }}
-        >
-          Shopee
-        </Button>
-        <Button
-          size="lg"
-          onClick={() => {
-            navigate("/income/tiktok");
-          }}
-        >
-          TikTok
-        </Button>
+        {link.map((url) => (
+          <li>
+            <Button
+              size="lg"
+              onClick={() => {
+                navigate(url.destination);
+              }}
+            >
+              {url.buttonName}
+            </Button>
+          </li>
+        ))}
       </ul>
     </div>
   );

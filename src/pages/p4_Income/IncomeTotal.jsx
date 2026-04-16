@@ -61,22 +61,22 @@ export default function IncomeTotal() {
     return Object.values(ATWithdrawals).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
-  });
+  }, [ATWithdrawals]);
   const totalTagihanAT = useMemo(() => {
     return Object.values(ATBills).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
-  });
+  }, [ATBills]);
   const totalSetorAT = useMemo(() => {
     return Object.values(ATSetor).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
-  });
+  }, [ATSetor]);
   const totalUntungAT = useMemo(() => {
     return Object.values(ATProfit).reduce((acc, cur) => {
       return acc + cur;
     }, 0);
-  });
+  }, [ATProfit]);
 
   const tempCalculateShopee = ATBills.shopee + ATSetor.shopee + ATProfit.shopee;
   const tempCalculateTiktok = ATBills.tiktok + ATSetor.tiktok + ATProfit.tiktok;

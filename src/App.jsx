@@ -1,5 +1,6 @@
 import { UIProvider } from "@/context/UIContext";
 import RootLayout from "@/layouts/RootLayout";
+import NotFound from "@/pages/NotFound";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { CRUDProvider } from "./context/CRUDContext";
 import { IncomeAllocationProvider } from "./context/IncomeAllocationContext";
@@ -14,9 +15,9 @@ import IncomeTotal from "./pages/p4_Income/IncomeTotal";
 import ShopeeWithdrawalRecords from "./pages/p4_Income/ShopeeWithdrawalRecords";
 import TikTokWithdrawasRecords from "./pages/p4_Income/TikTokWithdrawalRecords";
 import CRUD from "./pages/p5_CRUD/CRUD";
-import ProductDebt from "./pages/p5_CRUD/ProductDebt";
 import Products from "./pages/p5_CRUD/Products";
 import Supplier from "./pages/p5_CRUD/Supplier";
+import UpdateProductDebt from "./pages/p5_CRUD/UpdateProductDebt";
 
 const router = createHashRouter([
   {
@@ -56,7 +57,7 @@ const router = createHashRouter([
         children: [
           { index: true, element: <CRUD /> },
           { path: "supplier", element: <Supplier /> },
-          { path: "productDebt", element: <ProductDebt /> },
+          { path: "updateProductDebt", element: <UpdateProductDebt /> },
           { path: "products", element: <Products /> },
         ],
       },
@@ -70,6 +71,10 @@ const router = createHashRouter([
       //   ],
       // },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
   },
 ]);
 

@@ -49,27 +49,31 @@ import { toast } from "sonner";
 import { useCRUD } from "../../context/CRUDContext";
 import { formatNumber } from "../../utils/generalFunction";
 
-export default function ProductDebt() {
+export default function UpdateProductDebt() {
   const navigate = useNavigate();
   const {
     supplier,
     getSupplierList,
     supplierInitialFetch,
-    addProductDebt,
+    updateProductDebt,
     products,
     productsInitialFetch,
     getProductList,
   } = useCRUD();
   const [whichSupplier, setWhichSupplier] = useState("");
   const [addItemDialog, setAddItemDialog] = useState(false);
-  const [addDebtDialog, setAddDebtDialog] = useState(false);
+  const [confirmChangeDialog, setConfirmChangeDialog] = useState(false);
   const produk = useMemo(() => {
     return products.map((p) => ({ ...p, checked: false, remaining: 0 }));
-  });
+  }, [products]);
   const [cloneProduk, setCloneProduk] = useState([]);
   const [choosedProduk, setChoosedProduk] = useState([]);
   const [notChoosedProduk, setNotChoosedProduk] = useState([]);
   const [productDebt, setProductDebt] = useState([]);
+  const choosedSupplier = useMemo(() => {
+    return supplier.find((s) => s.id === whichSupplier);
+  }, [supplier, whichSupplier]);
+  const [actionType, setActionType] = useState("");
 
   const handleChooseProduct = () => {
     const choosed = cloneProduk.filter((p) => p.checked);
@@ -91,7 +95,7 @@ export default function ProductDebt() {
     setAddItemDialog(false);
   };
 
-  const handleAddDebtNow = () => {
+  const handleUpdateDebt = () => {
     // validasi
     if (choosedProduk.length === 0) {
       toast.info("Mohon Tambah Barang Terlebih Dahulu");
@@ -116,7 +120,7 @@ export default function ProductDebt() {
       return;
     }
 
-    setAddDebtDialog(true);
+    setConfirmChangeDialog(true);
     setProductDebt([...debt]);
   };
 
@@ -190,11 +194,32 @@ export default function ProductDebt() {
       {supplier.length > 0 && (
         <div className="flex flex-col justify-center items-center">
           <FieldSet className="px-3 py-2 border rounded-md">
-            <FieldLegend>Tambah Hutang Barang</FieldLegend>
+            <FieldLegend>Update Hutang Barang</FieldLegend>
             <FieldDescription>
-              Isi Dengan Barang Apa Saja Yang Di Pinjam Hari Ini
+              Tambah atau Kurangi Hutang Barang ke Supplier
             </FieldDescription>
             <FieldGroup>
+              {/* Action */}
+              <Field>
+                <FieldLabel>Action</FieldLabel>
+                <Select required onValueChange={setActionType}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Tipe Aksi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="addDebt">
+                        Tambah Hutang Barang
+                      </SelectItem>
+                      <SelectItem value="reduceDebt">
+                        Kurangi Hutang Barang
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </Field>
+
+              {/* Choose Supplier */}
               <Field>
                 <FieldLabel>Supplier</FieldLabel>
                 <Select required onValueChange={setWhichSupplier}>
@@ -225,7 +250,16 @@ export default function ProductDebt() {
                         key={produk.identifier}
                       >
                         <FieldLabel htmlFor={produk.identifier}>
-                          {produk.name}
+                          {produk.name}{" "}
+                          <span className="text-[10px] text-gray-400">
+                            <span>
+                              {
+                                choosedSupplier?.productDebt.find(
+                                  (p) => p.identifier === produk.identifier,
+                                )?.remaining
+                              }
+                            </span>
+                          </span>
                         </FieldLabel>
                         <div>
                           <input
@@ -316,7 +350,7 @@ export default function ProductDebt() {
                                 setCloneProduk((prev) => {
                                   return prev.map((p) => {
                                     if (p.identifier === produk.identifier) {
-                                      return { ...produk, checked: e };
+                                      return { ...p, checked: e };
                                     }
 
                                     return p;
@@ -325,7 +359,7 @@ export default function ProductDebt() {
                                 setNotChoosedProduk((prev) => {
                                   return prev.map((p) => {
                                     if (p.identifier === produk.identifier) {
-                                      return { ...produk, checked: e };
+                                      return { ...p, checked: e };
                                     }
 
                                     return p;
@@ -361,17 +395,20 @@ export default function ProductDebt() {
                     <Button
                       type="button"
                       className="bg-green-700"
-                      onClick={handleAddDebtNow}
+                      onClick={handleUpdateDebt}
+                      disabled={actionType === ""}
                     >
-                      Tambah Hutang Sekarang
+                      {actionType === "addDebt" && "Tambah Hutang Sekarang"}
+                      {actionType === "reduceDebt" && "Kurangi Hutang Sekarang"}
+                      {actionType === "" && "Pilih Action"}
                     </Button>
                   </div>
 
                   {/* peringatan sebelum menambahkan hutang barang */}
                   <div>
                     <AlertDialog
-                      open={addDebtDialog}
-                      onOpenChange={setAddDebtDialog}
+                      open={confirmChangeDialog}
+                      onOpenChange={setConfirmChangeDialog}
                     >
                       <AlertDialogContent>
                         <AlertDialogHeader>
@@ -382,13 +419,14 @@ export default function ProductDebt() {
                         <AlertDialogDescription>
                           <span className="block">
                             <span className="block">
-                              Supplier :{" "}
-                              <span>
-                                {
-                                  supplier.find((s) => s.id == whichSupplier)
-                                    ?.name
-                                }
+                              <span className="block">
+                                Tujuan :{" "}
+                                {actionType === "addDebt" &&
+                                  "Penambahan Hutang Barang"}{" "}
+                                {actionType === "reduceDebt" &&
+                                  "Pengurangan Hutang Barang"}
                               </span>
+                              Supplier : <span>{choosedSupplier?.name}</span>
                             </span>
                             <span>
                               <span className="block">
@@ -407,12 +445,18 @@ export default function ProductDebt() {
                           <AlertDialogCancel>Batal</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => {
-                              addProductDebt(whichSupplier, productDebt);
+                              updateProductDebt(
+                                whichSupplier,
+                                productDebt,
+                                actionType,
+                              );
                               setChoosedProduk([]);
                               setNotChoosedProduk(produk);
                               setCloneProduk(produk);
                               toast.success(
-                                "Berhasil Menambahkan Hutang Produk",
+                                actionType === "addDebt"
+                                  ? "Berhasil Menambahkan Hutang Produk"
+                                  : "Berhasil Mengurangi Hutang Produk",
                               );
                             }}
                           >

@@ -11,6 +11,21 @@ import { useCRUD } from "@/context/CRUDContext";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
+const link = [
+  {
+    buttonName: "Supplier",
+    destination: "/crud/supplier",
+  },
+  {
+    buttonName: "Update Hutang Barang",
+    destination: "/crud/updateProductDebt",
+  },
+  {
+    buttonName: "Produk",
+    destination: "/crud/products",
+  },
+];
+
 export default function CRUD() {
   const navigate = useNavigate();
   const { getSupplierList, supplierInitialFetch } = useCRUD();
@@ -37,36 +52,18 @@ export default function CRUD() {
         </BreadcrumbList>
       </Breadcrumb>
       <ul className="text-center flex flex-col justify-center gap-y-2">
-        <li>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/crud/supplier");
-            }}
-          >
-            Supplier
-          </Button>
-        </li>
-        <li>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/crud/productDebt");
-            }}
-          >
-            Tambah Hutang Barang
-          </Button>
-        </li>
-        <li>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/crud/products");
-            }}
-          >
-            Produk
-          </Button>
-        </li>
+        {link.map((url) => (
+          <li>
+            <Button
+              size="lg"
+              onClick={() => {
+                navigate(url.destination);
+              }}
+            >
+              {url.buttonName}
+            </Button>
+          </li>
+        ))}
       </ul>
     </div>
   );

@@ -56,7 +56,7 @@ export function CRUDProvider({ children }) {
     return exist ? true : false;
   };
 
-  const addProductDebt = async (supplierId, productDebt) => {
+  const updateProductDebt = async (supplierId, productDebt, actionType) => {
     setLoading(true);
     const {
       data: supplierObject,
@@ -77,9 +77,16 @@ export function CRUDProvider({ children }) {
         );
 
         if (sameDebt) {
+          let summary = 0;
+          if (actionType === "addDebt") {
+            summary = sameDebt.remaining + debt.remaining;
+          }
+          if (actionType === "reduceDebt") {
+            summary = sameDebt.remaining - debt.remaining;
+          }
           return {
             ...sameDebt,
-            remaining: sameDebt.remaining + debt.remaining,
+            remaining: summary,
           };
         } else {
           return debt;
@@ -94,13 +101,17 @@ export function CRUDProvider({ children }) {
         }
       });
 
+      const removedZeroDebt = [...unmondifiedDebt, ...merged].filter(
+        (p) => p.remaining > 0,
+      );
+
       await updateDocument(
         "Update Supplier Data",
         collectionName.supplier,
         supplierId,
         {
           ...supplierObject,
-          productDebt: [...unmondifiedDebt, ...merged],
+          productDebt: removedZeroDebt,
         },
         "Berhasil Mengupdate Supplier",
       );
@@ -111,7 +122,7 @@ export function CRUDProvider({ children }) {
           if (s.id === supplierId) {
             return {
               ...s,
-              productDebt: [...unmondifiedDebt, ...merged],
+              productDebt: removedZeroDebt,
             };
           } else {
             return s;
@@ -265,7 +276,7 @@ export function CRUDProvider({ children }) {
         getSupplierList,
         supplierInitialFetch,
         productsInitialFetch,
-        addProductDebt,
+        updateProductDebt,
         products,
         setProducts,
         getProductList,

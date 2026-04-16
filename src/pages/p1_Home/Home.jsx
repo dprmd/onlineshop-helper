@@ -1,14 +1,27 @@
 import { Button } from "@/components/ui/button";
-import { deleteCollection } from "@/services/firebase/docService";
 import { useNavigate } from "react-router-dom";
+
+const link = [
+  {
+    buttonName: "Perhitungan Profit",
+    destination: "/profitCalculation",
+  },
+  {
+    buttonName: "Alokasi Pemasukan",
+    destination: "/incomeAllocation",
+  },
+  {
+    buttonName: "Penghasilan",
+    destination: "/income",
+  },
+  {
+    buttonName: "Data Barang",
+    destination: "/crud",
+  },
+];
 
 export default function Home() {
   const navigate = useNavigate();
-
-  const handleClickMe = async () => {
-    deleteCollection("penghasilanJualanOnlineShopee");
-    deleteCollection("penghasilanJualanOnlineTikTok");
-  };
 
   return (
     <div>
@@ -16,50 +29,18 @@ export default function Home() {
         Hallo Selamat Datang 😄
       </h3>
       <ul className="text-center flex flex-col gap-y-2 justify-center">
-        <li>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/profitCalculation");
-            }}
-          >
-            Perhitungan Profit
-          </Button>
-        </li>
-        <li>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/incomeAllocation");
-            }}
-          >
-            Alokasi Pemasukan
-          </Button>
-        </li>
-        <li>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/income");
-            }}
-          >
-            Penghasilan
-          </Button>
-        </li>
-        <li>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/crud");
-            }}
-          >
-            CRUD Barang
-          </Button>
-        </li>
-
-        {/* <li>
-          <Button onClick={handleClickMe}>Click Me</Button>
-        </li> */}
+        {link.map((url) => (
+          <li>
+            <Button
+              size="lg"
+              onClick={() => {
+                navigate(url.destination);
+              }}
+            >
+              {url.buttonName}
+            </Button>
+          </li>
+        ))}
       </ul>
     </div>
   );

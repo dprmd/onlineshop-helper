@@ -229,45 +229,47 @@ export default function Products() {
           >
             Tambah Produk
           </Button>
-          {products.map((prod) => (
-            <Card className="min-w-[380px] max-w-[380px]" key={prod.id}>
-              <CardContent>
-                <p>Nama Produk : {prod.name}</p>
-                <p>HPP : {formatNumber(prod.hpp)}</p>
-              </CardContent>
-              <CardFooter className="flex gap-x-1">
-                <Button
-                  size={"xs"}
-                  onClick={() => {
-                    setProduct((prev) => ({
-                      ...prev,
-                      name: prod.name,
-                      hpp: formatNumber(prod.hpp),
-                    }));
-                    setIdPToEdit(prod.id);
-                    setDialog((prev) => ({
-                      ...prev,
-                      title: "Edit Produk",
-                      open: true,
-                      dialogMotive: "editProduct",
-                    }));
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  size={"xs"}
-                  variant={"destructive"}
-                  onClick={() => {
-                    setIdPToRemove(prod.id);
-                    setDialog((prev) => ({ ...prev, confirmRemove: true }));
-                  }}
-                >
-                  Hapus
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+          <div className="flex flex-col md:flex-wrap md:flex-row justify-center items-center gap-2">
+            {products.map((prod) => (
+              <Card className="min-w-[300px] max-w-[380px]" key={prod.id}>
+                <CardContent>
+                  <p>Nama Produk : {prod.name}</p>
+                  <p>HPP : {formatNumber(prod.hpp)}</p>
+                </CardContent>
+                <CardFooter className="flex gap-x-1">
+                  <Button
+                    size={"xs"}
+                    onClick={() => {
+                      setProduct((prev) => ({
+                        ...prev,
+                        name: prod.name,
+                        hpp: formatNumber(prod.hpp),
+                      }));
+                      setIdPToEdit(prod.id);
+                      setDialog((prev) => ({
+                        ...prev,
+                        title: "Edit Produk",
+                        open: true,
+                        dialogMotive: "editProduct",
+                      }));
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size={"xs"}
+                    variant={"destructive"}
+                    onClick={() => {
+                      setIdPToRemove(prod.id);
+                      setDialog((prev) => ({ ...prev, confirmRemove: true }));
+                    }}
+                  >
+                    Hapus
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </div>
       )}
     </div>

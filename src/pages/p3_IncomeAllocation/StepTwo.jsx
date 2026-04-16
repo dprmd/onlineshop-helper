@@ -44,7 +44,7 @@ export default function StepTwo() {
         ...p,
         sold: 0,
       }));
-  });
+  }, [supplier, whichSupplier]);
   const [setorBarang, setSetorBarang] = useState(productList);
   const [dialog, setDialog] = useState({
     open: false,
