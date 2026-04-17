@@ -32,7 +32,6 @@ import { useCRUD } from "@/context/CRUDContext";
 import { formatNumber, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
 
 export default function Products() {
   const {
@@ -46,6 +45,7 @@ export default function Products() {
   const [product, setProduct] = useState({
     name: "",
     hpp: "",
+    stock: 0,
   });
   const [idPToRemove, setIdPToRemove] = useState("");
   const [idPToEdit, setIdPToEdit] = useState("");
@@ -183,12 +183,7 @@ export default function Products() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
-                const deleteNow = await deleteProduct(idPToRemove);
-                if (deleteNow.success) {
-                  toast.info("Berhasil Menghapus Produk");
-                } else {
-                  toast.error("Gagal Menghapus Produk");
-                }
+                await deleteProduct(idPToRemove);
               }}
             >
               Lanjutkan

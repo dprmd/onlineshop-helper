@@ -44,7 +44,7 @@ export default function Income() {
       </Breadcrumb>
       <ul className="text-center flex flex-col gap-y-2 justify-center items-center">
         {link.map((url) => (
-          <li>
+          <li key={url.destination}>
             <Button
               size="lg"
               onClick={() => {

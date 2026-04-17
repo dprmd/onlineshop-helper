@@ -53,7 +53,7 @@ export default function CRUD() {
       </Breadcrumb>
       <ul className="text-center flex flex-col justify-center gap-y-2">
         {link.map((url) => (
-          <li>
+          <li key={url.destination}>
             <Button
               size="lg"
               onClick={() => {

@@ -30,7 +30,7 @@ export default function Home() {
       </h3>
       <ul className="text-center flex flex-col gap-y-2 justify-center">
         {link.map((url) => (
-          <li>
+          <li key={url.buttonName}>
             <Button
               size="lg"
               onClick={() => {
