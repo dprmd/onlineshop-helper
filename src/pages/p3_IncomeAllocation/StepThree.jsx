@@ -79,6 +79,7 @@ import {
   separateNumber,
   toCamelCase,
 } from "../../utils/generalFunction";
+import { useMemo } from "react";
 
 // additional function
 const date = new Date();
@@ -144,7 +145,9 @@ const StepThree = () => {
   const [work, setWork] = useState(day === 0 ? false : true);
   const [workingTime, setWorkingTime] = useState("Full Day");
   const [simpleMode, setSimpleMode] = useState(true);
-  const choosedSupplier = supplier.find((s) => s.id === whichSupplier);
+  const choosedSupplier = useMemo(() => {
+    return supplier.find((s) => s.id === whichSupplier);
+  }, [supplier, whichSupplier]);
   const lastSave = {
     shopee: "shopeeLastSave",
     tiktok: "tiktokLastSave",

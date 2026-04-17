@@ -24,6 +24,10 @@ const link = [
     buttonName: "Produk",
     destination: "/crud/products",
   },
+  {
+    buttonName: "Riwayat Produksi",
+    destination: "/crud/productionHistory",
+  },
 ];
 
 export default function CRUD() {

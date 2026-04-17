@@ -24,6 +24,7 @@ export const collectionName = {
   allTime: "penghasilanAllTime",
   allTimeDocId: "CatatanPenghasilanAllTime",
   products: "produk",
+  productionHistory: "riwayatProduksi",
   supplier: "supplier",
 };
 

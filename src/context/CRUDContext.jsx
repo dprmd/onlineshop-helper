@@ -17,14 +17,20 @@ const CRUDContext = createContext();
 export function CRUDProvider({ children }) {
   const { setLoading } = useUI();
 
-  // Supplier
+  // Supplier State
   const [supplier, setSupplier] = useState([]);
   const [supplierInitialFetch, setSupplierInitialFetch] = useState(true);
 
-  // Products
+  // Products State
   const [products, setProducts] = useState([]);
   const [productsInitialFetch, setProductsInitalFetch] = useState(true);
 
+  // Production History State
+  const [productionHistory, setProductionHistory] = useState([]);
+  const [productionHistoryInitialFetch, setProductionInitialFetch] =
+    useState(true);
+
+  // Supplier Function
   const getSupplierList = async () => {
     setLoading(true);
     const {
@@ -55,6 +61,8 @@ export function CRUDProvider({ children }) {
     );
     return exist ? true : false;
   };
+
+  // Products Function
 
   const updateProductDebt = async (supplierId, productDebt, actionType) => {
     setLoading(true);
@@ -267,6 +275,32 @@ export function CRUDProvider({ children }) {
     setLoading(false);
   };
 
+  // Production History Function
+
+  const getProductionHistory = async () => {
+    setLoading(true);
+    const {
+      data: productionList,
+      success,
+      error,
+      message,
+    } = await getDocuments(
+      "Ambil Riwayat Produksi",
+      collectionName.productionHistory,
+      "newToOld",
+    );
+
+    if (success) {
+      setProductionInitialFetch(false);
+      setProductionHistory([...productionList]);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <CRUDContext.Provider
       value={{
@@ -283,6 +317,9 @@ export function CRUDProvider({ children }) {
         addProduct,
         editProduct,
         deleteProduct,
+        productionHistory,
+        productionHistoryInitialFetch,
+        getProductionHistory,
       }}
     >
       {children}

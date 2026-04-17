@@ -1,6 +1,8 @@
 import { UIProvider } from "@/context/UIContext";
 import RootLayout from "@/layouts/RootLayout";
 import NotFound from "@/pages/NotFound";
+import AddBatchProduction from "@/pages/p5_CRUD/AddBatchProduction";
+import ProductionHistory from "@/pages/p5_CRUD/ProductionHistory";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { CRUDProvider } from "./context/CRUDContext";
 import { IncomeAllocationProvider } from "./context/IncomeAllocationContext";
@@ -59,6 +61,8 @@ const router = createHashRouter([
           { path: "supplier", element: <Supplier /> },
           { path: "updateProductDebt", element: <UpdateProductDebt /> },
           { path: "products", element: <Products /> },
+          { path: "productionHistory", element: <ProductionHistory /> },
+          { path: "addBatchProduction", element: <AddBatchProduction /> },
         ],
       },
 
