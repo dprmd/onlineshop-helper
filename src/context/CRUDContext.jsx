@@ -1,5 +1,8 @@
 import { useUI } from "@/context/UIContext";
+import { collectionName } from "@/services/firebase/firebase";
+import { isEqual } from "lodash";
 import { createContext, useContext, useState } from "react";
+import { toast } from "sonner";
 import {
   createDocument,
   deleteDocument,
@@ -8,9 +11,6 @@ import {
   updateDocument,
 } from "../services/firebase/docService";
 import { raw, toCamelCase } from "../utils/generalFunction";
-import { collectionName } from "@/services/firebase/firebase";
-import { toast } from "sonner";
-import { isEqual } from "lodash";
 
 const CRUDContext = createContext();
 
@@ -301,6 +301,29 @@ export function CRUDProvider({ children }) {
     setLoading(false);
   };
 
+  const addProduction = async (batchProduction) => {
+    setLoading(true);
+
+    const { docId, success, message } = await createDocument(
+      "Simpan Batch Produksi",
+      collectionName.productionHistory,
+      batchProduction,
+      "Berhasil Menambahkan Batch Ke Riwayat Produksi",
+    );
+
+    if (success) {
+      setProductionHistory((prev) => [
+        ...prev,
+        { id: docId, ...batchProduction },
+      ]);
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <CRUDContext.Provider
       value={{
@@ -320,6 +343,7 @@ export function CRUDProvider({ children }) {
         productionHistory,
         productionHistoryInitialFetch,
         getProductionHistory,
+        addProduction,
       }}
     >
       {children}

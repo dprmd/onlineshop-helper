@@ -1,3 +1,13 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -16,23 +26,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useCRUD } from "@/context/CRUDContext";
+import { raw, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 export default function AddBatchProduction() {
-  const { products, productsInitialFetch, getProductList } = useCRUD();
+  const { products, productsInitialFetch, getProductList, addProduction } =
+    useCRUD();
   const navigate = useNavigate();
 
   // Batch State
@@ -42,6 +43,31 @@ export default function AddBatchProduction() {
   const choosedProduct = useMemo(() => {
     return products.find((p) => p.id === selectedProduct);
   }, [products, selectedProduct]);
+
+  const handleCutPieces = async () => {
+    const cuttingAt = new Date().getTime();
+    const batch = {
+      status: "cutting",
+      product: choosedProduct,
+      materials: {
+        listMaterial: materials.map((m) => ({
+          ...m,
+          price: raw(m.price),
+          qty: Number(m.qty),
+          total: raw(m.price) * Number(m.qty),
+        })),
+        total: materials.reduce((acc, cur) => {
+          return acc + raw(cur.price) * Number(cur.qty);
+        }, 0),
+      },
+      time: {
+        startCutting: cuttingAt,
+      },
+    };
+
+    await addProduction(batch);
+    navigate("/crud/productionHistory");
+  };
 
   useEffect(() => {
     if (productsInitialFetch) {
@@ -54,15 +80,29 @@ export default function AddBatchProduction() {
       <AlertDialog open={confirmCutPieces} onOpenChange={setConfirmCutPieces}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogTitle>Potong Kain ?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account from our servers.
+              Berikan Kain Ini Ke Tukang Potong
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="text-gray-500 text-[12px]">
+            <p>
+              Produk Yang Akan Dibuat : <b>{choosedProduct?.name}</b>
+            </p>
+            <p>Bahan : </p>
+            <ul>
+              {materials.map((m) => (
+                <li className="font-bold" key={m.id}>
+                  {m.materialName} {m.qty} {m.type} Rp {m.price}
+                </li>
+              ))}
+            </ul>
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction>Continue</AlertDialogAction>
+            <AlertDialogAction onClick={handleCutPieces}>
+              Continue
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -101,86 +141,117 @@ export default function AddBatchProduction() {
               <FieldLabel>Bahan</FieldLabel>
               {materials?.map((m, i) => (
                 <Field
-                  className="flex flex-row justify-between items-center my-2"
                   key={`materials-${i}`}
+                  className="border border-gray-300 px-2 py-1 rounded-sm"
                 >
-                  <Field>
-                    <FieldLabel>Nama Kain</FieldLabel>
-                    <Input
-                      value={materials[i].materialName}
-                      onChange={(e) => {
-                        setMaterials((prev) => {
-                          return prev.map((mm) => {
-                            if (mm.id === m.id) {
-                              return { ...mm, materialName: e.target.value };
-                            } else {
-                              return mm;
-                            }
+                  <Field className="flex flex-row">
+                    <div>
+                      <FieldLabel>Nama Kain</FieldLabel>
+                      <Input
+                        className="text-sm"
+                        value={materials[i].materialName}
+                        onChange={(e) => {
+                          setMaterials((prev) => {
+                            return prev.map((mm) => {
+                              if (mm.id === m.id) {
+                                return { ...mm, materialName: e.target.value };
+                              } else {
+                                return mm;
+                              }
+                            });
                           });
-                        });
-                      }}
-                      placeholder=". . . . ."
-                    />
-                  </Field>
-                  <Field className="flex-1">
-                    <FieldLabel>Quantity</FieldLabel>
-                    <Input
-                      placeholder=". . ."
-                      value={materials[i].qty}
-                      onChange={(e) => {
-                        setMaterials((prev) => {
-                          return prev.map((mm) => {
-                            if (mm.id === m.id) {
-                              return { ...mm, qty: e.target.value };
-                            } else {
-                              return mm;
-                            }
+                        }}
+                        placeholder=". . . . ."
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Harga</FieldLabel>
+                      <Input
+                        className="text-sm"
+                        placeholder="0"
+                        value={materials[i].price}
+                        onChange={(e) => {
+                          console.log(e.target.value);
+                          setMaterials((prev) => {
+                            return prev.map((mm) => {
+                              if (mm.id === m.id) {
+                                return {
+                                  ...mm,
+                                  price: separateNumber(e),
+                                };
+                              } else {
+                                return mm;
+                              }
+                            });
                           });
-                        });
-                      }}
-                    />
+                        }}
+                      />
+                    </div>
                   </Field>
-                  <Field className="flex-1">
-                    <FieldLabel>Type</FieldLabel>
-                    <Select
-                      value={materials[i].type}
-                      onValueChange={(v) => {
-                        setMaterials((prev) => {
-                          return prev.map((mm) => {
-                            if (mm.id === m.id) {
-                              return { ...mm, type: v };
-                            } else {
-                              return mm;
-                            }
+                  <Field className="flex flex-row">
+                    <div className="min-w-fit">
+                      <FieldLabel>Quantity</FieldLabel>
+                      <Input
+                        className="text-sm"
+                        placeholder="0"
+                        value={materials[i].qty}
+                        onChange={(e) => {
+                          setMaterials((prev) => {
+                            return prev.map((mm) => {
+                              if (mm.id === m.id) {
+                                return { ...mm, qty: e.target.value };
+                              } else {
+                                return mm;
+                              }
+                            });
                           });
-                        });
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectItem value="yard">Yard</SelectItem>
-                          <SelectItem value="meter">Meter</SelectItem>
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  <Field className="max-w-[40px]">
-                    <FieldLabel>Act</FieldLabel>
-                    <Button
-                      className="bi bi-trash"
-                      onClick={() => {
-                        setMaterials((prev) => {
-                          return prev.filter((mm) => mm.id !== m.id);
-                        });
-                      }}
-                    />
+                        }}
+                      />
+                    </div>
+                    <div className="min-w-fit">
+                      <FieldLabel>Type</FieldLabel>
+                      <Select
+                        value={materials[i].type}
+                        className="w-[100%]"
+                        onValueChange={(v) => {
+                          setMaterials((prev) => {
+                            return prev.map((mm) => {
+                              if (mm.id === m.id) {
+                                return { ...mm, type: v };
+                              } else {
+                                return mm;
+                              }
+                            });
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectItem value="yard">Yard</SelectItem>
+                            <SelectItem value="meter">Meter</SelectItem>
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="max-w-fit">
+                      <FieldLabel>Act</FieldLabel>
+                      <Button
+                        className="bi bi-trash"
+                        onClick={() => {
+                          setMaterials((prev) => {
+                            return prev.filter((mm) => mm.id !== m.id);
+                          });
+                        }}
+                      />
+                    </div>
                   </Field>
                 </Field>
               ))}
               <Button
+                type="button"
                 size={"xs"}
                 className="max-w-fit"
                 onClick={() => {
@@ -189,8 +260,9 @@ export default function AddBatchProduction() {
                     {
                       id: new Date().getTime(),
                       materialName: "",
-                      qty: 0,
+                      qty: "",
                       type: "",
+                      price: "",
                     },
                   ]);
                 }}
@@ -211,11 +283,26 @@ export default function AddBatchProduction() {
               </Button>
               <Button
                 className="max-w-fit"
+                type="button"
                 onClick={() => {
                   if (!choosedProduct) {
                     toast.warning("Mohon Pilih Produk Yang Akan Dibuat");
+                    return;
                   } else if (materials.length === 0) {
                     toast.warning("Mohon Gunakan Bahan");
+                    return;
+                  }
+
+                  const checkMaterials = materials.filter((m) => {
+                    return m.materialName && m.qty && m.type && m.price;
+                  });
+
+                  if (checkMaterials.length === 0) {
+                    toast.warning("Mohon Masukan Info Kain Dengan Benar");
+                    return;
+                  } else {
+                    setMaterials([...checkMaterials]);
+                    setConfirmCutPieces(true);
                   }
                 }}
               >
