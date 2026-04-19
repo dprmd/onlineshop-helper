@@ -8,20 +8,19 @@ import {
   FieldSet,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useCRUD } from "@/context/CRUDContext";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { formatNumber } from "../../utils/generalFunction";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 export default function StepTwo() {
   const {
@@ -46,10 +45,10 @@ export default function StepTwo() {
       }));
   }, [supplier, whichSupplier]);
   const [setorBarang, setSetorBarang] = useState(productList);
-  const [dialog, setDialog] = useState({
-    open: false,
-    currentValue: 0,
-    newValue: 0,
+  const [valueOnPopover, setValueOnPopover] = useState({
+    value: 0,
+    product: [],
+    popList: {},
   });
 
   // Function
@@ -90,25 +89,6 @@ export default function StepTwo() {
     }
   }, []);
 
-  const handleSumSold = () => {
-    const total = Number(dialog.newValue) + Number(dialog.currentValue);
-    setSetorBarang((prev) => {
-      return prev.map((prod) => {
-        if (prod.identifier === dialog.product.identifier) {
-          return { ...prod, sold: total };
-        } else {
-          return prod;
-        }
-      });
-    });
-    setDialog({
-      open: false,
-      currentValue: 0,
-      newValue: 0,
-      product: {},
-    });
-  };
-
   return (
     <div className="flex justify-center items-center">
       <form
@@ -119,17 +99,33 @@ export default function StepTwo() {
           <FieldLegend>Setor Barang</FieldLegend>
           <FieldDescription>Masukan Barang Yang Akan Di Setor</FieldDescription>
           <FieldGroup>
-            {productList?.map((p, i) => (
-              <Field key={p.identifier}>
-                <FieldLabel htmlFor={p.identifier}>
-                  <span>{p.name}</span>
+            {productList?.map((produk, i) => (
+              <Field key={produk.identifier}>
+                <FieldLabel htmlFor={produk.identifier} className="px-12">
+                  <span>{produk.name}</span>
                   <span className="text-[10px] text-gray-400">
-                    Sisa {p.remaining}
+                    Sisa {produk.remaining}
                   </span>
                 </FieldLabel>
                 <div className="flex gap-x-2">
+                  <Button
+                    className="bi bi-x-circle"
+                    type="button"
+                    onClick={() => {
+                      setSetorBarang((barang) => {
+                        return barang.map((bar) => {
+                          if (bar.identifier === produk.identifier) {
+                            return { ...bar, sold: 0 };
+                          } else {
+                            return bar;
+                          }
+                        });
+                      });
+                      handleReset();
+                    }}
+                  />
                   <Input
-                    id={p.identifier}
+                    id={produk.identifier}
                     autoComplete="off"
                     placeholder="0"
                     value={setorBarang[i].sold}
@@ -138,9 +134,9 @@ export default function StepTwo() {
                       setShowConclusion(false);
                       setSetorBarang((prev) => {
                         return prev.map((prod) => {
-                          if (prod.identifier === p.identifier) {
-                            if (Number(e.target.value) > p.remaining) {
-                              return { ...prod, sold: p.remaining };
+                          if (prod.identifier === produk.identifier) {
+                            if (Number(e.target.value) > produk.remaining) {
+                              return { ...prod, sold: produk.remaining };
                             }
                             return { ...prod, sold: e.target.value };
                           } else {
@@ -150,18 +146,98 @@ export default function StepTwo() {
                       });
                     }}
                   />
-                  <Button
-                    type="button"
-                    onClick={() => {
-                      setDialog({
-                        open: true,
-                        currentValue: setorBarang[i].sold,
-                        product: p,
+                  <Popover
+                    open={valueOnPopover.popList[produk.identifier]}
+                    onOpenChange={(v) => {
+                      setValueOnPopover((prev) => {
+                        return {
+                          ...prev,
+                          value: 0,
+                          popList: {
+                            ...prev.popList,
+                            [produk.identifier]: v,
+                          },
+                        };
                       });
                     }}
                   >
-                    +
-                  </Button>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setValueOnPopover((prev) => {
+                            return {
+                              ...prev,
+                              product: produk,
+                              popList: {
+                                ...prev.popList,
+                                [produk.identifier]: true,
+                              },
+                            };
+                          });
+                        }}
+                      >
+                        +
+                      </Button>
+                    </PopoverTrigger>
+                    {/* </PopoverTrigger> */}
+                    <PopoverContent className="max-w-[100px]">
+                      <PopoverHeader>
+                        <PopoverTitle>Tambah</PopoverTitle>
+                        <FieldSet>
+                          <FieldGroup>
+                            <Field>
+                              <Input
+                                value={valueOnPopover.value}
+                                onChange={(e) => {
+                                  setValueOnPopover((prev) => ({
+                                    ...prev,
+                                    value: e.target.value,
+                                  }));
+                                }}
+                                onKeyUp={(e) => {
+                                  if (e.key === "Enter") {
+                                    const total =
+                                      Number(valueOnPopover.value) +
+                                      Number(setorBarang[i].sold);
+                                    setSetorBarang((prev) => {
+                                      return prev.map((prod) => {
+                                        if (
+                                          prod.identifier ===
+                                          valueOnPopover.product.identifier
+                                        ) {
+                                          if (
+                                            Number(total) > produk.remaining
+                                          ) {
+                                            return {
+                                              ...prod,
+                                              sold: produk.remaining,
+                                            };
+                                          } else {
+                                            return { ...prod, sold: total };
+                                          }
+                                        } else {
+                                          return prod;
+                                        }
+                                      });
+                                    });
+                                    setValueOnPopover((prev) => ({
+                                      ...prev,
+                                      popList: {
+                                        ...prev.popList,
+                                        [produk.identifier]: false,
+                                      },
+                                      value: 0,
+                                    }));
+                                  }
+                                }}
+                              />
+                            </Field>
+                          </FieldGroup>
+                        </FieldSet>
+                      </PopoverHeader>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </Field>
             ))}
@@ -209,44 +285,6 @@ export default function StepTwo() {
             </Field>
           </FieldGroup>
         </FieldSet>
-        <Dialog
-          open={dialog.open}
-          onOpenChange={(v) => {
-            setDialog({
-              open: v,
-            });
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tambah</DialogTitle>
-              <FieldSet>
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel>Terjual</FieldLabel>
-                    <Input
-                      value={dialog.newValue}
-                      onChange={(e) => {
-                        setDialog((prev) => ({
-                          ...prev,
-                          newValue: e.target.value,
-                        }));
-                      }}
-                    />
-                  </Field>
-                </FieldGroup>
-              </FieldSet>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button>Batal</Button>
-              </DialogClose>
-              <Button type="button" onClick={handleSumSold}>
-                Simpan
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </form>
     </div>
   );

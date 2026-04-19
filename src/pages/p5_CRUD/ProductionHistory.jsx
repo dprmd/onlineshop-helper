@@ -50,7 +50,7 @@ export default function ProductionHistory() {
       {productionHistory.length > 0 && (
         <div>
           {productionHistory.map((batch) => (
-            <BatchProductionCard batch={batch} />
+            <BatchProductionCard batch={batch} key={batch.id} />
           ))}
         </div>
       )}
@@ -75,18 +75,16 @@ const BatchProductionCard = ({ batch }) => {
               `Dipotong Pada ${formatTanggal(batch.time.startCutting)}`}
           </p>
           <p>Status : {getStatus(batch.status)}</p>
+          <p>Total Belanja Bahan : Rp {formatNumber(batch.materials.total)}</p>
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <p>
-          List Bahan - Total Belanja Bahan : Rp{" "}
-          {formatNumber(batch.materials.total)}
-        </p>
+        <p>List Bahan</p>
         <ul>
           {batch?.materials.listMaterial.map((material) => (
             <li
               key={material.id}
-              className="border px-2 py-1 rounded my-1 border-gray-400"
+              className="border px-2 py-1 rounded my-1 border-gray-300"
             >
               <p>Nama : {material.materialName}</p>
               <p>

@@ -263,6 +263,7 @@ const StepThree = () => {
   };
 
   const syncLastSave = async () => {
+    setLoadingSave(true);
     if (config.syncLastSave) {
       if (isTikTok) {
         const tiktokLastSave = await getDocument(
@@ -276,6 +277,7 @@ const StepThree = () => {
             "Kamu Sudah Menyimpan Dokument Penarikan TikTok Hari Ini, Kembali Lah Besok",
           );
         } else {
+          setLoadingSave(false);
           setConfirmSave(true);
         }
       } else {
@@ -290,16 +292,17 @@ const StepThree = () => {
             "Kamu Sudah Menyimpan Withdraw Shopee Hari Ini, Kembali Lah Besok",
           );
         } else {
+          setLoadingSave(false);
           setConfirmSave(true);
         }
       }
     } else {
+      setLoadingSave(false);
       setConfirmSave(true);
     }
   };
 
   const saveToFirebase = async () => {
-    const platform = isTikTok ? "tiktok" : "shopee";
     setLoadingSave(true);
 
     const soldProducts = modifiedSetorBarang
