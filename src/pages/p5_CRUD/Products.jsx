@@ -33,6 +33,7 @@ import { useCRUD } from "@/context/CRUDContext";
 import { formatNumber, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 
 export default function Products() {
   const { products, getProductList, addProduct, editProduct, deleteProduct } =
@@ -44,7 +45,6 @@ export default function Products() {
     variation: [],
     stock: 0,
   });
-  console.log(product);
   const [idPToRemove, setIdPToRemove] = useState("");
   const [idPToEdit, setIdPToEdit] = useState("");
   const [dialog, setDialog] = useState({
@@ -71,21 +71,30 @@ export default function Products() {
     }
 
     if (dialog.dialogMotive === "editProduct") {
-      await editProduct(idPToEdit, product);
-      // Reset State Produk
-      setProduct((prev) => ({
-        ...prev,
-        name: "",
-        hpp: "",
-        isHaveVariation: false,
-        variation: [],
-        stock: 0,
-      }));
-      setIdPToEdit("");
+      if (product.variation.length === 0 && product.isHaveVariation) {
+        toast.info("Mohon Tambahkan Variasi Terlebih Dahulu");
+        return;
+      } else {
+        await editProduct(idPToEdit, product);
+        // Reset State Produk
+        setProduct((prev) => ({
+          ...prev,
+          name: "",
+          hpp: "",
+          isHaveVariation: false,
+          variation: [],
+          stock: 0,
+        }));
+        setIdPToEdit("");
+      }
     }
 
     // Close Dialog
     setDialog((prev) => ({ ...prev, open: false }));
+  };
+
+  const sortHppRange = (variation) => {
+    return [...new Set([...variation.map((v) => v.hpp).sort((a, b) => a - b)])];
   };
 
   useEffect(() => {
@@ -184,13 +193,32 @@ export default function Products() {
                 )}
                 {product.isHaveVariation && (
                   <Field>
-                    <FieldLabel>Variasi</FieldLabel>
+                    <div className="flex justify-between items-center">
+                      <FieldLabel>Variasi</FieldLabel>
+                      {product.isHaveVariation && (
+                        <Button
+                          size={"xs"}
+                          type="button"
+                          variant={"outline"}
+                          onClick={() => {
+                            setProduct((prev) => ({
+                              ...prev,
+                              isHaveVariation: false,
+                            }));
+                          }}
+                        >
+                          Tanpa Variasi
+                        </Button>
+                      )}
+                    </div>
                     {product.variation.map((variant, i) => (
-                      <div className="flex justify-evenly" key={i}>
-                        <div className="w-[48%]">
+                      <div className="flex justify-evenly items-center" key={i}>
+                        <div className="w-[43%]">
                           <Label className="text-sm">Nama Variasi</Label>
                           <Input
                             value={variant.name}
+                            className="text-sm"
+                            required
                             onChange={(e) => {
                               setProduct((prev) => {
                                 return {
@@ -212,10 +240,12 @@ export default function Products() {
                             }}
                           />
                         </div>
-                        <div className="w-[48%]">
+                        <div className="w-[43%]">
                           <Label className="text-sm">HPP</Label>
                           <Input
                             value={variant.hpp}
+                            required
+                            className="text-sm"
                             onChange={(e) => {
                               const value = separateNumber(e);
                               setProduct((prev) => {
@@ -232,6 +262,23 @@ export default function Products() {
                                         return variantt;
                                       }
                                     },
+                                  ),
+                                };
+                              });
+                            }}
+                          />
+                        </div>
+                        <div className="w-[10%]">
+                          <FieldLabel>Act</FieldLabel>
+                          <Button
+                            type="button"
+                            className="inline-block bi bi-trash"
+                            onClick={() => {
+                              setProduct((prev) => {
+                                return {
+                                  ...prev,
+                                  variation: prev.variation.filter(
+                                    (_, ii) => ii !== i,
                                   ),
                                 };
                               });
@@ -304,6 +351,7 @@ export default function Products() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Tampilkan Ini Jika Produk Kosong */}
       {products.length === 0 && (
         <div className="text-center">
           <h3 className="my-2">Produk Masih Kosong</h3>
@@ -323,6 +371,7 @@ export default function Products() {
       )}
 
       {products.length > 0 && (
+        // Tombol Tambah Produk
         <div className="flex flex-col justify-center items-center md:flex-wrap gap-y-2">
           <Button
             onClick={() => {
@@ -336,12 +385,30 @@ export default function Products() {
           >
             Tambah Produk
           </Button>
+
+          {/* List Produk */}
           <div className="flex flex-col md:flex-wrap md:flex-row justify-center items-center gap-2">
             {products.map((prod) => (
               <Card className="min-w-[300px] max-w-[380px]" key={prod.id}>
                 <CardContent>
                   <p>Nama Produk : {prod.name}</p>
-                  <p>HPP : {formatNumber(prod.hpp)}</p>
+                  {!prod.isHaveVariation && (
+                    <p>HPP : {formatNumber(prod.hpp)}</p>
+                  )}
+                  {prod.isHaveVariation && (
+                    <div>
+                      <p>
+                        HPP : {sortHppRange(prod.variation)[0]}
+                        {sortHppRange(prod.variation).length > 1 ? " - " : null}
+                        {sortHppRange(prod.variation).length > 1 &&
+                          sortHppRange(prod.variation).reverse()[0]}
+                      </p>
+                      <p className="text-[12px]">
+                        Produk Ini Memiliki{" "}
+                        <b>{prod.variation.length} Variasi</b>
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="flex gap-x-1">
                   <Button
@@ -351,8 +418,10 @@ export default function Products() {
                         ...prev,
                         name: prod.name,
                         hpp: formatNumber(prod.hpp),
-                        isHaveVariation: prod.isHaveVariation,
-                        variation: [...prod.variation],
+                        isHaveVariation: prod.isHaveVariation
+                          ? prod.isHaveVariation
+                          : false,
+                        variation: prod.variation ? [...prod.variation] : [],
                       }));
                       setIdPToEdit(prod.id);
                       setDialog((prev) => ({

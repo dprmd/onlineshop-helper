@@ -121,7 +121,7 @@ export default function StepTwo() {
                           }
                         });
                       });
-                      handleReset();
+                      setShowConclusion(false);
                     }}
                   />
                   <Input
