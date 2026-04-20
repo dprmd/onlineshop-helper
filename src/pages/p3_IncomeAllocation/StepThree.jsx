@@ -124,7 +124,7 @@ const StepThree = () => {
     fetchAT,
     ATInitialFetch,
   } = useWithdrawalRecords();
-  const { supplier } = useCRUD();
+  const { supplier, setSupplier } = useCRUD();
 
   // State
   const [loadingSave, setLoadingSave] = useState(false);
@@ -408,6 +408,16 @@ const StepThree = () => {
           { ...choosedSupplier, productDebt: payDebt },
           `Berhasil Update Catatan Hutang Barang Dari Supplier ${capitalizeWords(choosedSupplier.name)}`,
         );
+
+        setSupplier((prev) => {
+          return prev.map((supp) => {
+            if (supp.id === whichSupplier) {
+              return { ...supp, productDebt: payDebt };
+            } else {
+              return supp;
+            }
+          });
+        });
       }
     };
 

@@ -26,12 +26,23 @@ export function WithdrawalRecordsProvider({ children }) {
 
   // Loading & Error & Initial Fetch
   const { setLoading } = useUI();
-  const [ATInitialFetch, setATInitialFetch] = useState(true);
-  const [shopeeInitialFetch, setShopeeInitialFetch] = useState(true);
-  const [tiktokInitialFetch, setTiktokInitialFetch] = useState(true);
+  const [isATFetched, setIsATFetched] = useState(false);
+  const [isFetchingAT, setIsFetchingAT] = useState(false);
+  const [isFetchingShopeeWithdrawals, setIsFetchingShopeeWithdrawals] =
+    useState(false);
+  const [isShopeeWithdrawalsFetched, setIsShopeeWithdrawalsFetched] =
+    useState(false);
+  const [isFetchingTiktokWithdrawals, setIsFetchingTiktokWithdrawals] =
+    useState(false);
+  const [isTiktokWithdrawalsFetched, setIsTiktokWithdrawalsFetched] =
+    useState(false);
 
   const fetchAT = async () => {
+    if (isFetchingAT || isATFetched) return;
+
+    setIsFetchingAT(true);
     setLoading(true);
+
     const { data, error, success, message } = await getDocument(
       "Mengambil Document Catatan Penghasilan All Time",
       collectionName.allTime,
@@ -39,7 +50,6 @@ export function WithdrawalRecordsProvider({ children }) {
     );
 
     if (success) {
-      setATInitialFetch(false);
       const { shopee, tiktok } = data;
       setATWithdrawals({
         shopee: shopee.ATWithdrawals,
@@ -57,35 +67,63 @@ export function WithdrawalRecordsProvider({ children }) {
         shopee: shopee.ATProfit,
         tiktok: tiktok.ATProfit,
       });
+      setIsATFetched(true);
     } else {
       console.log(message);
       console.log(error);
     }
 
     setLoading(false);
+    setIsFetchingAT(false);
   };
 
   const fetchWithdrawals = async (platform, limit) => {
     setLoading(true);
-    const {
-      data: withdrawalList,
-      success,
-      error,
-      message,
-    } = await getWithdrawalList(platform, "newToOld", limit);
-    if (success) {
-      if (platform === "shopee") {
-        setShopeeInitialFetch(false);
+
+    if (platform === "shopee") {
+      if (isFetchingShopeeWithdrawals || isShopeeWithdrawalsFetched) return;
+
+      setIsFetchingShopeeWithdrawals(true);
+
+      const {
+        data: withdrawalList,
+        success,
+        error,
+        message,
+      } = await getWithdrawalList(platform, "newToOld", limit);
+      if (success) {
         setShopeeWithdrawals(withdrawalList);
         setShopeeWithdrawals_temp(withdrawalList);
+        setIsShopeeWithdrawalsFetched(true);
       } else {
-        setTiktokInitialFetch(false);
+        toast.error(message);
+        console.log(error);
+      }
+
+      setIsFetchingShopeeWithdrawals(false);
+    }
+
+    if (platform === "tiktok") {
+      if (isFetchingTiktokWithdrawals || isTiktokWithdrawalsFetched) return;
+
+      setIsFetchingTiktokWithdrawals(true);
+
+      const {
+        data: withdrawalList,
+        success,
+        error,
+        message,
+      } = await getWithdrawalList(platform, "newToOld", limit);
+      if (success) {
         setTiktokWithdrawals(withdrawalList);
         setTiktokWithdrawals_temp(withdrawalList);
+        setIsTiktokWithdrawalsFetched(true);
+      } else {
+        toast.error(message);
+        console.log(error);
       }
-    } else {
-      toast.error(message);
-      console.log(error);
+
+      setIsFetchingTiktokWithdrawals(false);
     }
 
     setLoading(false);
@@ -167,12 +205,6 @@ export function WithdrawalRecordsProvider({ children }) {
         ATProfit,
         setATProfit,
         fetchAT,
-        ATInitialFetch,
-        setATInitialFetch,
-        shopeeInitialFetch,
-        setShopeeInitialFetch,
-        tiktokInitialFetch,
-        setTiktokInitialFetch,
       }}
     >
       {children}

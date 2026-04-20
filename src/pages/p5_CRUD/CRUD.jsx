@@ -32,12 +32,10 @@ const link = [
 
 export default function CRUD() {
   const navigate = useNavigate();
-  const { getSupplierList, supplierInitialFetch } = useCRUD();
+  const { getSupplierList } = useCRUD();
 
   useEffect(() => {
-    if (supplierInitialFetch) {
-      getSupplierList();
-    }
+    getSupplierList();
   }, []);
 
   return (

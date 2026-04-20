@@ -26,15 +26,13 @@ import { separateNumber } from "../../utils/generalFunction";
 export default function StepOne() {
   const { totalWithdraw, setTotalWithdraw, whichSupplier, setWhichSupplier } =
     useIncomeAllocation();
-  const { supplier, getSupplierList, supplierInitialFetch } = useCRUD();
+  const { supplier, getSupplierList } = useCRUD();
 
   const [errorSupplier, setErrorSupplier] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (supplierInitialFetch) {
-      getSupplierList();
-    }
+    getSupplierList();
   }, []);
 
   return (
@@ -55,14 +53,12 @@ export default function StepOne() {
                   setErrorSupplier(true);
                 }
               }}
-              id="totalPenarikan"
             >
               <FieldGroup>
                 <Field>
                   <FieldLabel htmlFor="supplier">Supplier</FieldLabel>
                   <Select
                     id="supplier"
-                    required
                     value={whichSupplier}
                     onValueChange={(e) => {
                       setErrorSupplier(false);
@@ -112,12 +108,7 @@ export default function StepOne() {
                   </Button>
 
                   {/* Selanjutnya */}
-                  <Button
-                    size="lg"
-                    type="submit"
-                    className="bg-green-700"
-                    form="totalPenarikan"
-                  >
+                  <Button size="lg" type="submit" className="bg-green-700">
                     Selanjutnya
                   </Button>
                 </Field>

@@ -12,13 +12,10 @@ import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import FilterList from "./FilterList";
 
 export default function ShopeeWithdrawalRecords() {
-  const { shopeeWithdrawals, fetchWithdrawals, shopeeInitialFetch } =
-    useWithdrawalRecords();
+  const { shopeeWithdrawals, fetchWithdrawals } = useWithdrawalRecords();
 
   useEffect(() => {
-    if (shopeeInitialFetch) {
-      fetchWithdrawals("shopee", 7);
-    }
+    fetchWithdrawals("shopee", 7);
   }, []);
 
   return (

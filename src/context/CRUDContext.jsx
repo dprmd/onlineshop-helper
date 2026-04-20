@@ -19,20 +19,90 @@ export function CRUDProvider({ children }) {
 
   // Supplier State
   const [supplier, setSupplier] = useState([]);
-  const [supplierInitialFetch, setSupplierInitialFetch] = useState(true);
+  const [isFetchingSupplier, setIsFetchingSupplier] = useState(false);
+  const [isSupplierFetched, setIsSupplierFetched] = useState(false);
 
   // Products State
   const [products, setProducts] = useState([]);
-  const [productsInitialFetch, setProductsInitalFetch] = useState(true);
+  const [isFetchingProducts, setIsFetchingProducts] = useState(false);
+  const [isProductsFetched, setIsProductsFetched] = useState(false);
 
   // Production History State
   const [productionHistory, setProductionHistory] = useState([]);
-  const [productionHistoryInitialFetch, setProductionInitialFetch] =
-    useState(true);
+  const [isProductionHistoryFetched, setIsProductionHistoryFetched] =
+    useState(false);
+  const [isFetchingProductionHistory, setIsFetchingProductionHistory] =
+    useState(false);
 
-  // Supplier Function
-  const getSupplierList = async () => {
+  // Create Function
+
+  const addProduct = async (product) => {
     setLoading(true);
+
+    const newProduct = {
+      ...product,
+      identifier: toCamelCase(product.name),
+      hpp: raw(product.hpp),
+    };
+
+    const { docId, success, error, message } = await createDocument(
+      "Menambahkan Produk Baru",
+      collectionName.products,
+      newProduct,
+      "Berhasil Menambahkan Produk",
+    );
+
+    if (success) {
+      // Optimistic Updates
+      setProducts((prev) => {
+        return [
+          {
+            ...newProduct,
+            id: docId,
+          },
+          ...prev,
+        ];
+      });
+      toast.success(message);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
+  const addProduction = async (batchProduction) => {
+    setLoading(true);
+
+    const { docId, success, message } = await createDocument(
+      "Simpan Batch Produksi",
+      collectionName.productionHistory,
+      batchProduction,
+      "Berhasil Menambahkan Batch Ke Riwayat Produksi",
+    );
+
+    if (success) {
+      setProductionHistory((prev) => [
+        ...prev,
+        { id: docId, ...batchProduction },
+      ]);
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
+
+    setLoading(false);
+  };
+
+  // Read Function
+
+  const getSupplierList = async () => {
+    if (isSupplierFetched || isFetchingSupplier) return;
+
+    setIsFetchingSupplier(true);
+    setLoading(true);
+
     const {
       data: supplierList,
       success,
@@ -45,14 +115,15 @@ export function CRUDProvider({ children }) {
     );
 
     if (success) {
-      setSupplierInitialFetch(false);
-      setSupplier([...supplierList]);
+      setSupplier(supplierList);
+      setIsSupplierFetched(true);
     } else {
       toast.error(message);
       console.log(error);
     }
 
     setLoading(false);
+    setIsFetchingSupplier(false);
   };
 
   const checkSupplierIfExist = (supplierName) => {
@@ -62,10 +133,69 @@ export function CRUDProvider({ children }) {
     return exist ? true : false;
   };
 
-  // Products Function
+  const getProductList = async () => {
+    if (isProductsFetched || isFetchingProducts) return;
+
+    setIsFetchingProducts(true);
+    setLoading(true);
+
+    const {
+      data: productList,
+      success,
+      error,
+      message,
+    } = await getDocuments(
+      "Ambil List Produk",
+      collectionName.products,
+      "newToOld",
+    );
+
+    if (success) {
+      setIsProductsFetched(true);
+      setProducts([...productList]);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+    setIsFetchingProducts(false);
+  };
+
+  const getProductionHistory = async () => {
+    if (isProductionHistoryFetched || isFetchingProductionHistory) return;
+
+    setIsFetchingProductionHistory(true);
+    setLoading(true);
+
+    const {
+      data: productionList,
+      success,
+      error,
+      message,
+    } = await getDocuments(
+      "Ambil Riwayat Produksi",
+      collectionName.productionHistory,
+      "newToOld",
+    );
+
+    if (success) {
+      setProductionHistory([...productionList]);
+      setIsProductionHistoryFetched(true);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+    setIsFetchingProductionHistory(false);
+  };
+
+  // Update Function
 
   const updateProductDebt = async (supplierId, productDebt, actionType) => {
     setLoading(true);
+
     const {
       data: supplierObject,
       error,
@@ -145,66 +275,6 @@ export function CRUDProvider({ children }) {
     setLoading(false);
   };
 
-  const getProductList = async () => {
-    setLoading(true);
-    const {
-      data: productList,
-      success,
-      error,
-      message,
-    } = await getDocuments(
-      "Ambil List Produk",
-      collectionName.products,
-      "newToOld",
-    );
-
-    if (success) {
-      setProductsInitalFetch(false);
-      setProducts(productList);
-    } else {
-      toast.error(message);
-      console.log(error);
-    }
-
-    setLoading(false);
-  };
-
-  const addProduct = async (product) => {
-    setLoading(true);
-
-    const newProduct = {
-      ...product,
-      identifier: toCamelCase(product.name),
-      hpp: raw(product.hpp),
-    };
-
-    const { docId, success, error, message } = await createDocument(
-      "Menambahkan Produk Baru",
-      collectionName.products,
-      newProduct,
-      "Berhasil Menambahkan Produk",
-    );
-
-    if (success) {
-      // Optimistic Updates
-      setProducts((prev) => {
-        return [
-          {
-            ...newProduct,
-            id: docId,
-          },
-          ...prev,
-        ];
-      });
-      toast.success(message);
-    } else {
-      toast.error(message);
-      console.log(error);
-    }
-
-    setLoading(false);
-  };
-
   const editProduct = async (productId, product) => {
     setLoading(true);
 
@@ -252,6 +322,8 @@ export function CRUDProvider({ children }) {
     setLoading(false);
   };
 
+  // Delete Function
+
   const deleteProduct = async (docId) => {
     setLoading(true);
 
@@ -275,55 +347,6 @@ export function CRUDProvider({ children }) {
     setLoading(false);
   };
 
-  // Production History Function
-
-  const getProductionHistory = async () => {
-    setLoading(true);
-    const {
-      data: productionList,
-      success,
-      error,
-      message,
-    } = await getDocuments(
-      "Ambil Riwayat Produksi",
-      collectionName.productionHistory,
-      "newToOld",
-    );
-
-    if (success) {
-      setProductionInitialFetch(false);
-      setProductionHistory([...productionList]);
-    } else {
-      toast.error(message);
-      console.log(error);
-    }
-
-    setLoading(false);
-  };
-
-  const addProduction = async (batchProduction) => {
-    setLoading(true);
-
-    const { docId, success, message } = await createDocument(
-      "Simpan Batch Produksi",
-      collectionName.productionHistory,
-      batchProduction,
-      "Berhasil Menambahkan Batch Ke Riwayat Produksi",
-    );
-
-    if (success) {
-      setProductionHistory((prev) => [
-        ...prev,
-        { id: docId, ...batchProduction },
-      ]);
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
-
-    setLoading(false);
-  };
-
   return (
     <CRUDContext.Provider
       value={{
@@ -331,8 +354,6 @@ export function CRUDProvider({ children }) {
         setSupplier,
         checkSupplierIfExist,
         getSupplierList,
-        supplierInitialFetch,
-        productsInitialFetch,
         updateProductDebt,
         products,
         setProducts,
@@ -341,7 +362,6 @@ export function CRUDProvider({ children }) {
         editProduct,
         deleteProduct,
         productionHistory,
-        productionHistoryInitialFetch,
         getProductionHistory,
         addProduction,
       }}

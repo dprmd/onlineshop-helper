@@ -28,25 +28,23 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useCRUD } from "@/context/CRUDContext";
 import { formatNumber, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function Products() {
-  const {
-    products,
-    productsInitialFetch,
-    getProductList,
-    addProduct,
-    editProduct,
-    deleteProduct,
-  } = useCRUD();
+  const { products, getProductList, addProduct, editProduct, deleteProduct } =
+    useCRUD();
   const [product, setProduct] = useState({
     name: "",
     hpp: "",
+    isHaveVariation: false,
+    variation: [],
     stock: 0,
   });
+  console.log(product);
   const [idPToRemove, setIdPToRemove] = useState("");
   const [idPToEdit, setIdPToEdit] = useState("");
   const [dialog, setDialog] = useState({
@@ -62,22 +60,36 @@ export default function Products() {
     if (dialog.dialogMotive === "addProduct") {
       await addProduct(product);
       // Reset State Produk
-      setProduct((prev) => ({ ...prev, name: "", hpp: "" }));
+      setProduct((prev) => ({
+        ...prev,
+        name: "",
+        hpp: "",
+        isHaveVariation: false,
+        variation: [],
+        stock: 0,
+      }));
     }
 
     if (dialog.dialogMotive === "editProduct") {
       await editProduct(idPToEdit, product);
       // Reset State Produk
-      setProduct({ name: "", hpp: "" });
+      setProduct((prev) => ({
+        ...prev,
+        name: "",
+        hpp: "",
+        isHaveVariation: false,
+        variation: [],
+        stock: 0,
+      }));
+      setIdPToEdit("");
     }
 
+    // Close Dialog
     setDialog((prev) => ({ ...prev, open: false }));
   };
 
   useEffect(() => {
-    if (productsInitialFetch) {
-      getProductList();
-    }
+    getProductList();
   }, []);
 
   return (
@@ -106,9 +118,18 @@ export default function Products() {
         open={dialog.open}
         onOpenChange={(v) => {
           setDialog((prev) => ({ ...prev, open: v }));
+          if (!v) {
+            setProduct((prev) => ({
+              ...prev,
+              name: "",
+              hpp: "",
+              isHaveVariation: false,
+              variation: [],
+            }));
+          }
         }}
       >
-        <form onSubmit={handleChangeProduct} id="addProduct">
+        <form onSubmit={handleChangeProduct} id="changeProduct">
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{dialog.title}</DialogTitle>
@@ -127,38 +148,124 @@ export default function Products() {
                     }}
                   />
                 </Field>
-                <Field>
-                  <FieldLabel>Harga Produk</FieldLabel>
-                  <Input
-                    value={product.hpp}
-                    onChange={(e) => {
-                      setProduct((prev) => {
-                        const value = separateNumber(e);
-                        return {
+                {!product.isHaveVariation && (
+                  <Field>
+                    <div className="flex justify-between items-center">
+                      <FieldLabel>HPP</FieldLabel>
+                      {!product.isHaveVariation && (
+                        <Button
+                          size={"xs"}
+                          type="button"
+                          variant={"outline"}
+                          onClick={() => {
+                            setProduct((prev) => ({
+                              ...prev,
+                              isHaveVariation: true,
+                            }));
+                          }}
+                        >
+                          Per Variasi
+                        </Button>
+                      )}
+                    </div>
+                    <Input
+                      value={product.hpp}
+                      onChange={(e) => {
+                        setProduct((prev) => {
+                          const value = separateNumber(e);
+                          return {
+                            ...prev,
+                            hpp: value,
+                          };
+                        });
+                      }}
+                    />
+                  </Field>
+                )}
+                {product.isHaveVariation && (
+                  <Field>
+                    <FieldLabel>Variasi</FieldLabel>
+                    {product.variation.map((variant, i) => (
+                      <div className="flex justify-evenly" key={i}>
+                        <div className="w-[48%]">
+                          <Label className="text-sm">Nama Variasi</Label>
+                          <Input
+                            value={variant.name}
+                            onChange={(e) => {
+                              setProduct((prev) => {
+                                return {
+                                  ...prev,
+                                  variation: prev.variation.map(
+                                    (variantt, ii) => {
+                                      if (ii === i) {
+                                        return {
+                                          ...variantt,
+                                          name: e.target.value,
+                                        };
+                                      } else {
+                                        return variantt;
+                                      }
+                                    },
+                                  ),
+                                };
+                              });
+                            }}
+                          />
+                        </div>
+                        <div className="w-[48%]">
+                          <Label className="text-sm">HPP</Label>
+                          <Input
+                            value={variant.hpp}
+                            onChange={(e) => {
+                              const value = separateNumber(e);
+                              setProduct((prev) => {
+                                return {
+                                  ...prev,
+                                  variation: prev.variation.map(
+                                    (variantt, ii) => {
+                                      if (ii === i) {
+                                        return {
+                                          ...variantt,
+                                          hpp: value,
+                                        };
+                                      } else {
+                                        return variantt;
+                                      }
+                                    },
+                                  ),
+                                };
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                    <Button
+                      variant={"outline"}
+                      size={"xs"}
+                      onClick={() => {
+                        setProduct((prev) => ({
                           ...prev,
-                          hpp: value,
-                        };
-                      });
-                    }}
-                  />
-                </Field>
+                          hpp: 0,
+                          variation: [...prev.variation, { name: "", hpp: "" }],
+                        }));
+                      }}
+                    >
+                      Tambah Variasi
+                    </Button>
+                  </Field>
+                )}
               </FieldGroup>
             </FieldSet>
             <DialogFooter className="flex flex-row justify-end">
               <DialogClose asChild>
-                <Button
-                  onClick={() => {
-                    setProduct((prev) => ({
-                      ...prev,
-                      name: "",
-                      hpp: "",
-                    }));
-                  }}
-                >
-                  Batal
-                </Button>
+                <Button>Batal</Button>
               </DialogClose>
-              <Button className="bg-green-800" type="submit" form="addProduct">
+              <Button
+                className="bg-green-800"
+                type="submit"
+                form="changeProduct"
+              >
                 Simpan
               </Button>
             </DialogFooter>
@@ -184,6 +291,11 @@ export default function Products() {
             <AlertDialogAction
               onClick={async () => {
                 await deleteProduct(idPToRemove);
+                setDialog((prev) => ({
+                  ...prev,
+                  confirmRemove: false,
+                }));
+                setIdPToRemove("");
               }}
             >
               Lanjutkan
@@ -239,6 +351,8 @@ export default function Products() {
                         ...prev,
                         name: prod.name,
                         hpp: formatNumber(prod.hpp),
+                        isHaveVariation: prod.isHaveVariation,
+                        variation: [...prod.variation],
                       }));
                       setIdPToEdit(prod.id);
                       setDialog((prev) => ({

@@ -12,13 +12,10 @@ import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import FilterList from "./FilterList";
 
 export default function TikTokWithdrawalRecords() {
-  const { tiktokWithdrawals, fetchWithdrawals, tiktokInitialFetch } =
-    useWithdrawalRecords();
+  const { tiktokWithdrawals, fetchWithdrawals } = useWithdrawalRecords();
 
   useEffect(() => {
-    if (tiktokInitialFetch) {
-      fetchWithdrawals("tiktok", 7);
-    }
+    fetchWithdrawals("tiktok", 7);
   }, []);
 
   return (

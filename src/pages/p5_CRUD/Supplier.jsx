@@ -29,13 +29,8 @@ import { toast } from "sonner";
 import { collectionName } from "@/services/firebase/firebase";
 
 export default function Supplier() {
-  const {
-    supplier,
-    setSupplier,
-    checkSupplierIfExist,
-    getSupplierList,
-    supplierInitialFetch,
-  } = useCRUD();
+  const { supplier, setSupplier, checkSupplierIfExist, getSupplierList } =
+    useCRUD();
 
   const [supplierName, setSupplierName] = useState("");
   const [dialogAddSupplier, setDialogAddSupplier] = useState(false);
@@ -75,9 +70,7 @@ export default function Supplier() {
   };
 
   useEffect(() => {
-    if (supplierInitialFetch) {
-      getSupplierList();
-    }
+    getSupplierList();
   }, []);
 
   return (

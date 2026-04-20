@@ -32,8 +32,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function AddBatchProduction() {
-  const { products, productsInitialFetch, getProductList, addProduction } =
-    useCRUD();
+  const { products, getProductList, addProduction } = useCRUD();
   const navigate = useNavigate();
 
   // Batch State
@@ -70,9 +69,7 @@ export default function AddBatchProduction() {
   };
 
   useEffect(() => {
-    if (productsInitialFetch) {
-      getProductList();
-    }
+    getProductList();
   });
   return (
     <div className="flex justify-center">
@@ -99,9 +96,9 @@ export default function AddBatchProduction() {
             </ul>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleCutPieces}>
-              Continue
+              Lanjutkan
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

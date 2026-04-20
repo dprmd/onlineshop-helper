@@ -54,10 +54,8 @@ export default function UpdateProductDebt() {
   const {
     supplier,
     getSupplierList,
-    supplierInitialFetch,
     updateProductDebt,
     products,
-    productsInitialFetch,
     getProductList,
   } = useCRUD();
   const [whichSupplier, setWhichSupplier] = useState("");
@@ -125,13 +123,8 @@ export default function UpdateProductDebt() {
   };
 
   useEffect(() => {
-    if (supplierInitialFetch) {
-      getSupplierList();
-    }
-
-    if (productsInitialFetch) {
-      getProductList();
-    }
+    getSupplierList();
+    getProductList();
   }, []);
 
   useEffect(() => {
