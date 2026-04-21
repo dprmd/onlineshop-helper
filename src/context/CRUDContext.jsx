@@ -39,15 +39,11 @@ export function CRUDProvider({ children }) {
   const addProduct = async (product) => {
     setLoading(true);
 
-    console.log(product);
-
     const newProduct = {
       ...product,
       identifier: toCamelCase(product.name),
       hpp: product.hpp ? raw(product.hpp) : 0,
     };
-
-    console.log(newProduct);
 
     const { docId, success, error, message } = await createDocument(
       "Menambahkan Produk Baru",
@@ -292,9 +288,6 @@ export function CRUDProvider({ children }) {
       variation: product.variation,
     };
 
-    console.log(productBefore);
-    console.log(editedProduct);
-
     if (isEqual({ ...editedProduct, id: productId }, productBefore)) {
       toast.info("Produk Tidak Di Edit");
       setLoading(false);
@@ -305,7 +298,7 @@ export function CRUDProvider({ children }) {
       "Edit Produk",
       collectionName.products,
       productId,
-      product,
+      editedProduct,
       "Berhasil Edit Produk",
     );
 

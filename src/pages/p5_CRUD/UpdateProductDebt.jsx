@@ -48,6 +48,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useCRUD } from "../../context/CRUDContext";
 import { formatNumber } from "../../utils/generalFunction";
+import { sortHppRange } from "@/pages/p5_CRUD/Products";
 
 export default function UpdateProductDebt() {
   const navigate = useNavigate();
@@ -363,7 +364,14 @@ export default function UpdateProductDebt() {
                             <FieldLabel htmlFor={produk.identifier}>
                               {produk.name}
                               <span className="text-[10px] text-gray-400">
-                                {formatNumber(produk.hpp)}
+                                {!produk.isHaveVariation &&
+                                  formatNumber(produk.hpp)}
+                                {sortHppRange(produk.variation)[0]}
+                                {sortHppRange(produk.variation).length > 1
+                                  ? " - "
+                                  : null}
+                                {sortHppRange(produk.variation).length > 1 &&
+                                  sortHppRange(produk.variation).reverse()[0]}
                               </span>
                             </FieldLabel>
                           </Field>

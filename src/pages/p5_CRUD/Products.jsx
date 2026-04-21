@@ -35,6 +35,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
+export const sortHppRange = (variation) => {
+  return [...new Set([...variation.map((v) => v.hpp).sort((a, b) => a - b)])];
+};
+
 export default function Products() {
   const { products, getProductList, addProduct, editProduct, deleteProduct } =
     useCRUD();
@@ -91,10 +95,6 @@ export default function Products() {
 
     // Close Dialog
     setDialog((prev) => ({ ...prev, open: false }));
-  };
-
-  const sortHppRange = (variation) => {
-    return [...new Set([...variation.map((v) => v.hpp).sort((a, b) => a - b)])];
   };
 
   useEffect(() => {
@@ -204,6 +204,7 @@ export default function Products() {
                             setProduct((prev) => ({
                               ...prev,
                               isHaveVariation: false,
+                              variation: [],
                             }));
                           }}
                         >
