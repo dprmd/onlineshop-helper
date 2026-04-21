@@ -54,6 +54,8 @@ export default function ProductionHistory() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+
+      {/* Jika Tidak Ada Riwayat Produksi */}
       {productionHistory.length === 0 && (
         <div className="text-center">
           <p className="text-xl text-gray-600 my-2">
@@ -68,28 +70,36 @@ export default function ProductionHistory() {
         </div>
       )}
 
-      <div className="text-center">
-        <Button
-          type="submit"
-          onClick={() => navigate("/crud/addBatchProduction")}
-        >
-          Buat Batch Produksi
-        </Button>
+      {/* List Riwayat Produksi */}
+      <div>
+        {productionHistory.length > 0 && (
+          <div>
+            <div className="text-center my-2">
+              <Button
+                type="submit"
+                onClick={() => navigate("/crud/addBatchProduction")}
+              >
+                Buat Batch Produksi
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              {productionHistory.map((batch) => (
+                <BatchProductionCard batch={batch} key={batch.id} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-      {productionHistory.length > 0 && (
-        <div className="flex flex-wrap gap-4">
-          {productionHistory.map((batch) => (
-            <BatchProductionCard batch={batch} key={batch.id} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
 
-const getStatus = (status) => {
-  if (status === "cutting") {
-    return "Di Potong";
+const getStatus = (batch) => {
+  if (batch.status === "cutting") {
+    return {
+      status: "Di Potong",
+      description: `Di Potong Pada ${formatTanggal(batch.time.startCutting)}`,
+    };
   }
 };
 
@@ -99,25 +109,23 @@ const BatchProductionCard = ({ batch }) => {
       <CardHeader>
         <CardTitle>{batch.product.name}</CardTitle>
         <CardDescription>
-          <p>
-            {batch.status === "cutting" &&
-              `Dipotong Pada ${formatTanggal(batch.time.startCutting)}`}
-          </p>
-          <p>Status : {getStatus(batch.status)}</p>
+          <p>Status : {getStatus(batch).status}</p>
           <p>Total Belanja Bahan : Rp {formatNumber(batch.materials.total)}</p>
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Collapsible>
-          <CollapsibleTrigger className="underline">
-            <Button variant={"outline"}>List Kain</Button>
+          <CollapsibleTrigger>
+            <div className="border px-2 py-1 rounded-lg border-gray-300 cursor-pointer hover:bg-gray-100">
+              List Kain
+            </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
             <ul>
               {batch?.materials.listMaterial.map((material) => (
                 <li
                   key={material.id}
-                  className="border px-2 py-1 rounded my-1 border-gray-300"
+                  className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500"
                 >
                   <p>Nama : {material.materialName}</p>
                   <p>

@@ -43,6 +43,9 @@ export function CRUDProvider({ children }) {
       ...product,
       identifier: toCamelCase(product.name),
       hpp: product.hpp ? raw(product.hpp) : 0,
+      variation: product.variation
+        ? product.variation.map((p) => ({ ...p, hpp: raw(p.hpp) }))
+        : [],
     };
 
     const { docId, success, error, message } = await createDocument(
@@ -215,16 +218,35 @@ export function CRUDProvider({ children }) {
         );
 
         if (sameDebt) {
+          let history = {
+            changeType: "",
+            changes: [],
+          };
           let summary = 0;
           if (actionType === "addDebt") {
             summary = sameDebt.remaining + debt.remaining;
+            history.changeType = "addDebt";
+            history.changes.push({
+              name: debt.name,
+              before: sameDebt.remaining,
+              after: summary,
+              changes: debt.remaining,
+            });
           }
           if (actionType === "reduceDebt") {
             summary = sameDebt.remaining - debt.remaining;
+            history.changeType = "reduceDebt";
+            history.changes.push({
+              name: debt.name,
+              before: sameDebt.remaining,
+              after: summary,
+              changes: debt.remaining,
+            });
           }
           return {
             ...sameDebt,
             remaining: summary,
+            debtChanges: [...sameDebt.debtChanges, history],
           };
         } else {
           return debt;
@@ -285,7 +307,9 @@ export function CRUDProvider({ children }) {
       identifier: toCamelCase(product.name),
       hpp: product.hpp ? raw(product.hpp) : 0,
       isHaveVariation: product.isHaveVariation,
-      variation: product.variation,
+      variation: product.variation
+        ? product.variation.map((p) => ({ ...p, hpp: raw(p.hpp) }))
+        : [],
     };
 
     if (isEqual({ ...editedProduct, id: productId }, productBefore)) {

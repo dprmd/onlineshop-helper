@@ -134,6 +134,7 @@ export default function Products() {
               hpp: "",
               isHaveVariation: false,
               variation: [],
+              stock: 0,
             }));
           }
         }}
@@ -149,6 +150,7 @@ export default function Products() {
                   <FieldLabel>Nama Produk</FieldLabel>
                   <Input
                     value={product.name}
+                    required
                     onChange={(e) => {
                       setProduct((prev) => ({
                         ...prev,
@@ -179,6 +181,7 @@ export default function Products() {
                     </div>
                     <Input
                       value={product.hpp}
+                      required
                       onChange={(e) => {
                         setProduct((prev) => {
                           const value = separateNumber(e);
@@ -399,10 +402,12 @@ export default function Products() {
                   {prod.isHaveVariation && (
                     <div>
                       <p>
-                        HPP : {sortHppRange(prod.variation)[0]}
+                        HPP : {formatNumber(sortHppRange(prod.variation)[0])}
                         {sortHppRange(prod.variation).length > 1 ? " - " : null}
                         {sortHppRange(prod.variation).length > 1 &&
-                          sortHppRange(prod.variation).reverse()[0]}
+                          formatNumber(
+                            sortHppRange(prod.variation).reverse()[0],
+                          )}
                       </p>
                       <p className="text-[12px]">
                         Produk Ini Memiliki{" "}
@@ -419,10 +424,13 @@ export default function Products() {
                         ...prev,
                         name: prod.name,
                         hpp: formatNumber(prod.hpp),
-                        isHaveVariation: prod.isHaveVariation
-                          ? prod.isHaveVariation
-                          : false,
-                        variation: prod.variation ? [...prod.variation] : [],
+                        isHaveVariation: prod.isHaveVariation,
+                        variation: [
+                          ...prod?.variation.map((v) => ({
+                            ...v,
+                            hpp: formatNumber(v.hpp),
+                          })),
+                        ],
                       }));
                       setIdPToEdit(prod.id);
                       setDialog((prev) => ({

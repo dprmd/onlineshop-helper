@@ -39,15 +39,24 @@ export default function AddBatchProduction() {
   const [materials, setMaterials] = useState([]);
   const [confirmCutPieces, setConfirmCutPieces] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedVariant, setSelectedVariant] = useState("");
   const choosedProduct = useMemo(() => {
     return products.find((p) => p.id === selectedProduct);
   }, [products, selectedProduct]);
+  const choosedVariant = useMemo(() => {
+    if (choosedProduct?.isHaveVariation) {
+      return choosedProduct.variation.find((v) => v.name === selectedVariant);
+    } else {
+      return;
+    }
+  }, [choosedProduct, selectedVariant]);
 
   const handleCutPieces = async () => {
     const cuttingAt = new Date().getTime();
     const batch = {
       status: "cutting",
       product: choosedProduct,
+      choosedVariant,
       materials: {
         listMaterial: materials.map((m) => ({
           ...m,
@@ -71,6 +80,7 @@ export default function AddBatchProduction() {
   useEffect(() => {
     getProductList();
   });
+
   return (
     <div className="flex justify-center">
       {/* Dialog Konfirmasi Potong */}
@@ -132,6 +142,33 @@ export default function AddBatchProduction() {
                 <FieldError>Mohon Tambah Produk Terlebih Dahulu</FieldError>
               )}
             </Field>
+
+            {/* Variasi, Jika Ada */}
+            {choosedProduct?.isHaveVariation && (
+              <Field>
+                <FieldLabel>Variasi</FieldLabel>
+                <Select
+                  value={selectedVariant}
+                  onValueChange={setSelectedVariant}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Pilih Variasi" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {choosedProduct?.variation.map((v) => (
+                        <SelectItem key={v.name} value={v.name}>
+                          {v.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {!choosedVariant && (
+                  <FieldError>Mohon Pilih Variasi </FieldError>
+                )}
+              </Field>
+            )}
 
             {/* Materials */}
             <Field>
