@@ -61,6 +61,7 @@ export default function Supplier() {
           name: supplierName,
           username: toCamelCase(supplierName),
           productDebt: [],
+          debtChanges: [],
         },
       ]);
       setSupplierName("");

@@ -94,7 +94,9 @@ export default function UpdateProductDebt() {
     setAddItemDialog(false);
   };
 
-  const handleUpdateDebt = () => {
+  const handleUpdateDebt = (e) => {
+    e.preventDefault();
+
     // validasi
     if (choosedProduk.length === 0) {
       toast.info("Mohon Tambah Barang Terlebih Dahulu");

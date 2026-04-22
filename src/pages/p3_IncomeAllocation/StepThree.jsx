@@ -264,41 +264,41 @@ const StepThree = () => {
 
   const syncLastSave = async () => {
     setLoadingSave(true);
-    if (config.syncLastSave) {
-      if (isTikTok) {
-        const tiktokLastSave = await getDocument(
-          "Ambil Last Save TikTok",
-          collectionName.withdrawals.tiktok,
-          lastSave.tiktok,
-        );
 
-        if (tiktokLastSave.data.time === today) {
-          toast.error(
-            "Kamu Sudah Menyimpan Dokument Penarikan TikTok Hari Ini, Kembali Lah Besok",
-          );
-        } else {
-          setLoadingSave(false);
-          setConfirmSave(true);
-        }
+    if (isTikTok) {
+      // Ambil Data Dari Firebase
+      const tiktokLastSave = await getDocument(
+        "Ambil Last Save TikTok",
+        collectionName.withdrawals.tiktok,
+        lastSave.tiktok,
+      );
+
+      // Bandingkan
+      if (tiktokLastSave.data.time === today) {
+        toast.error(
+          "Kamu Sudah Menyimpan Dokument Penarikan TikTok Hari Ini, Kembali Lah Besok",
+        );
       } else {
-        const shopeeLastSave = await getDocument(
-          "Ambil Last Save Shopee",
-          collectionName.withdrawals.shopee,
-          lastSave.shopee,
-        );
-
-        if (shopeeLastSave.data.time === today) {
-          toast.error(
-            "Kamu Sudah Menyimpan Withdraw Shopee Hari Ini, Kembali Lah Besok",
-          );
-        } else {
-          setLoadingSave(false);
-          setConfirmSave(true);
-        }
+        setLoadingSave(false);
+        setConfirmSave(true);
       }
     } else {
-      setLoadingSave(false);
-      setConfirmSave(true);
+      // Ambil Data Dari Firebase
+      const shopeeLastSave = await getDocument(
+        "Ambil Last Save Shopee",
+        collectionName.withdrawals.shopee,
+        lastSave.shopee,
+      );
+
+      // Bandingkan
+      if (shopeeLastSave.data.time === today) {
+        toast.error(
+          "Kamu Sudah Menyimpan Withdraw Shopee Hari Ini, Kembali Lah Besok",
+        );
+      } else {
+        setLoadingSave(false);
+        setConfirmSave(true);
+      }
     }
   };
 
@@ -374,51 +374,45 @@ const StepThree = () => {
       fetchWithdrawals(platform, 7);
       setLoadingSave(false);
       if (isTikTok) {
-        if (config.syncLastSave) {
-          setTiktokHasSaveToFirebase(true);
-        }
+        setTiktokHasSaveToFirebase(true);
       } else {
-        if (config.syncLastSave) {
-          setShopeeHasSaveToFirebase(true);
-        }
+        setShopeeHasSaveToFirebase(true);
       }
 
       // Update Product Debt
-      if (config.updateProductDebt) {
-        const productDebt = choosedSupplier.productDebt;
+      const productDebt = choosedSupplier.productDebt;
 
-        const payDebt = productDebt.map((debt) => {
-          let tempDebt = debt;
-          soldProducts.forEach((product) => {
-            if (product.identifier === debt.identifier) {
-              tempDebt = {
-                ...debt,
-                remaining: debt.remaining - product.sold,
-              };
-            }
-          });
-
-          return tempDebt;
+      const payDebt = productDebt.map((debt) => {
+        let tempDebt = debt;
+        soldProducts.forEach((product) => {
+          if (product.identifier === debt.identifier) {
+            tempDebt = {
+              ...debt,
+              remaining: debt.remaining - product.sold,
+            };
+          }
         });
 
-        await updateDocument(
-          `Update Hutang Barang Ke ${capitalizeWords(choosedSupplier.name)} `,
-          collectionName.supplier,
-          choosedSupplier.id,
-          { ...choosedSupplier, productDebt: payDebt },
-          `Berhasil Update Catatan Hutang Barang Dari Supplier ${capitalizeWords(choosedSupplier.name)}`,
-        );
+        return tempDebt;
+      });
 
-        setSupplier((prev) => {
-          return prev.map((supp) => {
-            if (supp.id === whichSupplier) {
-              return { ...supp, productDebt: payDebt };
-            } else {
-              return supp;
-            }
-          });
+      await updateDocument(
+        `Update Hutang Barang Ke ${capitalizeWords(choosedSupplier.name)} `,
+        collectionName.supplier,
+        choosedSupplier.id,
+        { ...choosedSupplier, productDebt: payDebt },
+        `Berhasil Update Catatan Hutang Barang Dari Supplier ${capitalizeWords(choosedSupplier.name)}`,
+      );
+
+      setSupplier((prev) => {
+        return prev.map((supp) => {
+          if (supp.id === whichSupplier) {
+            return { ...supp, productDebt: payDebt };
+          } else {
+            return supp;
+          }
         });
-      }
+      });
     };
 
     const updateTiktokDoc = async () => {
@@ -536,9 +530,7 @@ const StepThree = () => {
   useEffect(() => {
     if (!whichSupplier) {
       navigate("/incomeAllocation");
-    }
-
-    if (ATInitialFetch) {
+    } else {
       fetchAT();
     }
   }, []);

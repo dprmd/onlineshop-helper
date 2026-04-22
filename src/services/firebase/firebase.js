@@ -26,6 +26,7 @@ export const collectionName = {
   products: "produk",
   productionHistory: "riwayatProduksi",
   supplier: "supplier",
+  debtChanges: "riwayatPerubahanHutang",
 };
 
 // Initialize Firebase

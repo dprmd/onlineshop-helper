@@ -34,47 +34,45 @@ export function IncomeAllocationProvider({ children }) {
   const [tiktokHasSaveToFirebase, setTiktokHasSaveToFirebase] = useState(false);
 
   const sinkronLastSave = async () => {
-    if (config.syncLastSave) {
-      const lastSaveShopee = "shopeeLastSave";
-      const lastSaveTiktok = "tiktokLastSave";
+    const lastSaveShopee = "shopeeLastSave";
+    const lastSaveTiktok = "tiktokLastSave";
 
-      setLoading(true);
+    setLoading(true);
 
-      const tiktokLastSave = await getDocument(
-        "Ambil Last Save TikTok",
-        collectionName.withdrawals.tiktok,
-        lastSaveTiktok,
-      );
-      if (tiktokLastSave.success) {
-        if (tiktokLastSave.data.time === today) {
-          setTiktokHasSaveToFirebase(true);
-        } else {
-          setTiktokHasSaveToFirebase(false);
-        }
-        setLoading(false);
+    const tiktokLastSave = await getDocument(
+      "Ambil Last Save TikTok",
+      collectionName.withdrawals.tiktok,
+      lastSaveTiktok,
+    );
+    if (tiktokLastSave.success) {
+      if (tiktokLastSave.data.time === today) {
+        setTiktokHasSaveToFirebase(true);
       } else {
-        toast.error(tiktokLastSave.message);
-        console.log(tiktokLastSave.error);
-        setLoading(false);
+        setTiktokHasSaveToFirebase(false);
       }
+      setLoading(false);
+    } else {
+      toast.error(tiktokLastSave.message);
+      console.log(tiktokLastSave.error);
+      setLoading(false);
+    }
 
-      const shopeeLastSave = await getDocument(
-        "Ambil Last Save Shopee",
-        collectionName.withdrawals.shopee,
-        lastSaveShopee,
-      );
-      if (shopeeLastSave.success) {
-        if (shopeeLastSave.data.time === today) {
-          setShopeeHasSaveToFirebase(true);
-        } else {
-          setShopeeHasSaveToFirebase(false);
-        }
-        setLoading(false);
+    const shopeeLastSave = await getDocument(
+      "Ambil Last Save Shopee",
+      collectionName.withdrawals.shopee,
+      lastSaveShopee,
+    );
+    if (shopeeLastSave.success) {
+      if (shopeeLastSave.data.time === today) {
+        setShopeeHasSaveToFirebase(true);
       } else {
-        toast.error(shopeeLastSave.message);
-        console.log(shopeeLastSave.error);
-        setLoading(false);
+        setShopeeHasSaveToFirebase(false);
       }
+      setLoading(false);
+    } else {
+      toast.error(shopeeLastSave.message);
+      console.log(shopeeLastSave.error);
+      setLoading(false);
     }
   };
 

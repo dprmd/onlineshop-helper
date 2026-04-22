@@ -34,7 +34,154 @@ export function CRUDProvider({ children }) {
   const [isFetchingProductionHistory, setIsFetchingProductionHistory] =
     useState(false);
 
-  // Create Function
+  // Supplier Function
+
+  const getSupplierList = async () => {
+    if (isSupplierFetched || isFetchingSupplier) return;
+
+    setIsFetchingSupplier(true);
+    setLoading(true);
+
+    const {
+      data: supplierList,
+      success,
+      error,
+      message,
+    } = await getDocuments(
+      "Ambil List Supplier",
+      collectionName.supplier,
+      "newToOld",
+    );
+
+    if (success) {
+      setSupplier(supplierList);
+      setIsSupplierFetched(true);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+    setIsFetchingSupplier(false);
+  };
+
+  const checkSupplierIfExist = (supplierName) => {
+    const exist = supplier.find(
+      (v) => v.username === toCamelCase(supplierName),
+    );
+    return exist ? true : false;
+  };
+
+  const updateProductDebt = async (supplierId, productDebt, actionType) => {
+    setLoading(true);
+
+    const {
+      data: supplierObject,
+      error,
+      success,
+    } = await getDocument(
+      "Mengambil Data Supplier",
+      collectionName.supplier,
+      supplierId,
+    );
+
+    if (success) {
+      const previousDebt = supplierObject.productDebt;
+
+      let newChanges = {
+        supplierId: supplierId,
+        changeType: "",
+        changes: {},
+      };
+
+      const merged = productDebt.map((debt) => {
+        const sameDebt = previousDebt.find(
+          (b) => b.identifier === debt.identifier,
+        );
+
+        if (sameDebt) {
+          let summary = 0;
+          if (actionType === "addDebt") {
+            summary = sameDebt.remaining + debt.remaining;
+            newChanges.changeType = "addDebt";
+            newChanges.changes = {
+              name: debt.name,
+              before: sameDebt.remaining,
+              after: summary,
+              changes: debt.remaining,
+            };
+          }
+          if (actionType === "reduceDebt") {
+            summary = sameDebt.remaining - debt.remaining;
+            newChanges.changeType = "reduceDebt";
+            newChanges.changes = {
+              name: debt.name,
+              before: sameDebt.remaining,
+              after: summary,
+              changes: debt.remaining,
+            };
+          }
+          return {
+            ...sameDebt,
+            remaining: summary,
+          };
+        } else {
+          return debt;
+        }
+      });
+
+      let unmondifiedDebt = [];
+
+      previousDebt.forEach((debt) => {
+        if (!merged.find((d) => d.identifier === debt.identifier)) {
+          unmondifiedDebt.push(debt);
+        }
+      });
+
+      const removedZeroDebt = [...unmondifiedDebt, ...merged].filter(
+        (p) => p.remaining > 0,
+      );
+
+      await updateDocument(
+        "Update Supplier Data",
+        collectionName.supplier,
+        supplierId,
+        {
+          ...supplierObject,
+          productDebt: removedZeroDebt,
+        },
+        "Berhasil Mengupdate Supplier",
+      );
+
+      await createDocument(
+        "Menyimpan Riwayat Perubahan Hutang",
+        collectionName.debtChanges,
+        newChanges,
+        "Berhasil Menyimpan Riwayat Perubahan Hutang",
+      );
+
+      // Optimistic Update
+      setSupplier((prev) => {
+        return prev.map((s) => {
+          if (s.id === supplierId) {
+            return {
+              ...s,
+              productDebt: removedZeroDebt,
+            };
+          } else {
+            return s;
+          }
+        });
+      });
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
+  // Products Function
 
   const addProduct = async (product) => {
     setLoading(true);
@@ -75,67 +222,6 @@ export function CRUDProvider({ children }) {
     setLoading(false);
   };
 
-  const addProduction = async (batchProduction) => {
-    setLoading(true);
-
-    const { docId, success, message } = await createDocument(
-      "Simpan Batch Produksi",
-      collectionName.productionHistory,
-      batchProduction,
-      "Berhasil Menambahkan Batch Ke Riwayat Produksi",
-    );
-
-    if (success) {
-      setProductionHistory((prev) => [
-        ...prev,
-        { id: docId, ...batchProduction },
-      ]);
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
-
-    setLoading(false);
-  };
-
-  // Read Function
-
-  const getSupplierList = async () => {
-    if (isSupplierFetched || isFetchingSupplier) return;
-
-    setIsFetchingSupplier(true);
-    setLoading(true);
-
-    const {
-      data: supplierList,
-      success,
-      error,
-      message,
-    } = await getDocuments(
-      "Ambil List Supplier",
-      collectionName.supplier,
-      "newToOld",
-    );
-
-    if (success) {
-      setSupplier(supplierList);
-      setIsSupplierFetched(true);
-    } else {
-      toast.error(message);
-      console.log(error);
-    }
-
-    setLoading(false);
-    setIsFetchingSupplier(false);
-  };
-
-  const checkSupplierIfExist = (supplierName) => {
-    const exist = supplier.find(
-      (v) => v.username === toCamelCase(supplierName),
-    );
-    return exist ? true : false;
-  };
-
   const getProductList = async () => {
     if (isProductsFetched || isFetchingProducts) return;
 
@@ -163,138 +249,6 @@ export function CRUDProvider({ children }) {
 
     setLoading(false);
     setIsFetchingProducts(false);
-  };
-
-  const getProductionHistory = async () => {
-    if (isProductionHistoryFetched || isFetchingProductionHistory) return;
-
-    setIsFetchingProductionHistory(true);
-    setLoading(true);
-
-    const {
-      data: productionList,
-      success,
-      error,
-      message,
-    } = await getDocuments(
-      "Ambil Riwayat Produksi",
-      collectionName.productionHistory,
-      "newToOld",
-    );
-
-    if (success) {
-      setProductionHistory([...productionList]);
-      setIsProductionHistoryFetched(true);
-    } else {
-      toast.error(message);
-      console.log(error);
-    }
-
-    setLoading(false);
-    setIsFetchingProductionHistory(false);
-  };
-
-  // Update Function
-
-  const updateProductDebt = async (supplierId, productDebt, actionType) => {
-    setLoading(true);
-
-    const {
-      data: supplierObject,
-      error,
-      success,
-    } = await getDocument(
-      "Mengambil Data Supplier",
-      collectionName.supplier,
-      supplierId,
-    );
-
-    if (success) {
-      const previousDebt = supplierObject.productDebt;
-
-      const merged = productDebt.map((debt) => {
-        const sameDebt = previousDebt.find(
-          (b) => b.identifier === debt.identifier,
-        );
-
-        if (sameDebt) {
-          let history = {
-            changeType: "",
-            changes: [],
-          };
-          let summary = 0;
-          if (actionType === "addDebt") {
-            summary = sameDebt.remaining + debt.remaining;
-            history.changeType = "addDebt";
-            history.changes.push({
-              name: debt.name,
-              before: sameDebt.remaining,
-              after: summary,
-              changes: debt.remaining,
-            });
-          }
-          if (actionType === "reduceDebt") {
-            summary = sameDebt.remaining - debt.remaining;
-            history.changeType = "reduceDebt";
-            history.changes.push({
-              name: debt.name,
-              before: sameDebt.remaining,
-              after: summary,
-              changes: debt.remaining,
-            });
-          }
-          return {
-            ...sameDebt,
-            remaining: summary,
-            debtChanges: [...sameDebt.debtChanges, history],
-          };
-        } else {
-          return debt;
-        }
-      });
-
-      let unmondifiedDebt = [];
-
-      previousDebt.forEach((debt) => {
-        if (!merged.find((d) => d.identifier === debt.identifier)) {
-          unmondifiedDebt.push(debt);
-        }
-      });
-
-      const removedZeroDebt = [...unmondifiedDebt, ...merged].filter(
-        (p) => p.remaining > 0,
-      );
-
-      await updateDocument(
-        "Update Supplier Data",
-        collectionName.supplier,
-        supplierId,
-        {
-          ...supplierObject,
-          productDebt: removedZeroDebt,
-        },
-        "Berhasil Mengupdate Supplier",
-      );
-
-      // Optimistic Update
-      setSupplier((prev) => {
-        return prev.map((s) => {
-          if (s.id === supplierId) {
-            return {
-              ...s,
-              productDebt: removedZeroDebt,
-            };
-          } else {
-            return s;
-          }
-        });
-      });
-    } else {
-      toast.error(message);
-      console.log(error);
-    }
-
-    setLoading(false);
   };
 
   const editProduct = async (productId, product) => {
@@ -346,8 +300,6 @@ export function CRUDProvider({ children }) {
     setLoading(false);
   };
 
-  // Delete Function
-
   const deleteProduct = async (docId) => {
     setLoading(true);
 
@@ -370,6 +322,62 @@ export function CRUDProvider({ children }) {
 
     setLoading(false);
   };
+
+  // Productions Function
+
+  const addProduction = async (batchProduction) => {
+    setLoading(true);
+
+    const { docId, success, message } = await createDocument(
+      "Simpan Batch Produksi",
+      collectionName.productionHistory,
+      batchProduction,
+      "Berhasil Menambahkan Batch Ke Riwayat Produksi",
+    );
+
+    if (success) {
+      setProductionHistory((prev) => [
+        ...prev,
+        { id: docId, ...batchProduction },
+      ]);
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
+
+    setLoading(false);
+  };
+
+  const getProductionHistory = async () => {
+    if (isProductionHistoryFetched || isFetchingProductionHistory) return;
+
+    setIsFetchingProductionHistory(true);
+    setLoading(true);
+
+    const {
+      data: productionList,
+      success,
+      error,
+      message,
+    } = await getDocuments(
+      "Ambil Riwayat Produksi",
+      collectionName.productionHistory,
+      "newToOld",
+    );
+
+    if (success) {
+      setProductionHistory([...productionList]);
+      setIsProductionHistoryFetched(true);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+    setIsFetchingProductionHistory(false);
+  };
+
+  // Delete Function
 
   return (
     <CRUDContext.Provider

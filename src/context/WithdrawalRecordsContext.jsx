@@ -12,12 +12,15 @@ import { toast } from "sonner";
 const WithdrawalRecordsContext = createContext();
 
 export function WithdrawalRecordsProvider({ children }) {
+  // Shopee
   const [shopeeWithdrawals, setShopeeWithdrawals] = useState([]);
   const [shopeeWithdrawals_temp, setShopeeWithdrawals_temp] = useState([]);
+
+  // TikTok
   const [tiktokWithdrawals, setTiktokWithdrawals] = useState([]);
   const [tiktokWithdrawals_temp, setTiktokWithdrawals_temp] = useState([]);
 
-  // Shopee
+  // Shopee & TikTok All Time Withdrawals
   const dummy = { shopee: 0, tiktok: 0 };
   const [ATWithdrawals, setATWithdrawals] = useState(dummy);
   const [ATBills, setATBills] = useState(dummy);
@@ -78,11 +81,10 @@ export function WithdrawalRecordsProvider({ children }) {
   };
 
   const fetchWithdrawals = async (platform, limit) => {
-    setLoading(true);
-
     if (platform === "shopee") {
       if (isFetchingShopeeWithdrawals || isShopeeWithdrawalsFetched) return;
 
+      setLoading(true);
       setIsFetchingShopeeWithdrawals(true);
 
       const {
@@ -101,11 +103,13 @@ export function WithdrawalRecordsProvider({ children }) {
       }
 
       setIsFetchingShopeeWithdrawals(false);
+      setLoading(false);
     }
 
     if (platform === "tiktok") {
       if (isFetchingTiktokWithdrawals || isTiktokWithdrawalsFetched) return;
 
+      setLoading(true);
       setIsFetchingTiktokWithdrawals(true);
 
       const {
@@ -124,9 +128,8 @@ export function WithdrawalRecordsProvider({ children }) {
       }
 
       setIsFetchingTiktokWithdrawals(false);
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const fetchWithdrawalsByDate = async (platform, start, end) => {
