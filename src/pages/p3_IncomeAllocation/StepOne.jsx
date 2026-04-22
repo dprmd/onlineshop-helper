@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCRUD } from "@/context/CRUDContext";
+import { useDebt } from "@/context/DebtContext";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
@@ -26,7 +26,7 @@ import { separateNumber } from "../../utils/generalFunction";
 export default function StepOne() {
   const { totalWithdraw, setTotalWithdraw, whichSupplier, setWhichSupplier } =
     useIncomeAllocation();
-  const { supplier, getSupplierList } = useCRUD();
+  const { supplier, getSupplierList } = useDebt();
 
   const [errorSupplier, setErrorSupplier] = useState(false);
   const navigate = useNavigate();
@@ -122,7 +122,7 @@ export default function StepOne() {
           <Button
             type="button"
             onClick={() => {
-              navigate("/crud/supplier");
+              navigate("/debt/supplier");
             }}
             className="my-2"
           >

@@ -15,7 +15,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { useCRUD } from "@/context/CRUDContext";
+import { useDebt } from "@/context/DebtContext";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -35,7 +35,7 @@ export default function StepTwo() {
     setModifiedSetorBarang,
   } = useIncomeAllocation();
   const navigate = useNavigate();
-  const { supplier } = useCRUD();
+  const { supplier } = useDebt();
   const productList = useMemo(() => {
     return supplier
       .find((s) => s.id === whichSupplier)

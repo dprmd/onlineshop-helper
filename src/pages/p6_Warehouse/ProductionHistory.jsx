@@ -19,13 +19,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useCRUD } from "@/context/CRUDContext";
+import { useDebt } from "@/context/DebtContext";
 import { formatNumber, formatTanggal } from "@/utils/generalFunction";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function ProductionHistory() {
-  const { productionHistory, getProductionHistory, getProductList } = useCRUD();
+  const { productionHistory, getProductionHistory, getProductList } = useDebt();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function ProductionHistory() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/crud">CRUD</Link>
+              <Link to="/warehouse">Gudang Saya</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
@@ -63,7 +63,7 @@ export default function ProductionHistory() {
           </p>
           <Button
             type="submit"
-            onClick={() => navigate("/crud/addBatchProduction")}
+            onClick={() => navigate("/warehouse/addBatchProduction")}
           >
             Buat Batch Produksi
           </Button>
@@ -77,7 +77,7 @@ export default function ProductionHistory() {
             <div className="text-center my-2">
               <Button
                 type="submit"
-                onClick={() => navigate("/crud/addBatchProduction")}
+                onClick={() => navigate("/debt/addBatchProduction")}
               >
                 Buat Batch Produksi
               </Button>

@@ -15,8 +15,12 @@ const link = [
     destination: "/income",
   },
   {
-    buttonName: "Data Barang",
-    destination: "/crud",
+    buttonName: "Hutang Barang",
+    destination: "/debt",
+  },
+  {
+    buttonName: "Gudang Saya",
+    destination: "/warehouse",
   },
 ];
 

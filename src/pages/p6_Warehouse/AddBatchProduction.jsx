@@ -25,14 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCRUD } from "@/context/CRUDContext";
+import { useDebt } from "@/context/DebtContext";
 import { raw, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function AddBatchProduction() {
-  const { products, getProductList, addProduction } = useCRUD();
+  const { products, getProductList, addProduction } = useDebt();
   const navigate = useNavigate();
 
   // Batch State
@@ -74,7 +74,7 @@ export default function AddBatchProduction() {
     };
 
     await addProduction(batch);
-    navigate("/crud/productionHistory");
+    navigate("/debt/productionHistory");
   };
 
   useEffect(() => {
@@ -310,7 +310,7 @@ export default function AddBatchProduction() {
                 className="max-w-fit"
                 variant={"outline"}
                 onClick={() => {
-                  navigate("/crud/productionHistory");
+                  navigate("/debt/productionHistory");
                 }}
               >
                 Kembali

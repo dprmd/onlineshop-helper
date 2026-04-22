@@ -46,9 +46,9 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useCRUD } from "../../context/CRUDContext";
+import { useDebt } from "../../context/DebtContext";
 import { formatNumber } from "../../utils/generalFunction";
-import { sortHppRange } from "@/pages/p5_CRUD/Products";
+import { sortHppRange } from "@/pages/p5_Debt/Products";
 
 export default function UpdateProductDebt() {
   const navigate = useNavigate();
@@ -58,7 +58,7 @@ export default function UpdateProductDebt() {
     updateProductDebt,
     products,
     getProductList,
-  } = useCRUD();
+  } = useDebt();
   const [whichSupplier, setWhichSupplier] = useState("");
   const [addItemDialog, setAddItemDialog] = useState(false);
   const [confirmChangeDialog, setConfirmChangeDialog] = useState(false);
@@ -139,7 +139,7 @@ export default function UpdateProductDebt() {
     return (
       <div className="text-center">
         <p className="text-lg font-bold my-2">Anda Belum Menambahkan Produk</p>
-        <Button onClick={() => navigate("/crud/products")}>
+        <Button onClick={() => navigate("/debt/products")}>
           Tambah Sekarang
         </Button>
       </div>
@@ -158,12 +158,12 @@ export default function UpdateProductDebt() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/crud">CRUD</Link>
+              <Link to="/debt">Hutang Barang</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Hutang</BreadcrumbPage>
+            <BreadcrumbPage>Perubahan Hutang</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -178,7 +178,7 @@ export default function UpdateProductDebt() {
           <Button
             size="lg"
             onClick={() => {
-              navigate("/crud/supplier");
+              navigate("/debt/supplier");
             }}
           >
             Tambah Sekarang

@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { useCRUD } from "../../context/CRUDContext";
+import { useDebt } from "../../context/DebtContext";
 import { createDocument } from "../../services/firebase/docService";
 import { toCamelCase } from "../../utils/generalFunction";
 import { toast } from "sonner";
@@ -30,7 +30,7 @@ import { collectionName } from "@/services/firebase/firebase";
 
 export default function Supplier() {
   const { supplier, setSupplier, checkSupplierIfExist, getSupplierList } =
-    useCRUD();
+    useDebt();
 
   const [supplierName, setSupplierName] = useState("");
   const [dialogAddSupplier, setDialogAddSupplier] = useState(false);
@@ -86,7 +86,7 @@ export default function Supplier() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/crud">CRUD</Link>
+              <Link to="/debt">Hutang Barang</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

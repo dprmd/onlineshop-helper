@@ -7,32 +7,20 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useCRUD } from "@/context/CRUDContext";
+import { useDebt } from "@/context/DebtContext";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const link = [
   {
-    buttonName: "Supplier",
-    destination: "/crud/supplier",
-  },
-  {
-    buttonName: "Update Hutang Barang",
-    destination: "/crud/updateProductDebt",
-  },
-  {
-    buttonName: "Produk",
-    destination: "/crud/products",
-  },
-  {
     buttonName: "Riwayat Produksi",
-    destination: "/crud/productionHistory",
+    destination: "/warehouse/productionHistory",
   },
 ];
 
-export default function CRUD() {
+export default function Warehouse() {
   const navigate = useNavigate();
-  const { getSupplierList } = useCRUD();
+  const { getSupplierList } = useDebt();
 
   useEffect(() => {
     getSupplierList();
@@ -49,7 +37,7 @@ export default function CRUD() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>CRUD</BreadcrumbPage>
+            <BreadcrumbPage>Gudang Saya</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>

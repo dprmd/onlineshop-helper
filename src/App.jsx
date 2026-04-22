@@ -1,10 +1,10 @@
 import { UIProvider } from "@/context/UIContext";
 import RootLayout from "@/layouts/RootLayout";
 import NotFound from "@/pages/NotFound";
-import AddBatchProduction from "@/pages/p5_CRUD/AddBatchProduction";
-import ProductionHistory from "@/pages/p5_CRUD/ProductionHistory";
+import AddBatchProduction from "@/pages/p6_Warehouse/AddBatchProduction";
+import ProductionHistory from "@/pages/p6_Warehouse/ProductionHistory";
+import Warehouse from "@/pages/p6_Warehouse/Warehouse";
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { CRUDProvider } from "./context/CRUDContext";
 import { IncomeAllocationProvider } from "./context/IncomeAllocationContext";
 import { WithdrawalRecordsProvider } from "./context/WithdrawalRecordsContext";
 import Home from "./pages/p1_Home/Home";
@@ -16,10 +16,11 @@ import Withdrawals from "./pages/p4_Income/Income";
 import IncomeTotal from "./pages/p4_Income/IncomeTotal";
 import ShopeeWithdrawalRecords from "./pages/p4_Income/ShopeeWithdrawalRecords";
 import TikTokWithdrawasRecords from "./pages/p4_Income/TikTokWithdrawalRecords";
-import CRUD from "./pages/p5_CRUD/CRUD";
-import Products from "./pages/p5_CRUD/Products";
-import Supplier from "./pages/p5_CRUD/Supplier";
-import UpdateProductDebt from "./pages/p5_CRUD/UpdateProductDebt";
+import Debt from "./pages/p5_Debt/Debt";
+import Products from "./pages/p5_Debt/Products";
+import Supplier from "./pages/p5_Debt/Supplier";
+import UpdateProductDebt from "./pages/p5_Debt/UpdateProductDebt";
+import { DebtProvider } from "@/context/DebtContext";
 
 const router = createHashRouter([
   {
@@ -55,12 +56,18 @@ const router = createHashRouter([
 
       // Page 5
       {
-        path: "crud",
+        path: "debt",
         children: [
-          { index: true, element: <CRUD /> },
+          { index: true, element: <Debt /> },
           { path: "supplier", element: <Supplier /> },
           { path: "updateProductDebt", element: <UpdateProductDebt /> },
           { path: "products", element: <Products /> },
+        ],
+      },
+      {
+        path: "warehouse",
+        children: [
+          { index: true, element: <Warehouse /> },
           { path: "productionHistory", element: <ProductionHistory /> },
           { path: "addBatchProduction", element: <AddBatchProduction /> },
         ],
@@ -85,13 +92,13 @@ const router = createHashRouter([
 export default function App() {
   return (
     <UIProvider>
-      <CRUDProvider>
+      <DebtProvider>
         <WithdrawalRecordsProvider>
           <IncomeAllocationProvider>
             <RouterProvider router={router} />
           </IncomeAllocationProvider>
         </WithdrawalRecordsProvider>
-      </CRUDProvider>
+      </DebtProvider>
     </UIProvider>
   );
 }

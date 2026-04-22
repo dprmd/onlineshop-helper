@@ -29,7 +29,7 @@ import {
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCRUD } from "@/context/CRUDContext";
+import { useDebt } from "@/context/DebtContext";
 import { formatNumber, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -41,7 +41,7 @@ export const sortHppRange = (variation) => {
 
 export default function Products() {
   const { products, getProductList, addProduct, editProduct, deleteProduct } =
-    useCRUD();
+    useDebt();
   const [product, setProduct] = useState({
     name: "",
     hpp: "",
@@ -113,7 +113,7 @@ export default function Products() {
           <BreadcrumbSeparator />
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/crud">CRUD</Link>
+              <Link to="/debt">Hutang Barang</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

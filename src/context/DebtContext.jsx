@@ -12,9 +12,9 @@ import {
 } from "../services/firebase/docService";
 import { raw, toCamelCase } from "../utils/generalFunction";
 
-const CRUDContext = createContext();
+const DebtContext = createContext();
 
-export function CRUDProvider({ children }) {
+export function DebtProvider({ children }) {
   const { setLoading } = useUI();
 
   // Supplier State
@@ -88,10 +88,10 @@ export function CRUDProvider({ children }) {
     if (success) {
       const previousDebt = supplierObject.productDebt;
 
-      let newChanges = {
-        supplierId: supplierId,
+      let debtChanges = {
+        supplierId,
         changeType: "",
-        changes: {},
+        changes: [],
       };
 
       const merged = productDebt.map((debt) => {
@@ -101,25 +101,26 @@ export function CRUDProvider({ children }) {
 
         if (sameDebt) {
           let summary = 0;
+
           if (actionType === "addDebt") {
             summary = sameDebt.remaining + debt.remaining;
-            newChanges.changeType = "addDebt";
-            newChanges.changes = {
-              name: debt.name,
-              before: sameDebt.remaining,
-              after: summary,
-              changes: debt.remaining,
-            };
+            debtChanges.changeType = "addDebt";
+            debtChanges.changes.push({
+              productName: debt.name,
+              valueBefore: sameDebt.remaining,
+              valueAfter: summary,
+              change: debt.remaining,
+            });
           }
           if (actionType === "reduceDebt") {
             summary = sameDebt.remaining - debt.remaining;
-            newChanges.changeType = "reduceDebt";
-            newChanges.changes = {
-              name: debt.name,
-              before: sameDebt.remaining,
-              after: summary,
-              changes: debt.remaining,
-            };
+            debtChanges.changeType = "reduceDebt";
+            debtChanges.changes.push({
+              productName: debt.name,
+              valueBefore: sameDebt.remaining,
+              valueAfter: summary,
+              change: debt.remaining,
+            });
           }
           return {
             ...sameDebt,
@@ -156,7 +157,7 @@ export function CRUDProvider({ children }) {
       await createDocument(
         "Menyimpan Riwayat Perubahan Hutang",
         collectionName.debtChanges,
-        newChanges,
+        debtChanges,
         "Berhasil Menyimpan Riwayat Perubahan Hutang",
       );
 
@@ -380,7 +381,7 @@ export function CRUDProvider({ children }) {
   // Delete Function
 
   return (
-    <CRUDContext.Provider
+    <DebtContext.Provider
       value={{
         supplier,
         setSupplier,
@@ -399,8 +400,8 @@ export function CRUDProvider({ children }) {
       }}
     >
       {children}
-    </CRUDContext.Provider>
+    </DebtContext.Provider>
   );
 }
 
-export const useCRUD = () => useContext(CRUDContext);
+export const useDebt = () => useContext(DebtContext);

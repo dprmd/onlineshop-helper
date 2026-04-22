@@ -46,7 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useCRUD } from "@/context/CRUDContext";
+import { useDebt } from "@/context/DebtContext";
 import { collectionName } from "@/services/firebase/firebase";
 import { format } from "date-fns";
 import { ChevronDownIcon } from "lucide-react";
@@ -122,9 +122,8 @@ const StepThree = () => {
     ATProfit,
     setATProfit,
     fetchAT,
-    ATInitialFetch,
   } = useWithdrawalRecords();
-  const { supplier, setSupplier } = useCRUD();
+  const { supplier, setSupplier } = useDebt();
 
   // State
   const [loadingSave, setLoadingSave] = useState(false);
@@ -264,7 +263,6 @@ const StepThree = () => {
 
   const syncLastSave = async () => {
     setLoadingSave(true);
-
     if (isTikTok) {
       // Ambil Data Dari Firebase
       const tiktokLastSave = await getDocument(
@@ -272,7 +270,6 @@ const StepThree = () => {
         collectionName.withdrawals.tiktok,
         lastSave.tiktok,
       );
-
       // Bandingkan
       if (tiktokLastSave.data.time === today) {
         toast.error(
@@ -289,7 +286,6 @@ const StepThree = () => {
         collectionName.withdrawals.shopee,
         lastSave.shopee,
       );
-
       // Bandingkan
       if (shopeeLastSave.data.time === today) {
         toast.error(
@@ -382,6 +378,12 @@ const StepThree = () => {
       // Update Product Debt
       const productDebt = choosedSupplier.productDebt;
 
+      let debtChanges = {
+        supplierId: choosedSupplier.id,
+        changeType: "reduceDebtByWithdraw",
+        changes: [],
+      };
+
       const payDebt = productDebt.map((debt) => {
         let tempDebt = debt;
         soldProducts.forEach((product) => {
@@ -390,6 +392,12 @@ const StepThree = () => {
               ...debt,
               remaining: debt.remaining - product.sold,
             };
+            debtChanges.changes.push({
+              productName: product.name,
+              valueBefore: debt.remaining,
+              valueAfter: debt.remaining - product.sold,
+              change: product.sold,
+            });
           }
         });
 
@@ -402,6 +410,13 @@ const StepThree = () => {
         choosedSupplier.id,
         { ...choosedSupplier, productDebt: payDebt },
         `Berhasil Update Catatan Hutang Barang Dari Supplier ${capitalizeWords(choosedSupplier.name)}`,
+      );
+
+      await createDocument(
+        "Menyimpan Riwayat Perubahan Hutang",
+        collectionName.debtChanges,
+        debtChanges,
+        "Berhasil Menyimpan Riwayat Perubahan Hutang",
       );
 
       setSupplier((prev) => {
@@ -419,7 +434,7 @@ const StepThree = () => {
       // Data Penghasilan TikTok Yang Akan Di Simpan
       const tiktokWithdrawal = {
         totalWithdraw: raw(totalWithdraw),
-        supplier: toCamelCase(choosedSupplier.name),
+        supplierId: choosedSupplier.id,
         totalHPP: {
           total: raw(totalHPP),
           soldProducts,
@@ -440,7 +455,7 @@ const StepThree = () => {
       // Data Penghasilan Shopee Yang Akan Di Simpan
       const shopeeWithdrawal = {
         totalWithdraw: raw(totalWithdraw),
-        supplier: toCamelCase(choosedSupplier.name),
+        supplierId: choosedSupplier.id,
         totalHPP: {
           total: raw(totalHPP),
           soldProducts,

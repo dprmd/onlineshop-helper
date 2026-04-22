@@ -36,9 +36,7 @@ export function IncomeAllocationProvider({ children }) {
   const sinkronLastSave = async () => {
     const lastSaveShopee = "shopeeLastSave";
     const lastSaveTiktok = "tiktokLastSave";
-
     setLoading(true);
-
     const tiktokLastSave = await getDocument(
       "Ambil Last Save TikTok",
       collectionName.withdrawals.tiktok,
@@ -56,7 +54,6 @@ export function IncomeAllocationProvider({ children }) {
       console.log(tiktokLastSave.error);
       setLoading(false);
     }
-
     const shopeeLastSave = await getDocument(
       "Ambil Last Save Shopee",
       collectionName.withdrawals.shopee,

@@ -52,7 +52,6 @@ export default function IncomeTotal() {
     ATProfit,
     setATProfit,
     fetchAT,
-    ATInitialFetch,
   } = useWithdrawalRecords();
 
   const [showUntung, setShowUntung] = useState(false);
@@ -152,9 +151,7 @@ export default function IncomeTotal() {
   };
 
   useEffect(() => {
-    if (ATInitialFetch) {
-      fetchAT();
-    }
+    fetchAT();
   }, []);
 
   return (
@@ -267,7 +264,7 @@ function SalesPieChart({
     <Card className="flex flex-col relative">
       <CardHeader className="items-center pb-0">
         <CardTitle>Kontribusi Marketplace</CardTitle>
-        <CardDescription>6 Maret - Sekarang</CardDescription>
+        <CardDescription>Dulu - Sekarang</CardDescription>
         <Button
           variant="outline"
           onClick={() => {
@@ -330,7 +327,7 @@ function SalesPieChart({
       </CardContent>
       <CardFooter className="flex-col gap-2 text-sm">
         <div className="leading-none text-muted-foreground">
-          Lainnya Adalah Uang Harian Ema Iki
+          Ini Hanya Gambaran Awal 😊
         </div>
       </CardFooter>
     </Card>
