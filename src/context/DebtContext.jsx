@@ -67,39 +67,44 @@ export function DebtProvider({ children }) {
     return exist ? true : false;
   };
 
-  const getDebtChanges = async () => {
-    if (isFetchingDebtChanges || isDebtChangesFethced) return;
+  const getDebtChanges = async (supplierId, forceToFetch = false) => {
+    const getNow = async () => {
+      setIsFetchingDebtChanges(true);
+      setLoading(true);
 
-    setIsFetchingDebtChanges(true);
-    setLoading(true);
+      const {
+        success,
+        data: debtChanges,
+        error,
+        message,
+      } = await getDocuments(
+        "Mengambil List Perubahan Hutang",
+        `${collectionName.debtChanges}-${supplierId}`,
+        "newToOld",
+      );
 
-    const {
-      success,
-      data: debtChanges,
-      error,
-      message,
-    } = await getDocuments(
-      "Mengambil List Perubahan Hutang",
-      collectionName.debtChanges,
-      "newToOld",
-    );
+      if (success) {
+        setDebtChanges([...debtChanges]);
+        setIsDebtChangesFetched(true);
+      } else {
+        toast.error(message);
+        console.log(error);
+      }
 
-    if (success) {
-      setDebtChanges([...debtChanges]);
-      setIsDebtChangesFetched(true);
-    } else {
-      toast.error(message);
-      console.log(error);
+      setLoading(false);
+      setIsFetchingDebtChanges(false);
+    };
+
+    if (forceToFetch) {
+      getNow();
+    } else if (isFetchingDebtChanges || isDebtChangesFethced) return;
+    else {
+      getNow();
     }
-
-    setLoading(false);
-    setIsFetchingDebtChanges(false);
   };
 
   const updateProductDebt = async (supplierId, productDebt, actionType) => {
     setLoading(true);
-
-    console.log(productDebt);
 
     const {
       data: supplierObject,
@@ -114,7 +119,8 @@ export function DebtProvider({ children }) {
     if (success) {
       const previousDebt = supplierObject.productDebt;
 
-      let debtChanges = {
+      let debtChange = {
+        id: "",
         supplierId,
         changeType: "",
         changes: [],
@@ -125,29 +131,44 @@ export function DebtProvider({ children }) {
           (b) => b.identifier === debt.identifier,
         );
 
-        if (sameDebt) {
-          let summary = 0;
+        let remaining = 0;
 
-          if (actionType === "addDebt") {
-            summary = sameDebt.remaining + debt.remaining;
-            debtChanges.changeType = "addDebt";
-            debtChanges.changes.push({
-              productName: debt.name,
-              valueBefore: sameDebt.remaining,
-              valueAfter: summary,
-              change: debt.remaining,
-            });
+        if (sameDebt) {
+          remaining = sameDebt.remaining;
+        }
+
+        let summary = 0;
+        if (actionType === "addDebt") {
+          summary = remaining + debt.remaining;
+          debtChange.changeType = "addDebt";
+          debtChange.changes.push({
+            productName: debt.name,
+            valueBefore: remaining,
+            valueAfter: summary,
+            change: debt.remaining,
+          });
+        }
+        if (actionType === "reduceDebt") {
+          summary = remaining - debt.remaining;
+          debtChange.changeType = "reduceDebt";
+          debtChange.changes.push({
+            productName: debt.name,
+            valueBefore: remaining,
+            valueAfter: summary,
+            change: debt.remaining,
+          });
+
+          if (sameDebt) {
+            return {
+              ...sameDebt,
+              remaining: summary,
+            };
+          } else {
+            return debt;
           }
-          if (actionType === "reduceDebt") {
-            summary = sameDebt.remaining - debt.remaining;
-            debtChanges.changeType = "reduceDebt";
-            debtChanges.changes.push({
-              productName: debt.name,
-              valueBefore: sameDebt.remaining,
-              valueAfter: summary,
-              change: debt.remaining,
-            });
-          }
+        }
+
+        if (sameDebt) {
           return {
             ...sameDebt,
             remaining: summary,
@@ -180,12 +201,13 @@ export function DebtProvider({ children }) {
         "Berhasil Mengupdate Supplier",
       );
 
-      await createDocument(
+      const { docId: newDebtChangeId } = await createDocument(
         "Menyimpan Riwayat Perubahan Hutang",
-        collectionName.debtChanges,
-        debtChanges,
+        `${collectionName.debtChanges}-${supplierId}`,
+        debtChange,
         "Berhasil Menyimpan Riwayat Perubahan Hutang",
       );
+      debtChange.id = newDebtChangeId;
 
       // Optimistic Update
       setSupplier((prev) => {
@@ -199,6 +221,9 @@ export function DebtProvider({ children }) {
             return s;
           }
         });
+      });
+      setDebtChanges((prev) => {
+        return [...prev, debtChange];
       });
     } else {
       toast.error(message);

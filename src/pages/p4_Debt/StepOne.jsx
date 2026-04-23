@@ -48,7 +48,7 @@ export default function StepOne() {
               onSubmit={(e) => {
                 e.preventDefault();
                 if (whichSupplier) {
-                  navigate("/incomeAllocation/calculateHPP");
+                  navigate("/debt/incomeAllocation/calculateHPP");
                 } else {
                   setErrorSupplier(true);
                 }

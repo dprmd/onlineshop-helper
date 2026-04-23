@@ -81,7 +81,7 @@ export default function StepTwo() {
 
   useEffect(() => {
     if (!whichSupplier) {
-      navigate("/incomeAllocation");
+      navigate("/debt/incomeAllocation");
     }
 
     if (modifiedSetorBarang.length > 0) {
@@ -263,7 +263,7 @@ export default function StepTwo() {
               <Button
                 type="button"
                 onClick={() => {
-                  navigate("/incomeAllocation");
+                  navigate("/debt/incomeAllocation");
                 }}
               >
                 Kembali
@@ -276,7 +276,7 @@ export default function StepTwo() {
                 <Button
                   type="button"
                   onClick={() => {
-                    navigate("/incomeAllocation/summary");
+                    navigate("/debt/incomeAllocation/summary");
                   }}
                 >
                   Selanjutnya

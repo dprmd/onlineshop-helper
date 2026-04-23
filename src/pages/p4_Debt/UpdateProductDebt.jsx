@@ -22,6 +22,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -57,16 +58,17 @@ export default function UpdateProductDebt() {
     updateProductDebt,
     productsDebt,
     getProductList,
+    getDebtChanges,
   } = useDebt();
   const [whichSupplier, setWhichSupplier] = useState("");
   const [addItemDialog, setAddItemDialog] = useState(false);
   const [confirmChangeDialog, setConfirmChangeDialog] = useState(false);
   const produk = useMemo(() => {
-    return productsDebt.map((p) => ({ ...p, checked: false, remaining: 0 }));
+    return productsDebt.map((p) => ({ ...p, checked: false }));
   }, [productsDebt]);
   const [cloneProduk, setCloneProduk] = useState([]);
-  const [choosedProduk, setChoosedProduk] = useState([]);
-  const [notChoosedProduk, setNotChoosedProduk] = useState([]);
+  const [choosedProduct, setChoosedProduct] = useState([]);
+  const [notChoosedProduct, setNotChoosedProduct] = useState([]);
   const [productDebt, setProductDebt] = useState([]);
   const choosedSupplier = useMemo(() => {
     return supplier.find((s) => s.id === whichSupplier);
@@ -77,7 +79,7 @@ export default function UpdateProductDebt() {
     const choosed = cloneProduk.filter((p) => p.checked);
     const notChoosed = cloneProduk.filter((p) => !p.checked);
 
-    setChoosedProduk((prev) => {
+    setChoosedProduct((prev) => {
       return choosed.map((p) => {
         const hasAddedBefore = prev.find(
           (pc) => pc.identifier === p.identifier,
@@ -89,7 +91,7 @@ export default function UpdateProductDebt() {
         }
       });
     });
-    setNotChoosedProduk(notChoosed);
+    setNotChoosedProduct(notChoosed);
     setAddItemDialog(false);
   };
 
@@ -97,7 +99,7 @@ export default function UpdateProductDebt() {
     e.preventDefault();
 
     // validasi
-    if (choosedProduk.length === 0) {
+    if (choosedProduct.length === 0) {
       toast.info("Mohon Tambah Barang Terlebih Dahulu");
       return;
     } else if (!whichSupplier) {
@@ -106,7 +108,7 @@ export default function UpdateProductDebt() {
     }
 
     // sort terlebih dahulu
-    const debt = choosedProduk
+    const debt = choosedProduct
       .map((produk) => ({
         identifier: produk.identifier,
         name: produk.name,
@@ -116,7 +118,7 @@ export default function UpdateProductDebt() {
       .filter((produk) => produk.remaining > 0);
 
     if (debt.length === 0) {
-      toast.info("Mohon Masukan Jumlah Produk Yang Di Pinjam");
+      toast.info("Mohon Masukan Jumlah Produk");
       return;
     }
 
@@ -130,9 +132,22 @@ export default function UpdateProductDebt() {
   }, []);
 
   useEffect(() => {
-    setCloneProduk([...productsDebt]);
-    setNotChoosedProduk([...productsDebt]);
-  }, [productsDebt]);
+    if (whichSupplier) {
+      getDebtChanges(whichSupplier, true);
+    }
+  }, [whichSupplier]);
+
+  useEffect(() => {
+    if (actionType === "addDebt") {
+      setCloneProduk([...productsDebt]);
+      setNotChoosedProduct([...productsDebt]);
+    }
+
+    if (actionType === "reduceDebt") {
+      setCloneProduk([...choosedSupplier?.productDebt]);
+      setNotChoosedProduct([...choosedSupplier?.productDebt]);
+    }
+  }, [productsDebt, actionType, whichSupplier]);
 
   if (productsDebt.length === 0) {
     return (
@@ -194,26 +209,6 @@ export default function UpdateProductDebt() {
               Tambah atau Kurangi Hutang Barang ke Supplier
             </FieldDescription>
             <FieldGroup>
-              {/* Action */}
-              <Field>
-                <FieldLabel>Action</FieldLabel>
-                <Select required onValueChange={setActionType}>
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Tipe Aksi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="addDebt">
-                        Tambah Hutang Barang
-                      </SelectItem>
-                      <SelectItem value="reduceDebt">
-                        Kurangi Hutang Barang
-                      </SelectItem>
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </Field>
-
               {/* Choose Supplier */}
               <Field>
                 <FieldLabel>Supplier</FieldLabel>
@@ -232,14 +227,37 @@ export default function UpdateProductDebt() {
                   </SelectContent>
                 </Select>
               </Field>
-              {choosedProduk.length > 0 && (
+
+              {/* Action */}
+              {whichSupplier && (
                 <Field>
-                  {choosedProduk.length > 0 && (
+                  <FieldLabel>Action</FieldLabel>
+                  <Select required onValueChange={setActionType}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Tipe Aksi" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="addDebt">
+                          Tambah Hutang Barang
+                        </SelectItem>
+                        <SelectItem value="reduceDebt">
+                          Kurangi Hutang Barang
+                        </SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              )}
+
+              {choosedProduct.length > 0 && (
+                <Field>
+                  {choosedProduct.length > 0 && (
                     <FieldLabel>Pilih Barang</FieldLabel>
                   )}
                   <form className="min-w-[200px] max-w-[350px]">
                     {/* isi quantity produk */}
-                    {choosedProduk.map((produk) => (
+                    {choosedProduct.map((produk) => (
                       <div
                         className="border px-2 py-3 flex gap-x-2 justify-between"
                         key={produk.identifier}
@@ -262,7 +280,7 @@ export default function UpdateProductDebt() {
                             value={produk.remaining}
                             placeholder="0"
                             onChange={(e) => {
-                              setChoosedProduk((prev) => {
+                              setChoosedProduct((prev) => {
                                 return prev.map((p) => {
                                   if (p.identifier === produk.identifier) {
                                     return {
@@ -294,13 +312,13 @@ export default function UpdateProductDebt() {
                                   return p;
                                 });
 
-                                setNotChoosedProduk(
+                                setNotChoosedProduct(
                                   notChoosed.filter((p) => !p.checked),
                                 );
 
                                 return notChoosed;
                               });
-                              setChoosedProduk((prev) => {
+                              setChoosedProduct((prev) => {
                                 return prev.filter(
                                   (p) => p.identifier !== produk.identifier,
                                 );
@@ -316,22 +334,40 @@ export default function UpdateProductDebt() {
                 </Field>
               )}
               <Field>
-                {choosedProduk.length === 0 && (
+                {choosedProduct.length === 0 && (
                   <FieldLabel>Pilih Barang</FieldLabel>
                 )}
+                {actionType === "reduceDebt" &&
+                notChoosedProduct.length === 0 &&
+                choosedProduct.length === 0 ? (
+                  <p className="text-[12px]">
+                    Anda Tidak Mempunyai Hutang Ke Supplier Ini
+                  </p>
+                ) : null}
                 <Dialog open={addItemDialog} onOpenChange={setAddItemDialog}>
-                  {notChoosedProduk.length > 0 && (
+                  {notChoosedProduct.length > 0 && (
                     <DialogTrigger asChild>
-                      <Button className="my-2">Tambah Barang</Button>
+                      <Button
+                        className="my-2"
+                        disabled={actionType === "" && !whichSupplier}
+                      >
+                        Tambah Barang
+                      </Button>
                     </DialogTrigger>
                   )}
                   <DialogContent className="sm:max-w-sm">
                     <DialogHeader>
                       <DialogTitle>Tambah Barang</DialogTitle>
+                      {actionType === "addDebt" && (
+                        <DialogDescription className="text-[12px]">
+                          Produk Tidak Ada ?{" "}
+                          <Link to={"/debt/productsDebt"}>Tambah Produk</Link>
+                        </DialogDescription>
+                      )}
                     </DialogHeader>
                     <FieldSet>
                       <FieldGroup className="flex gap-y-1">
-                        {notChoosedProduk.map((produk) => (
+                        {notChoosedProduct.map((produk) => (
                           <Field
                             key={produk.identifier}
                             orientation="horizontal"
@@ -351,7 +387,7 @@ export default function UpdateProductDebt() {
                                     return p;
                                   });
                                 });
-                                setNotChoosedProduk((prev) => {
+                                setNotChoosedProduct((prev) => {
                                   return prev.map((p) => {
                                     if (p.identifier === produk.identifier) {
                                       return { ...p, checked: e };
@@ -425,7 +461,7 @@ export default function UpdateProductDebt() {
                             </span>
                             <span>
                               <span className="block">
-                                {choosedProduk
+                                {choosedProduct
                                   .filter((p) => p.remaining > 0)
                                   .map((p) => (
                                     <span key={p.identifier} className="block">
@@ -445,8 +481,8 @@ export default function UpdateProductDebt() {
                                 productDebt,
                                 actionType,
                               );
-                              setChoosedProduk([]);
-                              setNotChoosedProduk(produk);
+                              setChoosedProduct([]);
+                              setNotChoosedProduct(produk);
                               setCloneProduk(produk);
                               toast.success(
                                 actionType === "addDebt"

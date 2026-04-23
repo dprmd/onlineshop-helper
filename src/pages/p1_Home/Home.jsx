@@ -7,10 +7,6 @@ const link = [
     destination: "/profitCalculation",
   },
   {
-    buttonName: "Alokasi Pemasukan",
-    destination: "/incomeAllocation",
-  },
-  {
     buttonName: "Penghasilan",
     destination: "/income",
   },

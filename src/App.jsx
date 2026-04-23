@@ -3,26 +3,26 @@ import { UIProvider } from "@/context/UIContext";
 import { WarehouseProvider } from "@/context/WarehouseContext";
 import RootLayout from "@/layouts/RootLayout";
 import NotFound from "@/pages/NotFound";
-import DebtChanges from "@/pages/p5_Debt/DebtChanges";
-import AddBatchProduction from "@/pages/p6_Warehouse/AddBatchProduction";
-import ProductionHistory from "@/pages/p6_Warehouse/ProductionHistory";
-import Warehouse from "@/pages/p6_Warehouse/Warehouse";
+import DebtChanges from "@/pages/p4_Debt/DebtChanges";
+import AddBatchProduction from "@/pages/p5_Warehouse/AddBatchProduction";
+import ProductionHistory from "@/pages/p5_Warehouse/ProductionHistory";
+import Warehouse from "@/pages/p5_Warehouse/Warehouse";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { IncomeAllocationProvider } from "./context/IncomeAllocationContext";
 import { WithdrawalRecordsProvider } from "./context/WithdrawalRecordsContext";
 import Home from "./pages/p1_Home/Home";
 import ProfitCalculation from "./pages/p2_ProfitCalculation/ProfitCalculation";
-import StepOne from "./pages/p3_IncomeAllocation/StepOne";
-import StepThree from "./pages/p3_IncomeAllocation/StepThree";
-import StepTwo from "./pages/p3_IncomeAllocation/StepTwo";
-import Withdrawals from "./pages/p4_Income/Income";
-import IncomeTotal from "./pages/p4_Income/IncomeTotal";
-import ShopeeWithdrawalRecords from "./pages/p4_Income/ShopeeWithdrawalRecords";
-import TikTokWithdrawasRecords from "./pages/p4_Income/TikTokWithdrawalRecords";
-import Debt from "./pages/p5_Debt/Debt";
-import ProductsDebt from "./pages/p5_Debt/ProductsDebt";
-import Supplier from "./pages/p5_Debt/Supplier";
-import UpdateProductDebt from "./pages/p5_Debt/UpdateProductDebt";
+import Withdrawals from "./pages/p3_Income/Income";
+import IncomeTotal from "./pages/p3_Income/IncomeTotal";
+import ShopeeWithdrawalRecords from "./pages/p3_Income/ShopeeWithdrawalRecords";
+import TikTokWithdrawasRecords from "./pages/p3_Income/TikTokWithdrawalRecords";
+import Debt from "./pages/p4_Debt/Debt";
+import ProductsDebt from "./pages/p4_Debt/ProductsDebt";
+import StepOne from "./pages/p4_Debt/StepOne";
+import StepThree from "./pages/p4_Debt/StepThree";
+import StepTwo from "./pages/p4_Debt/StepTwo";
+import Supplier from "./pages/p4_Debt/Supplier";
+import UpdateProductDebt from "./pages/p4_Debt/UpdateProductDebt";
 
 const router = createHashRouter([
   {
@@ -34,16 +34,6 @@ const router = createHashRouter([
 
       // Page 2
       { path: "profitCalculation", element: <ProfitCalculation /> },
-
-      // Page 3
-      {
-        path: "incomeAllocation",
-        children: [
-          { index: true, element: <StepOne /> },
-          { path: "calculateHPP", element: <StepTwo /> },
-          { path: "summary", element: <StepThree /> },
-        ],
-      },
 
       // Page 4
       {
@@ -65,6 +55,14 @@ const router = createHashRouter([
           { path: "updateProductDebt", element: <UpdateProductDebt /> },
           { path: "productsDebt", element: <ProductsDebt /> },
           { path: "debtChanges", element: <DebtChanges /> },
+          {
+            path: "incomeAllocation",
+            children: [
+              { index: true, element: <StepOne /> },
+              { path: "calculateHPP", element: <StepTwo /> },
+              { path: "summary", element: <StepThree /> },
+            ],
+          },
         ],
       },
 

@@ -47,6 +47,7 @@ export default function ProductsDebt() {
     name: "",
     hpp: "",
     stock: 0,
+    remaining: 0,
   });
   const [idPToRemove, setIdPToRemove] = useState("");
   const [idPToEdit, setIdPToEdit] = useState("");

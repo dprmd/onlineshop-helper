@@ -311,7 +311,7 @@ const StepThree = () => {
       })
       .filter((p) => p.sold > 0);
 
-    const updateDocNow = async (platform, withdrawal) => {
+    const updateDocNow = async (platform, withdrawal, supplierId) => {
       // Simpan Note Withdrawal
       await createDocument(
         `Save Nota Penghasilan ${capitalizeWords(platform)}`,
@@ -414,7 +414,7 @@ const StepThree = () => {
 
       await createDocument(
         "Menyimpan Riwayat Perubahan Hutang",
-        collectionName.debtChanges,
+        `${collectionName.debtChanges}-${supplierId}`,
         debtChanges,
         "Berhasil Menyimpan Riwayat Perubahan Hutang",
       );
@@ -448,7 +448,7 @@ const StepThree = () => {
         },
         totalSetor: uangAdeSiska,
       };
-      await updateDocNow("tiktok", tiktokWithdrawal);
+      await updateDocNow("tiktok", tiktokWithdrawal, whichSupplier);
     };
 
     const updateShopeeDoc = async () => {
@@ -478,7 +478,7 @@ const StepThree = () => {
         splitBillEmaIki: splitBillEmaIki,
         gajiAdi: dailyWage,
       };
-      await updateDocNow("shopee", shopeeWithdrawal);
+      await updateDocNow("shopee", shopeeWithdrawal, whichSupplier);
     };
 
     if (isTikTok) {
@@ -544,7 +544,7 @@ const StepThree = () => {
 
   useEffect(() => {
     if (!whichSupplier) {
-      navigate("/incomeAllocation");
+      navigate("/debt/incomeAllocation");
     } else {
       fetchAT();
     }
@@ -650,7 +650,6 @@ const StepThree = () => {
       <form
         className="border-slate-400 rounded-md w-max mx-auto mt-3 max-w-[800px]"
         onSubmit={calculateNow}
-        id="incomeAllocation"
       >
         <Card className="min-w-[380px]">
           <CardHeader>
@@ -749,6 +748,7 @@ const StepThree = () => {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        type="button"
                         id="date-picker"
                         className="w-32 justify-between font-normal border border-gray-500"
                       >
@@ -893,18 +893,14 @@ const StepThree = () => {
               <Button
                 type="button"
                 onClick={() => {
-                  navigate("/incomeAllocation/calculateHPP");
+                  navigate("/debt/incomeAllocation/calculateHPP");
                 }}
               >
                 Kembali
               </Button>
 
               {/* Hitung Sekarang */}
-              <Button
-                type="submit"
-                className="bg-green-700"
-                form="incomeAllocation"
-              >
+              <Button type="submit" className="bg-green-700">
                 Hitung
               </Button>
 
