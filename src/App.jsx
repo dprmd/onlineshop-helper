@@ -1,6 +1,9 @@
+import { DebtProvider } from "@/context/DebtContext";
 import { UIProvider } from "@/context/UIContext";
+import { WarehouseProvider } from "@/context/WarehouseContext";
 import RootLayout from "@/layouts/RootLayout";
 import NotFound from "@/pages/NotFound";
+import DebtChanges from "@/pages/p5_Debt/DebtChanges";
 import AddBatchProduction from "@/pages/p6_Warehouse/AddBatchProduction";
 import ProductionHistory from "@/pages/p6_Warehouse/ProductionHistory";
 import Warehouse from "@/pages/p6_Warehouse/Warehouse";
@@ -17,10 +20,9 @@ import IncomeTotal from "./pages/p4_Income/IncomeTotal";
 import ShopeeWithdrawalRecords from "./pages/p4_Income/ShopeeWithdrawalRecords";
 import TikTokWithdrawasRecords from "./pages/p4_Income/TikTokWithdrawalRecords";
 import Debt from "./pages/p5_Debt/Debt";
-import Products from "./pages/p5_Debt/Products";
+import ProductsDebt from "./pages/p5_Debt/ProductsDebt";
 import Supplier from "./pages/p5_Debt/Supplier";
 import UpdateProductDebt from "./pages/p5_Debt/UpdateProductDebt";
-import { DebtProvider } from "@/context/DebtContext";
 
 const router = createHashRouter([
   {
@@ -61,9 +63,12 @@ const router = createHashRouter([
           { index: true, element: <Debt /> },
           { path: "supplier", element: <Supplier /> },
           { path: "updateProductDebt", element: <UpdateProductDebt /> },
-          { path: "products", element: <Products /> },
+          { path: "productsDebt", element: <ProductsDebt /> },
+          { path: "debtChanges", element: <DebtChanges /> },
         ],
       },
+
+      // Page 6
       {
         path: "warehouse",
         children: [
@@ -72,15 +77,6 @@ const router = createHashRouter([
           { path: "addBatchProduction", element: <AddBatchProduction /> },
         ],
       },
-
-      // Contoh nested route
-      // {
-      //   path: "PerhitunganKomisiKotor",
-      //   children: [
-      //     { index: true, Component: PerhitunganKomisiKotor },
-      //     { path: "UbahInformasiProduk", Component: UbahInformasiProduk },
-      //   ],
-      // },
     ],
   },
   {
@@ -92,13 +88,15 @@ const router = createHashRouter([
 export default function App() {
   return (
     <UIProvider>
-      <DebtProvider>
-        <WithdrawalRecordsProvider>
-          <IncomeAllocationProvider>
-            <RouterProvider router={router} />
-          </IncomeAllocationProvider>
-        </WithdrawalRecordsProvider>
-      </DebtProvider>
+      <WarehouseProvider>
+        <DebtProvider>
+          <WithdrawalRecordsProvider>
+            <IncomeAllocationProvider>
+              <RouterProvider router={router} />
+            </IncomeAllocationProvider>
+          </WithdrawalRecordsProvider>
+        </DebtProvider>
+      </WarehouseProvider>
     </UIProvider>
   );
 }

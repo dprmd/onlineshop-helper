@@ -48,7 +48,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDebt } from "../../context/DebtContext";
 import { formatNumber } from "../../utils/generalFunction";
-import { sortHppRange } from "@/pages/p5_Debt/Products";
 
 export default function UpdateProductDebt() {
   const navigate = useNavigate();
@@ -56,15 +55,15 @@ export default function UpdateProductDebt() {
     supplier,
     getSupplierList,
     updateProductDebt,
-    products,
+    productsDebt,
     getProductList,
   } = useDebt();
   const [whichSupplier, setWhichSupplier] = useState("");
   const [addItemDialog, setAddItemDialog] = useState(false);
   const [confirmChangeDialog, setConfirmChangeDialog] = useState(false);
   const produk = useMemo(() => {
-    return products.map((p) => ({ ...p, checked: false, remaining: 0 }));
-  }, [products]);
+    return productsDebt.map((p) => ({ ...p, checked: false, remaining: 0 }));
+  }, [productsDebt]);
   const [cloneProduk, setCloneProduk] = useState([]);
   const [choosedProduk, setChoosedProduk] = useState([]);
   const [notChoosedProduk, setNotChoosedProduk] = useState([]);
@@ -131,15 +130,15 @@ export default function UpdateProductDebt() {
   }, []);
 
   useEffect(() => {
-    setCloneProduk([...products]);
-    setNotChoosedProduk([...products]);
-  }, [products]);
+    setCloneProduk([...productsDebt]);
+    setNotChoosedProduk([...productsDebt]);
+  }, [productsDebt]);
 
-  if (products.length === 0) {
+  if (productsDebt.length === 0) {
     return (
       <div className="text-center">
         <p className="text-lg font-bold my-2">Anda Belum Menambahkan Produk</p>
-        <Button onClick={() => navigate("/debt/products")}>
+        <Button onClick={() => navigate("/debt/productsDebt")}>
           Tambah Sekarang
         </Button>
       </div>
@@ -366,14 +365,7 @@ export default function UpdateProductDebt() {
                             <FieldLabel htmlFor={produk.identifier}>
                               {produk.name}
                               <span className="text-[10px] text-gray-400">
-                                {!produk.isHaveVariation &&
-                                  formatNumber(produk.hpp)}
-                                {sortHppRange(produk.variation)[0]}
-                                {sortHppRange(produk.variation).length > 1
-                                  ? " - "
-                                  : null}
-                                {sortHppRange(produk.variation).length > 1 &&
-                                  sortHppRange(produk.variation).reverse()[0]}
+                                {formatNumber(produk.hpp)}
                               </span>
                             </FieldLabel>
                           </Field>

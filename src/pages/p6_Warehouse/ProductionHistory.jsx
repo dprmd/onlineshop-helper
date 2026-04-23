@@ -20,12 +20,14 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useDebt } from "@/context/DebtContext";
+import { useWarehouse } from "@/context/WarehouseContext";
 import { formatNumber, formatTanggal } from "@/utils/generalFunction";
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function ProductionHistory() {
-  const { productionHistory, getProductionHistory, getProductList } = useDebt();
+  const { productionHistory, getProductionHistory } = useWarehouse();
+  const { getProductList } = useDebt();
   const navigate = useNavigate();
 
   useEffect(() => {

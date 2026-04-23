@@ -47,7 +47,7 @@ export default function StepTwo() {
   const [setorBarang, setSetorBarang] = useState(productList);
   const [valueOnPopover, setValueOnPopover] = useState({
     value: 0,
-    product: [],
+    products: [],
     popList: {},
   });
 
@@ -168,7 +168,7 @@ export default function StepTwo() {
                           setValueOnPopover((prev) => {
                             return {
                               ...prev,
-                              product: produk,
+                              products: produk,
                               popList: {
                                 ...prev.popList,
                                 [produk.identifier]: true,
@@ -204,7 +204,7 @@ export default function StepTwo() {
                                       return prev.map((prod) => {
                                         if (
                                           prod.identifier ===
-                                          valueOnPopover.product.identifier
+                                          valueOnPopover.products.identifier
                                         ) {
                                           if (
                                             Number(total) > produk.remaining

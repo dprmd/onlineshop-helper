@@ -7,8 +7,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { useDebt } from "@/context/DebtContext";
-import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const link = [
@@ -20,11 +18,6 @@ const link = [
 
 export default function Warehouse() {
   const navigate = useNavigate();
-  const { getSupplierList } = useDebt();
-
-  useEffect(() => {
-    getSupplierList();
-  }, []);
 
   return (
     <div className=" flex flex-col justify-center items-center gap-y-4">

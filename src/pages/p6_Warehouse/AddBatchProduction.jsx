@@ -32,24 +32,16 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function AddBatchProduction() {
-  const { products, getProductList, addProduction } = useDebt();
+  const { productsDebt, getProductList, addProduction } = useDebt();
   const navigate = useNavigate();
 
   // Batch State
   const [materials, setMaterials] = useState([]);
   const [confirmCutPieces, setConfirmCutPieces] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
-  const [selectedVariant, setSelectedVariant] = useState("");
   const choosedProduct = useMemo(() => {
-    return products.find((p) => p.id === selectedProduct);
-  }, [products, selectedProduct]);
-  const choosedVariant = useMemo(() => {
-    if (choosedProduct?.isHaveVariation) {
-      return choosedProduct.variation.find((v) => v.name === selectedVariant);
-    } else {
-      return;
-    }
-  }, [choosedProduct, selectedVariant]);
+    return productsDebt.find((p) => p.id === selectedProduct);
+  }, [productsDebt, selectedProduct]);
 
   const handleCutPieces = async () => {
     const cuttingAt = new Date().getTime();
@@ -123,14 +115,14 @@ export default function AddBatchProduction() {
               <Select
                 value={selectedProduct}
                 onValueChange={setSelectedProduct}
-                disabled={products.length === 0}
+                disabled={productsDebt.length === 0}
               >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Pilih Produk" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {products.map((p) => (
+                    {productsDebt.map((p) => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.name}
                       </SelectItem>
@@ -138,37 +130,10 @@ export default function AddBatchProduction() {
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              {products.length === 0 && (
+              {productsDebt.length === 0 && (
                 <FieldError>Mohon Tambah Produk Terlebih Dahulu</FieldError>
               )}
             </Field>
-
-            {/* Variasi, Jika Ada */}
-            {choosedProduct?.isHaveVariation && (
-              <Field>
-                <FieldLabel>Variasi</FieldLabel>
-                <Select
-                  value={selectedVariant}
-                  onValueChange={setSelectedVariant}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Pilih Variasi" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {choosedProduct?.variation.map((v) => (
-                        <SelectItem key={v.name} value={v.name}>
-                          {v.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-                {!choosedVariant && (
-                  <FieldError>Mohon Pilih Variasi </FieldError>
-                )}
-              </Field>
-            )}
 
             {/* Materials */}
             <Field>

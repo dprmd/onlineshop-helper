@@ -23,7 +23,7 @@ export const collectionName = {
   },
   allTime: "penghasilanAllTime",
   allTimeDocId: "CatatanPenghasilanAllTime",
-  products: "produk",
+  productsDebt: "produkHutang",
   productionHistory: "riwayatProduksi",
   supplier: "supplier",
   debtChanges: "riwayatPerubahanHutang",

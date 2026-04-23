@@ -16,23 +16,18 @@ const DebtContext = createContext();
 
 export function DebtProvider({ children }) {
   const { setLoading } = useUI();
-
   // Supplier State
   const [supplier, setSupplier] = useState([]);
   const [isFetchingSupplier, setIsFetchingSupplier] = useState(false);
   const [isSupplierFetched, setIsSupplierFetched] = useState(false);
+  const [debtChanges, setDebtChanges] = useState([]);
+  const [isFetchingDebtChanges, setIsFetchingDebtChanges] = useState(false);
+  const [isDebtChangesFethced, setIsDebtChangesFetched] = useState(false);
 
   // Products State
-  const [products, setProducts] = useState([]);
+  const [productsDebt, setProductsDebt] = useState([]);
   const [isFetchingProducts, setIsFetchingProducts] = useState(false);
   const [isProductsFetched, setIsProductsFetched] = useState(false);
-
-  // Production History State
-  const [productionHistory, setProductionHistory] = useState([]);
-  const [isProductionHistoryFetched, setIsProductionHistoryFetched] =
-    useState(false);
-  const [isFetchingProductionHistory, setIsFetchingProductionHistory] =
-    useState(false);
 
   // Supplier Function
 
@@ -72,8 +67,39 @@ export function DebtProvider({ children }) {
     return exist ? true : false;
   };
 
+  const getDebtChanges = async () => {
+    if (isFetchingDebtChanges || isDebtChangesFethced) return;
+
+    setIsFetchingDebtChanges(true);
+    setLoading(true);
+
+    const {
+      success,
+      data: debtChanges,
+      error,
+      message,
+    } = await getDocuments(
+      "Mengambil List Perubahan Hutang",
+      collectionName.debtChanges,
+      "newToOld",
+    );
+
+    if (success) {
+      setDebtChanges([...debtChanges]);
+      setIsDebtChangesFetched(true);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+    setIsFetchingDebtChanges(false);
+  };
+
   const updateProductDebt = async (supplierId, productDebt, actionType) => {
     setLoading(true);
+
+    console.log(productDebt);
 
     const {
       data: supplierObject,
@@ -184,28 +210,25 @@ export function DebtProvider({ children }) {
 
   // Products Function
 
-  const addProduct = async (product) => {
+  const addProductDebt = async (productDebt) => {
     setLoading(true);
 
     const newProduct = {
-      ...product,
-      identifier: toCamelCase(product.name),
-      hpp: product.hpp ? raw(product.hpp) : 0,
-      variation: product.variation
-        ? product.variation.map((p) => ({ ...p, hpp: raw(p.hpp) }))
-        : [],
+      ...productDebt,
+      identifier: toCamelCase(productDebt.name),
+      hpp: raw(productDebt.hpp),
     };
 
     const { docId, success, error, message } = await createDocument(
       "Menambahkan Produk Baru",
-      collectionName.products,
+      collectionName.productsDebt,
       newProduct,
       "Berhasil Menambahkan Produk",
     );
 
     if (success) {
       // Optimistic Updates
-      setProducts((prev) => {
+      setProductsDebt((prev) => {
         return [
           {
             ...newProduct,
@@ -235,14 +258,14 @@ export function DebtProvider({ children }) {
       error,
       message,
     } = await getDocuments(
-      "Ambil List Produk",
-      collectionName.products,
+      "Ambil List Produk Hutang",
+      collectionName.productsDebt,
       "newToOld",
     );
 
     if (success) {
       setIsProductsFetched(true);
-      setProducts([...productList]);
+      setProductsDebt([...productList]);
     } else {
       toast.error(message);
       console.log(error);
@@ -252,19 +275,15 @@ export function DebtProvider({ children }) {
     setIsFetchingProducts(false);
   };
 
-  const editProduct = async (productId, product) => {
+  const editProductDebt = async (productId, productDebt) => {
     setLoading(true);
 
-    const productBefore = products.find((p) => p.id === productId);
+    const productBefore = productsDebt.find((p) => p.id === productId);
     const editedProduct = {
       ...productBefore,
-      name: product.name,
-      identifier: toCamelCase(product.name),
-      hpp: product.hpp ? raw(product.hpp) : 0,
-      isHaveVariation: product.isHaveVariation,
-      variation: product.variation
-        ? product.variation.map((p) => ({ ...p, hpp: raw(p.hpp) }))
-        : [],
+      name: productDebt.name,
+      identifier: toCamelCase(productDebt.name),
+      hpp: raw(productDebt.hpp),
     };
 
     if (isEqual({ ...editedProduct, id: productId }, productBefore)) {
@@ -275,7 +294,7 @@ export function DebtProvider({ children }) {
 
     const { success, error, message } = await updateDocument(
       "Edit Produk",
-      collectionName.products,
+      collectionName.productsDebt,
       productId,
       editedProduct,
       "Berhasil Edit Produk",
@@ -283,7 +302,7 @@ export function DebtProvider({ children }) {
 
     if (success) {
       // Optimistic Update
-      setProducts((prev) => {
+      setProductsDebt((prev) => {
         return prev.map((p) => {
           if (p.id === productId) {
             return { ...editedProduct, id: productId };
@@ -301,18 +320,18 @@ export function DebtProvider({ children }) {
     setLoading(false);
   };
 
-  const deleteProduct = async (docId) => {
+  const deleteProductDebt = async (docId) => {
     setLoading(true);
 
     const { success, error, message } = await deleteDocument(
       "Menghapus Produk",
-      collectionName.products,
+      collectionName.productsDebt,
       docId,
       "Berhasil Menghapus Produk",
     );
 
     if (success) {
-      setProducts((prev) => {
+      setProductsDebt((prev) => {
         return prev.filter((p) => p.id !== docId);
       });
       toast.success(message);
@@ -324,62 +343,6 @@ export function DebtProvider({ children }) {
     setLoading(false);
   };
 
-  // Productions Function
-
-  const addProduction = async (batchProduction) => {
-    setLoading(true);
-
-    const { docId, success, message } = await createDocument(
-      "Simpan Batch Produksi",
-      collectionName.productionHistory,
-      batchProduction,
-      "Berhasil Menambahkan Batch Ke Riwayat Produksi",
-    );
-
-    if (success) {
-      setProductionHistory((prev) => [
-        ...prev,
-        { id: docId, ...batchProduction },
-      ]);
-      toast.success(message);
-    } else {
-      toast.error(message);
-    }
-
-    setLoading(false);
-  };
-
-  const getProductionHistory = async () => {
-    if (isProductionHistoryFetched || isFetchingProductionHistory) return;
-
-    setIsFetchingProductionHistory(true);
-    setLoading(true);
-
-    const {
-      data: productionList,
-      success,
-      error,
-      message,
-    } = await getDocuments(
-      "Ambil Riwayat Produksi",
-      collectionName.productionHistory,
-      "newToOld",
-    );
-
-    if (success) {
-      setProductionHistory([...productionList]);
-      setIsProductionHistoryFetched(true);
-    } else {
-      toast.error(message);
-      console.log(error);
-    }
-
-    setLoading(false);
-    setIsFetchingProductionHistory(false);
-  };
-
-  // Delete Function
-
   return (
     <DebtContext.Provider
       value={{
@@ -388,15 +351,14 @@ export function DebtProvider({ children }) {
         checkSupplierIfExist,
         getSupplierList,
         updateProductDebt,
-        products,
-        setProducts,
+        productsDebt,
+        setProductsDebt,
         getProductList,
-        addProduct,
-        editProduct,
-        deleteProduct,
-        productionHistory,
-        getProductionHistory,
-        addProduction,
+        addProductDebt,
+        editProductDebt,
+        deleteProductDebt,
+        getDebtChanges,
+        debtChanges,
       }}
     >
       {children}

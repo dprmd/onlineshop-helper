@@ -152,6 +152,9 @@ function PenghasilanTikTokCard({ data }) {
             </span>
           </div>
         )}
+        <div>
+          <span className="text-sm">Doc Id : {data.id}</span>
+        </div>
       </div>
     </div>
   );

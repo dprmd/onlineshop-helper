@@ -22,7 +22,11 @@ const link = [
   },
   {
     buttonName: "Produk",
-    destination: "/debt/products",
+    destination: "/debt/productsDebt",
+  },
+  {
+    buttonName: "Riwayat Perubahan Hutang",
+    destination: "/debt/debtChanges",
   },
 ];
 
