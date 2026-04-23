@@ -1,5 +1,5 @@
 import { useUI } from "@/context/UIContext";
-import { getDocuments } from "@/services/firebase/docService";
+import { createDocument, getDocuments } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";

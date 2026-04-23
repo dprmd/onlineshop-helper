@@ -109,7 +109,7 @@ const BatchProductionCard = ({ batch }) => {
   return (
     <Card className="min-w-[380px] max-w-[380px] h-fit">
       <CardHeader>
-        <CardTitle>{batch.product.name}</CardTitle>
+        <CardTitle>{batch.name}</CardTitle>
         <CardDescription>
           <p>Status : {getStatus(batch).status}</p>
           <p>Total Belanja Bahan : Rp {formatNumber(batch.materials.total)}</p>
