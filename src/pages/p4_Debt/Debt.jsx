@@ -28,6 +28,10 @@ const link = [
     buttonName: "Riwayat Perubahan Hutang",
     destination: "/debt/debtChanges",
   },
+  {
+    buttonName: "Alokasi Pemasukan",
+    destination: "/debt/incomeAllocation",
+  },
 ];
 
 export default function Debt() {
