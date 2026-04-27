@@ -80,9 +80,11 @@ export function WithdrawalRecordsProvider({ children }) {
     setIsFetchingAT(false);
   };
 
-  const fetchWithdrawals = async (platform, limit) => {
+  const fetchWithdrawals = async (platform, limit, forceFetch = false) => {
     if (platform === "shopee") {
-      if (isFetchingShopeeWithdrawals || isShopeeWithdrawalsFetched) return;
+      if (!forceFetch) {
+        if (isFetchingShopeeWithdrawals || isShopeeWithdrawalsFetched) return;
+      }
 
       setLoading(true);
       setIsFetchingShopeeWithdrawals(true);
@@ -107,7 +109,9 @@ export function WithdrawalRecordsProvider({ children }) {
     }
 
     if (platform === "tiktok") {
-      if (isFetchingTiktokWithdrawals || isTiktokWithdrawalsFetched) return;
+      if (!forceFetch) {
+        if (isFetchingTiktokWithdrawals || isTiktokWithdrawalsFetched) return;
+      }
 
       setLoading(true);
       setIsFetchingTiktokWithdrawals(true);

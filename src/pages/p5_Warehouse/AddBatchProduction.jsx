@@ -31,7 +31,8 @@ export default function AddBatchProduction() {
 
   // Batch State
   const [product, setProduct] = useState({
-    name: "",
+    productName: "",
+    shippingCost: 0,
     materials: [],
   });
   const [confirmCutPieces, setConfirmCutPieces] = useState(false);
@@ -40,18 +41,18 @@ export default function AddBatchProduction() {
     const cuttingAt = new Date().getTime();
     const batch = {
       status: "cutting",
-      name: product.name,
-      materials: {
-        listMaterial: product.materials.map((m) => ({
-          ...m,
-          price: raw(m.price),
-          qty: Number(m.qty),
-          total: raw(m.price) * Number(m.qty),
-        })),
-        total: product.materials.reduce((acc, cur) => {
+      productName: product.productName,
+      shippingCost: raw(product.shippingCost),
+      materials: product.materials.map((m) => ({
+        ...m,
+        price: raw(m.price),
+        qty: Number(m.qty),
+        total: raw(m.price) * Number(m.qty),
+      })),
+      totalCost:
+        product.materials.reduce((acc, cur) => {
           return acc + raw(cur.price) * Number(cur.qty);
-        }, 0),
-      },
+        }, 0) + raw(product.shippingCost),
       time: {
         startCutting: cuttingAt,
       },
@@ -74,7 +75,7 @@ export default function AddBatchProduction() {
           </AlertDialogHeader>
           <div className="text-gray-500 text-[12px]">
             <p>
-              Produk Yang Akan Dibuat : <b>{product.name}</b>
+              Produk Yang Akan Dibuat : <b>{product.productName}</b>
             </p>
             <p>Bahan : </p>
             <ul>
@@ -102,10 +103,13 @@ export default function AddBatchProduction() {
               <FieldLabel>Produk Yang Akan Dibuat</FieldLabel>
               <Input
                 required
-                value={product.name}
+                value={product.productName}
                 placeholder="Masukan Nama Produk"
                 onChange={(e) => {
-                  setProduct((prev) => ({ ...prev, name: e.target.value }));
+                  setProduct((prev) => ({
+                    ...prev,
+                    productName: e.target.value,
+                  }));
                 }}
               />
             </Field>
@@ -246,10 +250,25 @@ export default function AddBatchProduction() {
                     ],
                   }));
                 }}
-                disabled={!product.name}
+                disabled={!product.productName}
               >
                 Tambah Kain
               </Button>
+              {product.materials.length > 0 && (
+                <Field>
+                  <FieldLabel>Ongkos Kirim</FieldLabel>
+                  <Input
+                    required
+                    value={product.shippingCost}
+                    onChange={(e) => {
+                      setProduct((prev) => ({
+                        ...prev,
+                        shippingCost: separateNumber(e),
+                      }));
+                    }}
+                  />
+                </Field>
+              )}
             </Field>
             <Field className="flex flex-row justify-end">
               <Button
@@ -266,6 +285,9 @@ export default function AddBatchProduction() {
                 className="max-w-fit"
                 type="button"
                 onClick={() => {
+                  if (product.productName === "") {
+                    toast.warning("Mohon Masukan Nama Produk");
+                  }
                   if (product.materials.length === 0) {
                     toast.warning("Mohon Gunakan Bahan");
                     return;

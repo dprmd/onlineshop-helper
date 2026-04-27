@@ -22,13 +22,21 @@ export default function DebtChanges() {
   const choosedSupplier = useMemo(() => {
     return supplier.find((s) => s.id === whichSupplier);
   }, [whichSupplier]);
+  const debtChangesList = useMemo(() => {
+    if (!whichSupplier) return [];
+    else {
+      const check = debtChanges.find((c) => c.supplierId === whichSupplier);
+      if (check) return check.changes;
+      else return [];
+    }
+  }, [debtChanges, whichSupplier]);
 
   useEffect(() => {
     getSupplierList();
   }, []);
 
   useEffect(() => {
-    getDebtChanges(whichSupplier, true);
+    getDebtChanges(whichSupplier);
   }, [whichSupplier]);
 
   return (
@@ -56,7 +64,7 @@ export default function DebtChanges() {
         </Select>
       </div>
 
-      {whichSupplier && debtChanges.length === 0 ? (
+      {whichSupplier && debtChangesList.length === 0 ? (
         <div>
           <p className="my-2">Kosong</p>
           <Button
@@ -69,7 +77,7 @@ export default function DebtChanges() {
         </div>
       ) : null}
 
-      {whichSupplier && debtChanges.length > 0 && (
+      {whichSupplier && debtChangesList.length > 0 && (
         <div>
           <Button
             onClick={() => {
@@ -82,8 +90,8 @@ export default function DebtChanges() {
         </div>
       )}
       <div className="flex flex-wrap justify-center items-center gap-4">
-        {debtChanges.map((debt) => (
-          <DebtChangesCard key={debt.id} debt={debt} />
+        {debtChangesList.map((debt, i) => (
+          <DebtChangesCard key={i} debt={debt} />
         ))}
       </div>
     </div>

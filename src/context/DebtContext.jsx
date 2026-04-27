@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   createDocument,
   deleteDocument,
+  getDebtChangeBySupplierId,
   getDocument,
   getDocuments,
   updateDocument,
@@ -21,8 +22,6 @@ export function DebtProvider({ children }) {
   const [isFetchingSupplier, setIsFetchingSupplier] = useState(false);
   const [isSupplierFetched, setIsSupplierFetched] = useState(false);
   const [debtChanges, setDebtChanges] = useState([]);
-  const [isFetchingDebtChanges, setIsFetchingDebtChanges] = useState(false);
-  const [isDebtChangesFethced, setIsDebtChangesFetched] = useState(false);
 
   // Products State
   const [productsDebt, setProductsDebt] = useState([]);
@@ -67,9 +66,10 @@ export function DebtProvider({ children }) {
     return exist ? true : false;
   };
 
-  const getDebtChanges = async (supplierId, forceToFetch = false) => {
+  const getDebtChanges = async (supplierId) => {
+    if (!supplierId) return;
+
     const getNow = async () => {
-      setIsFetchingDebtChanges(true);
       setLoading(true);
 
       const {
@@ -77,28 +77,31 @@ export function DebtProvider({ children }) {
         data: debtChanges,
         error,
         message,
-      } = await getDocuments(
-        "Mengambil List Perubahan Hutang",
-        `${collectionName.debtChanges}-${supplierId}`,
-        "newToOld",
-      );
+      } = await getDebtChangeBySupplierId(supplierId, "newToOld");
 
       if (success) {
-        setDebtChanges([...debtChanges]);
-        setIsDebtChangesFetched(true);
+        setDebtChanges((prev) => {
+          return [
+            ...prev,
+            {
+              supplierId,
+              changes: debtChanges,
+            },
+          ];
+        });
       } else {
         toast.error(message);
         console.log(error);
       }
 
       setLoading(false);
-      setIsFetchingDebtChanges(false);
     };
 
-    if (forceToFetch) {
-      getNow();
-    } else if (isFetchingDebtChanges || isDebtChangesFethced) return;
-    else {
+    const isDebtChangesExist = debtChanges.find(
+      (c) => c.supplierId === supplierId,
+    );
+
+    if (!isDebtChangesExist) {
       getNow();
     }
   };
@@ -223,7 +226,13 @@ export function DebtProvider({ children }) {
         });
       });
       setDebtChanges((prev) => {
-        return [...prev, debtChange];
+        return prev.map((c) => {
+          if (c.supplierId === supplierId) {
+            return { ...c, changes: [debtChange, ...c.changes] };
+          } else {
+            return c;
+          }
+        });
       });
     } else {
       toast.error(message);

@@ -1,6 +1,11 @@
 import { useUI } from "@/context/UIContext";
-import { createDocument, getDocuments } from "@/services/firebase/docService";
+import {
+  createDocument,
+  getDocuments,
+  updateDocument,
+} from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
+import { raw } from "@/utils/generalFunction";
 import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
 
@@ -67,12 +72,64 @@ export function WarehouseProvider({ children }) {
     setLoading(false);
     setIsFetchingProductionHistory(false);
   };
+
+  const completeCut = async (batch, result, cutterPayment) => {
+    const now = new Date().getTime();
+
+    const updatedBatch = {
+      ...batch,
+      status: "sewing",
+      stock: {
+        cutResult: Number(result),
+        onWarehouse: 0,
+      },
+      time: {
+        ...batch.time,
+        endCutting: now,
+        startSewing: now,
+      },
+      operationalCosts: {
+        worker: [{ workerType: "Tukang Potong", payment: raw(cutterPayment) }],
+        total: raw(cutterPayment),
+      },
+    };
+
+    setLoading(true);
+
+    const { success, message } = await updateDocument(
+      "Mengupdate Batch",
+      collectionName.productionHistory,
+      batch.id,
+      updatedBatch,
+      "Berhasil Mengupdate Batch",
+    );
+
+    if (success) {
+      // optimistic update
+      setProductionHistory((prev) => {
+        return prev.map((b) => {
+          if (b.id === batch.id) {
+            return updatedBatch;
+          } else {
+            return b;
+          }
+        });
+      });
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <WarehouseContext.Provider
       value={{
         productionHistory,
         getProductionHistory,
         addProduction,
+        completeCut,
       }}
     >
       {children}

@@ -343,3 +343,38 @@ export const deleteCollection = async (collectionName) => {
   await Promise.all(deletePromises);
   console.log("Collection berhasil dihapus");
 };
+
+export const getDebtChangeBySupplierId = async (supplierId, order) => {
+  const orderChoice = {
+    newToOld: "desc",
+    oldToNew: "asc",
+  };
+
+  try {
+    console.log(
+      `Operation : Read , Operation Name : Get Daftar Perubahan Hutang Dari Supplier ${supplierId}`,
+    );
+    const q = query(
+      collection(db, `${collectionName.debtChanges}-${supplierId}`),
+      orderBy("createdAtMs", orderChoice[order]),
+    );
+
+    const snapshot = await getDocs(q);
+
+    const result = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+      error,
+    };
+  }
+};

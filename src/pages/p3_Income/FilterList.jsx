@@ -66,7 +66,7 @@ export default function FilterList({ platform }) {
     if (limitOffPage <= 7) {
       sortByLimitUnderSeven(platform, Number(limitOffPage));
     } else {
-      await fetchWithdrawals(platform, Number(limitOffPage));
+      await fetchWithdrawals(platform, Number(limitOffPage), true);
     }
   };
 
