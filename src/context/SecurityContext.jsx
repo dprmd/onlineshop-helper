@@ -1,6 +1,5 @@
 import { getDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
-import { compareSync } from "node_modules/bcryptjs/umd";
 import { createContext, useContext } from "react";
 
 const SecurityContext = createContext();
@@ -12,7 +11,8 @@ export const SecurityProvider = ({ children }) => {
       collectionName.security,
       "pin",
     );
-    const isMatch = compareSync(pin, hashedPin);
+    // const isMatch = (pin, hashedPin);
+    const isMatch = false;
 
     if (isMatch) {
       return {
