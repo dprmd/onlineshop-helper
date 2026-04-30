@@ -57,7 +57,7 @@ export default function UpdateProductDebt() {
     getSupplierList,
     updateProductDebt,
     productsDebt,
-    getProductList,
+    getProductDebtList,
     getDebtChanges,
   } = useDebt();
   const [whichSupplier, setWhichSupplier] = useState("");
@@ -128,7 +128,7 @@ export default function UpdateProductDebt() {
 
   useEffect(() => {
     getSupplierList();
-    getProductList();
+    getProductDebtList();
   }, []);
 
   useEffect(() => {

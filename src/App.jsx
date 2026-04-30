@@ -23,6 +23,7 @@ import StepThree from "./pages/p4_Debt/StepThree";
 import StepTwo from "./pages/p4_Debt/StepTwo";
 import Supplier from "./pages/p4_Debt/Supplier";
 import UpdateProductDebt from "./pages/p4_Debt/UpdateProductDebt";
+import { SecurityProvider } from "@/context/SecurityContext";
 
 const router = createHashRouter([
   {
@@ -85,16 +86,18 @@ const router = createHashRouter([
 
 export default function App() {
   return (
-    <UIProvider>
-      <WarehouseProvider>
-        <DebtProvider>
-          <WithdrawalRecordsProvider>
-            <IncomeAllocationProvider>
-              <RouterProvider router={router} />
-            </IncomeAllocationProvider>
-          </WithdrawalRecordsProvider>
-        </DebtProvider>
-      </WarehouseProvider>
-    </UIProvider>
+    <SecurityProvider>
+      <UIProvider>
+        <WarehouseProvider>
+          <DebtProvider>
+            <WithdrawalRecordsProvider>
+              <IncomeAllocationProvider>
+                <RouterProvider router={router} />
+              </IncomeAllocationProvider>
+            </WithdrawalRecordsProvider>
+          </DebtProvider>
+        </WarehouseProvider>
+      </UIProvider>
+    </SecurityProvider>
   );
 }

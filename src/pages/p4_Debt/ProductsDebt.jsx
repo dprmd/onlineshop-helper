@@ -38,7 +38,7 @@ import { toast } from "sonner";
 export default function ProductsDebt() {
   const {
     productsDebt,
-    getProductList,
+    getProductDebtList,
     addProductDebt,
     editProductDebt,
     deleteProductDebt,
@@ -89,7 +89,7 @@ export default function ProductsDebt() {
   };
 
   useEffect(() => {
-    getProductList();
+    getProductDebtList();
   }, []);
 
   return (

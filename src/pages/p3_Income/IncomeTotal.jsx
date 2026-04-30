@@ -181,10 +181,7 @@ export default function IncomeTotal() {
           <CardAction>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button
-                  size={"xs"}
-                  className="cursor-pointer hover:bg-gray-600"
-                >
+                <Button size={"xs"} className="hover:bg-gray-600">
                   Fix Data
                 </Button>
               </AlertDialogTrigger>
@@ -270,7 +267,7 @@ function SalesPieChart({
           onClick={() => {
             setShowUntung((prev) => !prev);
           }}
-          className="absolute right-1 top-1 text-[10px] cursor-pointer"
+          className="absolute right-1 top-1 text-[10px]"
         >
           {showUntung ? "Omzet" : "Untung"}
         </Button>

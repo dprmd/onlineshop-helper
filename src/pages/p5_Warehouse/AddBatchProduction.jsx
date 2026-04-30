@@ -38,7 +38,6 @@ export default function AddBatchProduction() {
   const [confirmCutPieces, setConfirmCutPieces] = useState(false);
 
   const handleCutPieces = async () => {
-    const cuttingAt = new Date().getTime();
     const batch = {
       status: "cutting",
       productName: product.productName,
@@ -49,12 +48,12 @@ export default function AddBatchProduction() {
         qty: Number(m.qty),
         total: raw(m.price) * Number(m.qty),
       })),
-      totalCost:
+      totalFabricCost:
         product.materials.reduce((acc, cur) => {
           return acc + raw(cur.price) * Number(cur.qty);
         }, 0) + raw(product.shippingCost),
       time: {
-        startCutting: cuttingAt,
+        startCutting: new Date().getTime(),
       },
     };
 
@@ -171,6 +170,7 @@ export default function AddBatchProduction() {
                         className="text-sm"
                         placeholder="0"
                         value={product.materials[i].qty}
+                        type="number"
                         onChange={(e) => {
                           setProduct((prod) => ({
                             ...prod,
@@ -256,7 +256,7 @@ export default function AddBatchProduction() {
               </Button>
               {product.materials.length > 0 && (
                 <Field>
-                  <FieldLabel>Ongkos Kirim</FieldLabel>
+                  <FieldLabel>Ongkos Kirim (opsional)</FieldLabel>
                   <Input
                     required
                     value={product.shippingCost}
@@ -293,17 +293,21 @@ export default function AddBatchProduction() {
                     return;
                   }
 
-                  const checkMaterials = product.materials.filter((m) => {
-                    return m.materialName && m.qty && m.type && m.price;
+                  const checkMaterials = product.materials.map((m) => {
+                    if (m.materialName && m.qty && m.type && m.price) {
+                      return "yes";
+                    } else {
+                      return "no";
+                    }
                   });
 
-                  if (checkMaterials.length === 0) {
+                  if (checkMaterials.includes("no")) {
                     toast.warning("Mohon Masukan Info Kain Dengan Benar");
                     return;
                   } else {
                     setProduct((prev) => ({
                       ...prev,
-                      materials: [...checkMaterials],
+                      materials: [...product.materials],
                     }));
                     setConfirmCutPieces(true);
                   }

@@ -33,8 +33,8 @@ export function WarehouseProvider({ children }) {
 
     if (success) {
       setProductionHistory((prev) => [
-        ...prev,
         { id: docId, ...batchProduction },
+        ...prev,
       ]);
       toast.success(message);
     } else {
@@ -73,7 +73,9 @@ export function WarehouseProvider({ children }) {
     setIsFetchingProductionHistory(false);
   };
 
-  const completeCut = async (batch, result, cutterPayment) => {
+  const completeCut = async (batch, result, cutterPayment, packingCost) => {
+    setLoading(true);
+
     const now = new Date().getTime();
 
     const updatedBatch = {
@@ -86,15 +88,26 @@ export function WarehouseProvider({ children }) {
       time: {
         ...batch.time,
         endCutting: now,
-        startSewing: now,
+        startSewing: now + 60 * 1000,
       },
       operationalCosts: {
-        worker: [{ workerType: "Tukang Potong", payment: raw(cutterPayment) }],
-        total: raw(cutterPayment),
+        worker: [
+          {
+            id: new Date().getTime(),
+            role: "Tukang Potong",
+            payment: raw(cutterPayment),
+          },
+        ],
+        packingCost: raw(packingCost),
+        total: raw(cutterPayment) + raw(packingCost),
       },
+      hpp: Math.round(
+        (Number(result) * raw(cutterPayment) +
+          Number(result) * raw(packingCost) +
+          batch.totalFabricCost) /
+          Number(result),
+      ),
     };
-
-    setLoading(true);
 
     const { success, message } = await updateDocument(
       "Mengupdate Batch",
@@ -123,6 +136,112 @@ export function WarehouseProvider({ children }) {
     setLoading(false);
   };
 
+  const completeSewing = async (batch) => {
+    setLoading(true);
+
+    const now = new Date().getTime();
+
+    const updatedBatch = {
+      ...batch,
+      status: "toPack",
+      time: {
+        ...batch.time,
+        endSewing: now,
+        startPacking: now + 60 * 1000,
+      },
+    };
+
+    const { success, message } = await updateDocument(
+      `Menandai ${batch.productName}-${batch.id} Selesai Dijahit`,
+      collectionName.productionHistory,
+      batch.id,
+      updatedBatch,
+      `Berhasil Menandai ${batch.productName}-${batch.id} Selesai Dijahit`,
+    );
+
+    if (success) {
+      setProductionHistory((prev) => {
+        return prev.map((b) => {
+          if (b.id === batch.id) {
+            return updatedBatch;
+          } else {
+            return b;
+          }
+        });
+      });
+      toast.success(message);
+    } else {
+      toast.error(message);
+    }
+
+    setLoading(false);
+  };
+
+  const addProductionCost = async (batch) => {
+    setLoading(true);
+
+    const targetBatch = productionHistory.find((b) => b.id === batch.batchId);
+
+    const newCost = batch.workerPayments.reduce((acc, wrkr) => {
+      return acc + raw(wrkr.payment);
+    }, 0);
+
+    const currentWorker = targetBatch.operationalCosts.worker;
+    const newWorker = batch.workerPayments.map((wrkr) => {
+      return {
+        ...wrkr,
+        payment: raw(wrkr.payment),
+      };
+    });
+
+    const cutResult = targetBatch.stock.cutResult;
+    const totalNewWorkerCost = [...currentWorker, ...newWorker].reduce(
+      (acc, cur) => {
+        return acc + cur.payment * cutResult;
+      },
+      0,
+    );
+
+    const updatedBatch = {
+      ...targetBatch,
+      operationalCosts: {
+        ...targetBatch.operationalCosts,
+        total: targetBatch.operationalCosts.total + newCost,
+        worker: [...currentWorker, ...newWorker],
+      },
+      hpp: Math.round(
+        (totalNewWorkerCost +
+          targetBatch.operationalCosts.packingCost * cutResult +
+          targetBatch.totalFabricCost) /
+          cutResult,
+      ),
+    };
+
+    const { success, message } = await updateDocument(
+      "Menambahkan Biaya Produksi",
+      collectionName.productionHistory,
+      batch.batchId,
+      updatedBatch,
+      "Berhasil Menambahkan Biaya Produksi",
+    );
+
+    if (success) {
+      setProductionHistory((prev) => {
+        return prev.map((b) => {
+          if (b.id === batch.batchId) {
+            return updatedBatch;
+          } else {
+            return b;
+          }
+        });
+      });
+    } else {
+      toast.error(message);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <WarehouseContext.Provider
       value={{
@@ -130,6 +249,8 @@ export function WarehouseProvider({ children }) {
         getProductionHistory,
         addProduction,
         completeCut,
+        completeSewing,
+        addProductionCost,
       }}
     >
       {children}

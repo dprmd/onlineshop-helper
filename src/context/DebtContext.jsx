@@ -280,7 +280,7 @@ export function DebtProvider({ children }) {
     setLoading(false);
   };
 
-  const getProductList = async () => {
+  const getProductDebtList = async () => {
     if (isProductsFetched || isFetchingProducts) return;
 
     setIsFetchingProducts(true);
@@ -387,7 +387,7 @@ export function DebtProvider({ children }) {
         updateProductDebt,
         productsDebt,
         setProductsDebt,
-        getProductList,
+        getProductDebtList,
         addProductDebt,
         editProductDebt,
         deleteProductDebt,
