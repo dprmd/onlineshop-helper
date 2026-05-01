@@ -49,6 +49,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useDebt } from "../../context/DebtContext";
 import { formatNumber } from "../../utils/generalFunction";
+import { useSecurity } from "@/context/SecurityContext";
 
 export default function UpdateProductDebt() {
   const navigate = useNavigate();
@@ -60,6 +61,7 @@ export default function UpdateProductDebt() {
     getProductDebtList,
     getDebtChanges,
   } = useDebt();
+  const { setOpenPin } = useSecurity();
   const [whichSupplier, setWhichSupplier] = useState("");
   const [addItemDialog, setAddItemDialog] = useState(false);
   const [confirmChangeDialog, setConfirmChangeDialog] = useState(false);
@@ -98,15 +100,6 @@ export default function UpdateProductDebt() {
   const handleUpdateDebt = (e) => {
     e.preventDefault();
 
-    // validasi
-    if (choosedProduct.length === 0) {
-      toast.info("Mohon Tambah Barang Terlebih Dahulu");
-      return;
-    } else if (!whichSupplier) {
-      toast.info("Mohon Pilih Supplier Terlebih Dahulu");
-      return;
-    }
-
     // sort terlebih dahulu
     const debt = choosedProduct
       .map((produk) => ({
@@ -122,8 +115,12 @@ export default function UpdateProductDebt() {
       return;
     }
 
-    setConfirmChangeDialog(true);
     setProductDebt([...debt]);
+    setOpenPin({
+      open: true,
+      actionOnMatch: setConfirmChangeDialog,
+      parameter: true,
+    });
   };
 
   useEffect(() => {

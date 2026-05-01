@@ -80,6 +80,7 @@ import {
   toCamelCase,
 } from "../../utils/generalFunction";
 import { useMemo } from "react";
+import { useSecurity } from "@/context/SecurityContext";
 
 // additional function
 const date = new Date();
@@ -124,6 +125,7 @@ const StepThree = () => {
     fetchAT,
   } = useWithdrawalRecords();
   const { supplier, setSupplier } = useDebt();
+  const { setOpenPin } = useSecurity();
 
   // State
   const [loadingSave, setLoadingSave] = useState(false);
@@ -277,7 +279,11 @@ const StepThree = () => {
         );
       } else {
         setLoadingSave(false);
-        setConfirmSave(true);
+        setOpenPin({
+          open: true,
+          actionOnMatch: setConfirmSave,
+          parameter: true,
+        });
       }
     } else {
       // Ambil Data Dari Firebase
@@ -293,7 +299,11 @@ const StepThree = () => {
         );
       } else {
         setLoadingSave(false);
-        setConfirmSave(true);
+        setOpenPin({
+          open: true,
+          actionOnMatch: setConfirmSave,
+          parameter: true,
+        });
       }
     }
   };

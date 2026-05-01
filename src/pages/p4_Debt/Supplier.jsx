@@ -20,13 +20,14 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { collectionName } from "@/services/firebase/firebase";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { useDebt } from "../../context/DebtContext";
 import { createDocument } from "../../services/firebase/docService";
 import { toCamelCase } from "../../utils/generalFunction";
-import { toast } from "sonner";
-import { collectionName } from "@/services/firebase/firebase";
+import { useSecurity } from "@/context/SecurityContext";
 
 export default function Supplier() {
   const { supplier, setSupplier, checkSupplierIfExist, getSupplierList } =
@@ -37,6 +38,8 @@ export default function Supplier() {
 
   const handleSaveSupplier = async (e) => {
     e.preventDefault();
+
+    if (!supplierName) return;
 
     // Cek jika supplier name supplier ada di firebase
     const checkedSupplierName = checkSupplierIfExist(supplierName);
@@ -161,40 +164,52 @@ const DialogAddSupplier = ({
   dialog,
   setDialog,
 }) => {
+  const { setOpenPin } = useSecurity();
+
   return (
-    <Dialog open={dialog} onOpenChange={setDialog}>
-      <form id="addSupplier" onSubmit={onSubmit}>
-        <DialogTrigger asChild>
-          <Button size="lg">Tambah Supplier</Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Tambah Supplier</DialogTitle>
-          </DialogHeader>
-          <FieldGroup>
-            <Field>
-              <Label htmlFor="name-1">Nama</Label>
-              <Input
-                id="name-1"
-                name="name"
-                required
-                value={supplierName}
-                onChange={(e) => {
-                  setSupplierName(e.target.value);
-                }}
-              />
-            </Field>
-          </FieldGroup>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Batal</Button>
-            </DialogClose>
-            <Button type="submit" form="addSupplier">
-              Simpan
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
-    </Dialog>
+    <>
+      <Button
+        onClick={() => {
+          setOpenPin({
+            open: true,
+            actionOnMatch: setDialog,
+            parameter: true,
+          });
+        }}
+      >
+        Tambah Supplier
+      </Button>
+      <Dialog open={dialog} onOpenChange={setDialog}>
+        <form id="addSupplier" onSubmit={onSubmit}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Tambah Supplier</DialogTitle>
+            </DialogHeader>
+            <FieldGroup>
+              <Field>
+                <Label htmlFor="name-1">Nama</Label>
+                <Input
+                  id="name-1"
+                  name="name"
+                  required
+                  value={supplierName}
+                  onChange={(e) => {
+                    setSupplierName(e.target.value);
+                  }}
+                />
+              </Field>
+            </FieldGroup>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Batal</Button>
+              </DialogClose>
+              <Button type="submit" form="addSupplier">
+                Simpan
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </form>
+      </Dialog>
+    </>
   );
 };

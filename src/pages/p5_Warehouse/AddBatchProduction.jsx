@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSecurity } from "@/context/SecurityContext";
 import { useWarehouse } from "@/context/WarehouseContext";
 import { raw, separateNumber } from "@/utils/generalFunction";
 import { useState } from "react";
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 export default function AddBatchProduction() {
   const { addProduction } = useWarehouse();
   const navigate = useNavigate();
+  const { setOpenPin } = useSecurity();
 
   // Batch State
   const [product, setProduct] = useState({
@@ -38,10 +40,12 @@ export default function AddBatchProduction() {
   const [confirmCutPieces, setConfirmCutPieces] = useState(false);
 
   const handleCutPieces = async () => {
+    const shippingCost = product.shippingCost ? raw(product.shippingCost) : 0;
+    console.log(product.shippingCost);
     const batch = {
       status: "cutting",
       productName: product.productName,
-      shippingCost: raw(product.shippingCost),
+      shippingCost,
       materials: product.materials.map((m) => ({
         ...m,
         price: raw(m.price),
@@ -51,7 +55,7 @@ export default function AddBatchProduction() {
       totalFabricCost:
         product.materials.reduce((acc, cur) => {
           return acc + raw(cur.price) * Number(cur.qty);
-        }, 0) + raw(product.shippingCost),
+        }, 0) + shippingCost,
       time: {
         startCutting: new Date().getTime(),
       },
@@ -309,7 +313,11 @@ export default function AddBatchProduction() {
                       ...prev,
                       materials: [...product.materials],
                     }));
-                    setConfirmCutPieces(true);
+                    setOpenPin({
+                      open: true,
+                      actionOnMatch: setConfirmCutPieces,
+                      parameter: true,
+                    });
                   }
                 }}
               >

@@ -28,8 +28,8 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useDebt } from "@/context/DebtContext";
+import { useSecurity } from "@/context/SecurityContext";
 import { formatNumber, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -43,6 +43,7 @@ export default function ProductsDebt() {
     editProductDebt,
     deleteProductDebt,
   } = useDebt();
+  const { setOpenPin } = useSecurity();
   const [productDebt, setProductDebt] = useState({
     name: "",
     hpp: "",
@@ -62,6 +63,14 @@ export default function ProductsDebt() {
     e.preventDefault();
 
     if (dialog.dialogMotive === "addProductDebt") {
+      if (!productDebt.name) {
+        toast.warning("Isi Nama Produk");
+        return;
+      }
+      if (productDebt.hpp) {
+        toast.warning("Isi HPP Produk");
+        return;
+      }
       await addProductDebt(productDebt);
       // Reset State Produk
       setProductDebt((prev) => ({
@@ -221,12 +230,16 @@ export default function ProductsDebt() {
           <h3 className="my-2">Produk Masih Kosong</h3>
           <Button
             onClick={() => {
-              setDialog((prev) => ({
-                ...prev,
-                title: "Tambah Produk",
+              setOpenPin({
                 open: true,
-                dialogMotive: "addProductDebt",
-              }));
+                actionOnMatch: setDialog,
+                parameter: (prev) => ({
+                  ...prev,
+                  title: "Tambah Produk",
+                  open: true,
+                  dialogMotive: "addProductDebt",
+                }),
+              });
             }}
           >
             Tambah Produk
@@ -239,12 +252,16 @@ export default function ProductsDebt() {
         <div className="flex flex-col justify-center items-center md:flex-wrap gap-y-2">
           <Button
             onClick={() => {
-              setDialog((prev) => ({
-                ...prev,
-                title: "Tambah",
+              setOpenPin({
                 open: true,
-                dialogMotive: "addProductDebt",
-              }));
+                actionOnMatch: setDialog,
+                parameter: (prev) => ({
+                  ...prev,
+                  title: "Tambah Produk",
+                  open: true,
+                  dialogMotive: "addProductDebt",
+                }),
+              });
             }}
           >
             Tambah Produk

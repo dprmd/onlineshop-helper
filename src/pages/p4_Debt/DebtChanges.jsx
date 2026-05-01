@@ -19,9 +19,6 @@ export default function DebtChanges() {
   const { debtChanges, getDebtChanges, getSupplierList } = useDebt();
   const { supplier } = useDebt();
   const [whichSupplier, setWhichSupplier] = useState("");
-  const choosedSupplier = useMemo(() => {
-    return supplier.find((s) => s.id === whichSupplier);
-  }, [whichSupplier]);
   const debtChangesList = useMemo(() => {
     if (!whichSupplier) return [];
     else {
@@ -98,6 +95,19 @@ export default function DebtChanges() {
   );
 }
 
+const formatDate = (ms) => {
+  const date = new Date(ms);
+
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+};
+
 const DebtChangesCard = ({ debt }) => {
   const { supplier } = useDebt();
   const debtType = {
@@ -113,6 +123,9 @@ const DebtChangesCard = ({ debt }) => {
     <Card className="min-w-[400px] max-w-[400px]">
       <CardHeader>
         <CardTitle>{debtType[debt.changeType]}</CardTitle>
+        <p className="text-sm border border-gray-300 bg-gray-200 w-fit mx-auto px-2 py-1 rounded-lg">
+          {formatDate(debt.createdAtMs)}
+        </p>
         <p>Supplier : {choosedSupplier?.name}</p>
       </CardHeader>
       <CardContent>

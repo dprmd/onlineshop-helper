@@ -517,7 +517,7 @@ const BatchProductionCard = ({
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <ul>
-                  {batch.shippingCost && (
+                  {batch.shippingCost !== 0 && (
                     <li className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500">
                       <p>
                         Ongkos Kirim : Rp {formatNumber(batch.shippingCost)}

@@ -1,4 +1,14 @@
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -17,6 +27,7 @@ import { collectionName } from "@/services/firebase/firebase";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Label, Pie, PieChart } from "recharts";
+import { toast } from "sonner";
 import {
   Card,
   CardAction,
@@ -28,18 +39,7 @@ import {
 } from "../../components/ui/card";
 import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import { formatNumber } from "../../utils/generalFunction";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+import { useSecurity } from "@/context/SecurityContext";
 
 export default function IncomeTotal() {
   const {
@@ -53,8 +53,10 @@ export default function IncomeTotal() {
     setATProfit,
     fetchAT,
   } = useWithdrawalRecords();
+  const { setOpenPin } = useSecurity();
 
   const [showUntung, setShowUntung] = useState(false);
+  const [dialogFixData, setDialogFixData] = useState(false);
 
   const totalPenghasilanAT = useMemo(() => {
     return Object.values(ATWithdrawals).reduce((acc, cur) => {
@@ -179,12 +181,20 @@ export default function IncomeTotal() {
         <CardHeader>
           <CardTitle>DATA ALL TIME</CardTitle>
           <CardAction>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button size={"xs"} className="hover:bg-gray-600">
-                  Fix Data
-                </Button>
-              </AlertDialogTrigger>
+            <Button
+              size={"xs"}
+              className="hover:bg-gray-600"
+              onClick={() => {
+                setOpenPin({
+                  open: true,
+                  actionOnMatch: setDialogFixData,
+                  parameter: true,
+                });
+              }}
+            >
+              Fix Data
+            </Button>
+            <AlertDialog open={dialogFixData} onOpenChange={setDialogFixData}>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Kamu Yakin?</AlertDialogTitle>
