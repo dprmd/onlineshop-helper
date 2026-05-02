@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatDate } from "@/utils/generalFunction";
 
 export default function DebtChanges() {
   const navigate = useNavigate();
@@ -94,19 +95,6 @@ export default function DebtChanges() {
     </div>
   );
 }
-
-const formatDate = (ms) => {
-  const date = new Date(ms);
-
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(date);
-};
 
 const DebtChangesCard = ({ debt }) => {
   const { supplier } = useDebt();
