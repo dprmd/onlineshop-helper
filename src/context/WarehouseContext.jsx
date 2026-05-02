@@ -177,6 +177,21 @@ export function WarehouseProvider({ children }) {
     setLoading(false);
   };
 
+  const completePacking = async (batch, qc) => {
+    const updatedBatch = {
+      ...batch,
+      status: "inStock",
+      stock: {
+        ...batch.stock,
+        onWarehouse: Number(qc.qcPassed),
+        damaged: Number(qc.damaged),
+        missing: Number(qc.missing),
+      },
+    };
+
+    console.log(updatedBatch);
+  };
+
   const addProductionCost = async (batch) => {
     setLoading(true);
 
@@ -250,6 +265,7 @@ export function WarehouseProvider({ children }) {
         addProduction,
         completeCut,
         completeSewing,
+        completePacking,
         addProductionCost,
       }}
     >

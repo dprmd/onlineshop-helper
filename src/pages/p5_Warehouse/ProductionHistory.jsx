@@ -1,6 +1,5 @@
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -38,8 +37,10 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { useDebt } from "@/context/DebtContext";
+import { useSecurity } from "@/context/SecurityContext";
 import { useWarehouse } from "@/context/WarehouseContext";
+import { createDocument } from "@/services/firebase/docService";
+import { collectionName } from "@/services/firebase/firebase";
 import {
   formatNumber,
   formatTanggal,
@@ -68,86 +69,178 @@ export default function ProductionHistory() {
     getProductionHistory,
     completeCut,
     completeSewing,
+    completePacking,
     addProductionCost,
   } = useWarehouse();
   const navigate = useNavigate();
-  const [alertDialog, setAlertDialog] = useState({
+  const { setOpenPin } = useSecurity();
+  const [alertDialogMissingProduct, setAlertDialogMissingProduct] =
+    useState(false);
+  const initialAlertDialog = {
     open: false,
     status: "",
     batch: {},
     result: 0,
     cutterPayment: 0,
     packingCost: 0,
-  });
+    qc: {
+      quota: 0,
+      qcPassed: 0,
+      damaged: 0,
+      missing: 0,
+    },
+  };
+  const [alertDialog, setAlertDialog] = useState(initialAlertDialog);
+
   const [editedBatch, setEditedBatch] = useState({
     openAddCost: false,
     batchId: "",
     workerPayments: [],
   });
 
-  useEffect(() => {
-    getProductionHistory();
-  }, []);
-
   const markAsCompleteCut = (batch) => {
-    setAlertDialog((prev) => ({
-      ...prev,
+    setOpenPin({
       open: true,
-      batch: batch,
-      status: "completeCut",
-    }));
+      actionOnMatch: setAlertDialog,
+      parameter: (prev) => ({
+        ...prev,
+        open: true,
+        batch,
+        status: "completeCut",
+      }),
+    });
   };
 
-  const markAsSewingCompleted = (batch) => {
+  const markAsCompleteSewing = (batch) => {
+    setOpenPin({
+      open: true,
+      actionOnMatch: setAlertDialog,
+      parameter: (prev) => ({
+        ...prev,
+        open: true,
+        batch: batch,
+        status: "completeSewing",
+      }),
+    });
+  };
+
+  const markAsCompletePacking = (batch) => {
+    // setOpenPin({
+    //   open: true,
+    //   actionOnMatch: setAlertDialog,
+    //   parameter: (prev) => ({
+    //     ...prev,
+    //     open: true,
+    //     batch: batch,
+    //     status: "completePacking",
+    //   }),
+    // });
     setAlertDialog((prev) => ({
       ...prev,
       open: true,
+      qc: {
+        ...prev.qc,
+        quota: batch.stock.cutResult,
+      },
       batch: batch,
-      status: "completeSewing",
+      status: "completePacking",
     }));
   };
 
   const handleCompleteCut = () => {
     if (!alertDialog.cutterPayment) {
       toast.warning("Berapa Bayaran Pemotong ?");
+      return;
     }
     if (!alertDialog.result) {
       toast.warning("Berapa Potong Yang Didapat ?");
-    } else {
-      completeCut(
-        alertDialog.batch,
-        alertDialog.result,
-        alertDialog.cutterPayment,
-        alertDialog.packingCost,
-      );
-
-      // Reset State
-      setAlertDialog((prev) => ({
-        ...prev,
-        cutterPayment: 0,
-        packingCost: 0,
-        result: 0,
-        batch: {},
-        open: false,
-        status: "",
-      }));
+      return;
     }
+    completeCut(
+      alertDialog.batch,
+      alertDialog.result,
+      alertDialog.cutterPayment,
+      alertDialog.packingCost,
+    );
+
+    // Reset State
+    setAlertDialog({ ...initialAlertDialog });
   };
 
   const handleCompleteSewing = () => {
     completeSewing(alertDialog.batch);
 
     // Reset State
-    setAlertDialog((prev) => ({
-      ...prev,
-      open: false,
-      batch: {},
-      cutterPayment: 0,
-      packingCost: 0,
-      result: 0,
-      status: "",
-    }));
+    setAlertDialog({ ...initialAlertDialog });
   };
+
+  const handleCompletePacking = () => {
+    const totalMustBe = alertDialog.batch.stock.cutResult;
+    const qcPassed = Number(alertDialog.qc.qcPassed);
+    const damaged = Number(alertDialog.qc.damaged);
+    const checkTotal = qcPassed + damaged === totalMustBe;
+    const missingMarked = Number(alertDialog.qc.missing) > 0;
+
+    if (qcPassed === 0) {
+      toast.warning("Mohon Masukan Jumlah Produk Yang Lolos Quality Control");
+    } else if (!checkTotal && !missingMarked) {
+      setAlertDialogMissingProduct(true);
+    } else {
+      completePacking(alertDialog.batch, alertDialog.qc);
+      // Reset State
+      setAlertDialog({ ...initialAlertDialog });
+    }
+  };
+
+  const dummy = async () => {
+    const a = {
+      id: "zmT5BueyH4mY1Hyf9QgV",
+      createdAt: {
+        type: "firestore/timestamp/1.0",
+        seconds: 1777725464,
+        nanoseconds: 179000000,
+      },
+      stock: { onWarehouse: 0, cutResult: 300 },
+      hpp: 11933,
+      time: {
+        endCutting: 1777725513101,
+        startSewing: 1777725573101,
+        startCutting: 1777725462388,
+        startPacking: 1777725680963,
+        endSewing: 1777725620963,
+      },
+      operationalCosts: {
+        total: 8500,
+        packingCost: 1000,
+        worker: [
+          { id: 1777725513101, payment: 1500, role: "Tukang Potong" },
+          { id: 1777725549811, payment: 5000, role: "Jahit" },
+          { role: "QC", payment: 1000, id: 1777725557556 },
+        ],
+      },
+      createdAtMs: 1777725462389,
+      shippingCost: 30000,
+      status: "toPack",
+      totalFabricCost: 1030000,
+      materials: [
+        {
+          id: 1777725435337,
+          price: 10000,
+          materialName: "Test Aja Bahan",
+          type: "yard",
+          qty: 100,
+          total: 1000000,
+        },
+      ],
+      productName: "Test Aja",
+    };
+
+    await createDocument("", collectionName.productionHistory, a, "");
+  };
+
+  useEffect(() => {
+    getProductionHistory();
+  }, []);
 
   return (
     <div className="flex flex-col gap-y-4 justify-center items-center">
@@ -310,6 +403,58 @@ export default function ProductionHistory() {
         </DialogContent>
       </Dialog>
 
+      {/* Alert Dialog Missing Product */}
+      <AlertDialog
+        open={alertDialogMissingProduct}
+        onOpenChange={setAlertDialogMissingProduct}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Quantitas Produk Tidak Sama</AlertDialogTitle>
+            <AlertDialogDescription>
+              <p>Jumlah Produk Yang Kamu Masukan Tidak Sama</p>
+              <p>
+                Harus Ada Total{" "}
+                {formatNumber(alertDialog.batch?.stock?.cutResult)} Pcs
+              </p>
+              <p>Apa Mungkin Produk Hilang ?</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              type="button"
+              variant={"outline"}
+              onClick={() => {
+                setAlertDialogMissingProduct(false);
+              }}
+            >
+              Kembali
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                const totalMustBe = alertDialog.batch.stock.cutResult;
+                const qcPassed = Number(alertDialog.qc.qcPassed);
+                const damaged = Number(alertDialog.qc.damaged);
+                const merged = qcPassed + damaged;
+
+                setAlertDialog((prev) => ({
+                  ...prev,
+                  qc: {
+                    ...prev.qc,
+                    missing: totalMustBe - merged,
+                  },
+                }));
+
+                setAlertDialogMissingProduct(false);
+              }}
+            >
+              Tandai Hilang
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Alert Dialog */}
       <AlertDialog
         open={alertDialog.open}
@@ -327,6 +472,7 @@ export default function ProductionHistory() {
               {alertDialog.status === "completeSewing" && (
                 <p>Cek Juga Apakah Biaya Pembuatan Sudah Fix</p>
               )}
+              {alertDialog.status === "completePacking" && "Di Packing"}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {alertDialog.status === "completeCut" && (
@@ -375,9 +521,89 @@ export default function ProductionHistory() {
               </FieldGroup>
             </FieldSet>
           )}
+          {alertDialog.status === "completePacking" && (
+            <FieldSet>
+              <p className="text-sm text-gray-500">
+                Total Harus Ada{" "}
+                {formatNumber(alertDialog.batch?.stock?.cutResult)} Pcs
+                <br />
+                {alertDialog.qc.missing > 0 && (
+                  <p className="text-sm text-gray-500">
+                    Di Tandai Hilang {formatNumber(alertDialog.qc.missing)} Pcs
+                    <i className="mx-1 bi bi-check-circle" />
+                  </p>
+                )}
+              </p>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel>Produk Lolos Quality Control</FieldLabel>
+                  <Input
+                    value={alertDialog.qc.qcPassed}
+                    type="number"
+                    onChange={(e) => {
+                      let newValue = 0;
+                      let updatedQuota = 0;
+                      const realQuota = alertDialog.batch.stock.cutResult;
+                      const value = Number(e.target.value);
+                      const damaged = Number(alertDialog.qc.damaged);
+                      const alocatedQuota = realQuota - damaged;
+
+                      if (value > alocatedQuota) {
+                        newValue = alocatedQuota;
+                      } else {
+                        newValue = e.target.value;
+                        updatedQuota = alocatedQuota - value;
+                      }
+
+                      setAlertDialog((prev) => ({
+                        ...prev,
+                        qc: {
+                          ...prev.qc,
+                          qcPassed: newValue,
+                          quota: updatedQuota,
+                        },
+                      }));
+                    }}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Produk Rusak / Cacat</FieldLabel>
+                  <Input
+                    value={alertDialog.qc.damaged}
+                    type="number"
+                    onChange={(e) => {
+                      let newValue = 0;
+                      let updatedQuota = 0;
+                      const realQuota = alertDialog.batch.stock.cutResult;
+                      const value = Number(e.target.value);
+                      const qcPassed = Number(alertDialog.qc.qcPassed);
+                      const alocatedQuota = realQuota - qcPassed;
+
+                      if (value > alocatedQuota) {
+                        newValue = alocatedQuota;
+                      } else {
+                        newValue = e.target.value;
+                        updatedQuota = alocatedQuota - value;
+                      }
+
+                      setAlertDialog((prev) => ({
+                        ...prev,
+                        qc: {
+                          ...prev.qc,
+                          damaged: newValue,
+                          quota: updatedQuota,
+                        },
+                      }));
+                    }}
+                  />
+                </Field>
+              </FieldGroup>
+            </FieldSet>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction
+            <Button
+              type="button"
               onClick={() => {
                 switch (alertDialog.status) {
                   case "completeCut":
@@ -386,13 +612,16 @@ export default function ProductionHistory() {
                   case "completeSewing":
                     handleCompleteSewing();
                     return;
+                  case "completePacking":
+                    handleCompletePacking();
+                    return;
                   default:
                     return;
                 }
               }}
             >
               Lanjutkan
-            </AlertDialogAction>
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -409,6 +638,9 @@ export default function ProductionHistory() {
           >
             Buat Batch Produksi
           </Button>
+          <Button type="button" onClick={dummy}>
+            Dummy
+          </Button>
         </div>
       )}
 
@@ -423,6 +655,9 @@ export default function ProductionHistory() {
               >
                 Buat Batch Produksi
               </Button>
+              <Button type="button" onClick={dummy}>
+                Dummy
+              </Button>
             </div>
             <div className="flex flex-wrap gap-4 justify-center">
               {productionHistory.map((batch) => (
@@ -430,7 +665,8 @@ export default function ProductionHistory() {
                   batch={batch}
                   key={batch.id}
                   markAsCompleteCut={markAsCompleteCut}
-                  markAsSewingCompleted={markAsSewingCompleted}
+                  markAsCompleteSewing={markAsCompleteSewing}
+                  markAsCompletePacking={markAsCompletePacking}
                   openDialogAddCost={setEditedBatch}
                 />
               ))}
@@ -487,9 +723,11 @@ const getTimeKey = (key) => {
 const BatchProductionCard = ({
   batch,
   markAsCompleteCut,
-  markAsSewingCompleted,
+  markAsCompleteSewing,
+  markAsCompletePacking,
   openDialogAddCost,
 }) => {
+  const { setOpenPin } = useSecurity();
   return (
     <>
       <Card className="min-w-[380px] max-w-[380px] h-fit">
@@ -605,11 +843,15 @@ const BatchProductionCard = ({
               <Button
                 className="bg-green-700 hover:bg-green-600"
                 onClick={() => {
-                  openDialogAddCost((prev) => ({
-                    ...prev,
-                    openAddCost: true,
-                    batchId: batch.id,
-                  }));
+                  setOpenPin({
+                    open: true,
+                    actionOnMatch: openDialogAddCost,
+                    parameter: (prev) => ({
+                      ...prev,
+                      openAddCost: true,
+                      batchId: batch.id,
+                    }),
+                  });
                 }}
                 key={2}
               >
@@ -618,7 +860,7 @@ const BatchProductionCard = ({
               </Button>
               <Button
                 className="bg-orange-700 hover:bg-orange-600"
-                onClick={() => markAsSewingCompleted(batch)}
+                onClick={() => markAsCompleteSewing(batch)}
                 key={3}
               >
                 <i className="bi bi-check-circle" />
@@ -627,7 +869,11 @@ const BatchProductionCard = ({
             </div>
           )}
           {batch.status === "toPack" && (
-            <Button className="bg-cyan-600" key={4}>
+            <Button
+              className="bg-cyan-600"
+              key={4}
+              onClick={() => markAsCompletePacking(batch)}
+            >
               <i className="bi bi-check-circle" />
               Tandai Selesai Di Packing
             </Button>
