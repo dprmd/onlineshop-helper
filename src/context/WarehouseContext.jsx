@@ -14,6 +14,11 @@ const WarehouseContext = createContext();
 export function WarehouseProvider({ children }) {
   const { setLoading } = useUI();
 
+  // Products State
+  const [products, setProducts] = useState([]);
+  const [isProductsFetched, setIsProductsFetched] = useState(false);
+  const [isFetchingProducts, setIsFetchingProducts] = useState(false);
+
   // Production History State
   const [productionHistory, setProductionHistory] = useState([]);
   const [isProductionHistoryFetched, setIsProductionHistoryFetched] =
@@ -21,24 +26,59 @@ export function WarehouseProvider({ children }) {
   const [isFetchingProductionHistory, setIsFetchingProductionHistory] =
     useState(false);
 
-  const addProduction = async (batchProduction) => {
+  const getProductList = async () => {
+    if (isFetchingProducts || isProductsFetched) return;
+
+    setIsFetchingProducts(true);
     setLoading(true);
 
-    const { docId, success, message } = await createDocument(
-      "Simpan Batch Produksi",
-      collectionName.productionHistory,
-      batchProduction,
-      "Berhasil Menambahkan Batch Ke Riwayat Produksi",
+    const {
+      data: productList,
+      success,
+      error,
+      message,
+    } = await getDocuments(
+      "Ambil List Produk Saya",
+      collectionName.myProducts,
+      "newToOld",
     );
 
     if (success) {
+      setProducts([...productList]);
+      setIsProductsFetched(true);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+    setIsFetchingProducts(false);
+  };
+
+  const addNewProduct = async (product) => {
+    console.log(product);
+  };
+
+  const addProduction = async (batchProduction) => {
+    setLoading(true);
+
+    const { docId, success, error, message, createdAtMs } =
+      await createDocument(
+        "Simpan Batch Produksi",
+        collectionName.productionHistory,
+        batchProduction,
+        "Berhasil Menambahkan Batch Ke Riwayat Produksi",
+      );
+
+    if (success) {
       setProductionHistory((prev) => [
-        { id: docId, ...batchProduction },
+        { id: docId, createdAtMs, ...batchProduction },
         ...prev,
       ]);
       toast.success(message);
     } else {
       toast.error(message);
+      console.log(error);
     }
 
     setLoading(false);
@@ -109,7 +149,7 @@ export function WarehouseProvider({ children }) {
       ),
     };
 
-    const { success, message } = await updateDocument(
+    const { success, error, message } = await updateDocument(
       "Mengupdate Batch",
       collectionName.productionHistory,
       batch.id,
@@ -131,6 +171,7 @@ export function WarehouseProvider({ children }) {
       toast.success(message);
     } else {
       toast.error(message);
+      console.log(error);
     }
 
     setLoading(false);
@@ -151,7 +192,7 @@ export function WarehouseProvider({ children }) {
       },
     };
 
-    const { success, message } = await updateDocument(
+    const { success, error, message } = await updateDocument(
       `Menandai ${batch.productName}-${batch.id} Selesai Dijahit`,
       collectionName.productionHistory,
       batch.id,
@@ -172,6 +213,7 @@ export function WarehouseProvider({ children }) {
       toast.success(message);
     } else {
       toast.error(message);
+      console.log(error);
     }
 
     setLoading(false);
@@ -180,16 +222,33 @@ export function WarehouseProvider({ children }) {
   const completePacking = async (batch, qc) => {
     const updatedBatch = {
       ...batch,
-      status: "inStock",
+      status: "ready",
       stock: {
         ...batch.stock,
         onWarehouse: Number(qc.qcPassed),
         damaged: Number(qc.damaged),
         missing: Number(qc.missing),
       },
+      time: {
+        ...batch.time,
+        endPacking: new Date().getTime(),
+      },
     };
 
-    console.log(updatedBatch);
+    const product = {
+      id: updatedBatch.id,
+      productName: updatedBatch.productName,
+      hpp: updatedBatch.hpp,
+      stockInfo: {
+        total: updatedBatch.stock.cutResult,
+        ready: updatedBatch.stock.onWarehouse,
+        damaged: updatedBatch.stock.damaged,
+        missing: updatedBatch.stock.missing,
+      },
+      time: { ...updatedBatch.time },
+    };
+
+    console.log(product);
   };
 
   const addProductionCost = async (batch) => {
@@ -232,7 +291,7 @@ export function WarehouseProvider({ children }) {
       ),
     };
 
-    const { success, message } = await updateDocument(
+    const { success, error, message } = await updateDocument(
       "Menambahkan Biaya Produksi",
       collectionName.productionHistory,
       batch.batchId,
@@ -252,6 +311,7 @@ export function WarehouseProvider({ children }) {
       });
     } else {
       toast.error(message);
+      console.log(error);
     }
 
     setLoading(false);
@@ -267,6 +327,9 @@ export function WarehouseProvider({ children }) {
         completeSewing,
         completePacking,
         addProductionCost,
+        products,
+        getProductList,
+        addNewProduct,
       }}
     >
       {children}

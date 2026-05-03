@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useDebt } from "@/context/DebtContext";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { separateNumber } from "../../utils/generalFunction";
 
@@ -97,18 +97,12 @@ export default function StepOne() {
                   />
                 </Field>
                 <Field>
-                  <Button
-                    size="lg"
-                    type="button"
-                    onClick={() => {
-                      navigate("/");
-                    }}
-                  >
-                    Kembali
+                  <Button type="button" asChild>
+                    <Link to="/">Kembali</Link>
                   </Button>
 
                   {/* Selanjutnya */}
-                  <Button size="lg" type="submit" className="bg-green-700">
+                  <Button type="submit" className="bg-green-700">
                     Selanjutnya
                   </Button>
                 </Field>
@@ -119,14 +113,8 @@ export default function StepOne() {
       ) : (
         <div className="text-center">
           <p>Mohon Tambahkan Supplier Terlebih Dahulu</p>
-          <Button
-            type="button"
-            onClick={() => {
-              navigate("/debt/supplier");
-            }}
-            className="my-2"
-          >
-            Tambah Supplier
+          <Button type="button" asChild>
+            <Link to="/debt/supplier">Tambah Supplier</Link>
           </Button>
         </div>
       )}

@@ -3,7 +3,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   InputOTP,
@@ -14,10 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { getDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import bcrypt from "bcryptjs";
-import { useRef } from "react";
-import { useEffect } from "react";
-import { useState } from "react";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const SecurityContext = createContext();
@@ -27,13 +23,12 @@ export const SecurityProvider = ({ children }) => {
   const [pin, setPin] = useState("");
   const [openPin, setOpenPin] = useState({
     open: false,
-    actionOnMatch: () => {},
-    parameter: "",
+    actionOnMatch: async () => {},
   });
   const [disableInputOtp, setDisableInputOtp] = useState(false);
 
   const comparePin = async (thePin) => {
-    if (thePin.length < 6) return;
+    if (thePin.length < 10) return;
     else {
       setDisableInputOtp(true);
 
@@ -46,17 +41,16 @@ export const SecurityProvider = ({ children }) => {
       const isMatch = await bcrypt.compare(thePin, data.hashedPin);
 
       if (isMatch) {
+        setPin("");
+        setDisableInputOtp(false);
+        await openPin.actionOnMatch();
         setOpenPin(() => ({
-          actionOnMatch: () => {},
+          actionOnMatch: async () => {},
           parameter: "",
           open: false,
         }));
-        setPin("");
-        setDisableInputOtp(false);
-        openPin.actionOnMatch(openPin.parameter);
         return;
       } else {
-        console.log(openPin);
         toast.warning("Pin Salah");
         setDisableInputOtp(false);
         setPin("");
@@ -86,11 +80,11 @@ export const SecurityProvider = ({ children }) => {
           </DialogHeader>
           <InputOTP
             ref={otpRef}
-            maxLength={6}
+            maxLength={10}
             value={pin}
             onChange={async (v) => {
               setPin(v);
-              if (v.length >= 6) {
+              if (v.length >= 10) {
                 await comparePin(v);
               }
             }}
@@ -103,6 +97,10 @@ export const SecurityProvider = ({ children }) => {
               <InputOTPSlot index={3} />
               <InputOTPSlot index={4} />
               <InputOTPSlot index={5} />
+              <InputOTPSlot index={6} />
+              <InputOTPSlot index={7} />
+              <InputOTPSlot index={8} />
+              <InputOTPSlot index={9} />
             </InputOTPGroup>
           </InputOTP>
         </DialogContent>

@@ -4,7 +4,7 @@ import { useDebt } from "@/context/DebtContext";
 import { useMemo } from "react";
 import { useState } from "react";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -16,7 +16,6 @@ import {
 import { formatDate } from "@/utils/generalFunction";
 
 export default function DebtChanges() {
-  const navigate = useNavigate();
   const { debtChanges, getDebtChanges, getSupplierList } = useDebt();
   const { supplier } = useDebt();
   const [whichSupplier, setWhichSupplier] = useState("");
@@ -65,28 +64,15 @@ export default function DebtChanges() {
       {whichSupplier && debtChangesList.length === 0 ? (
         <div>
           <p className="my-2">Kosong</p>
-          <Button
-            onClick={() => {
-              navigate("/debt");
-            }}
-          >
-            Kembali
-          </Button>
         </div>
       ) : null}
 
-      {whichSupplier && debtChangesList.length > 0 && (
-        <div>
-          <Button
-            onClick={() => {
-              navigate("/debt");
-            }}
-            className="max-w-fit"
-          >
-            Kembali
-          </Button>
-        </div>
-      )}
+      <div>
+        <Button asChild>
+          <Link to="/debt">Kembali</Link>
+        </Button>
+      </div>
+
       <div className="flex flex-wrap justify-center items-center gap-4">
         {debtChangesList.map((debt, i) => (
           <DebtChangesCard key={i} debt={debt} />

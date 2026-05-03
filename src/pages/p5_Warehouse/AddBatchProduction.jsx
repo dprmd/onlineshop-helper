@@ -23,7 +23,7 @@ import { useSecurity } from "@/context/SecurityContext";
 import { useWarehouse } from "@/context/WarehouseContext";
 import { raw, separateNumber } from "@/utils/generalFunction";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function AddBatchProduction() {
@@ -41,7 +41,6 @@ export default function AddBatchProduction() {
 
   const handleCutPieces = async () => {
     const shippingCost = product.shippingCost ? raw(product.shippingCost) : 0;
-    console.log(product.shippingCost);
     const batch = {
       status: "cutting",
       productName: product.productName,
@@ -61,8 +60,13 @@ export default function AddBatchProduction() {
       },
     };
 
-    await addProduction(batch);
-    navigate("/warehouse/productionHistory");
+    setOpenPin({
+      open: true,
+      actionOnMatch: async () => {
+        await addProduction(batch);
+        navigate("/warehouse/productionHistory");
+      },
+    });
   };
 
   return (
@@ -279,11 +283,9 @@ export default function AddBatchProduction() {
                 type="button"
                 className="max-w-fit"
                 variant={"outline"}
-                onClick={() => {
-                  navigate("/warehouse/productionHistory");
-                }}
+                asChild
               >
-                Kembali
+                <Link to="/warehouse/productionHistory">Kembali</Link>
               </Button>
               <Button
                 className="max-w-fit"
@@ -313,11 +315,7 @@ export default function AddBatchProduction() {
                       ...prev,
                       materials: [...product.materials],
                     }));
-                    setOpenPin({
-                      open: true,
-                      actionOnMatch: setConfirmCutPieces,
-                      parameter: true,
-                    });
+                    setConfirmCutPieces(true);
                   }
                 }}
               >

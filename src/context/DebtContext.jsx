@@ -113,6 +113,7 @@ export function DebtProvider({ children }) {
       data: supplierObject,
       error,
       success,
+      message,
     } = await getDocument(
       "Mengambil Data Supplier",
       collectionName.supplier,
@@ -204,13 +205,15 @@ export function DebtProvider({ children }) {
         "Berhasil Mengupdate Supplier",
       );
 
-      const { docId: newDebtChangeId } = await createDocument(
-        "Menyimpan Riwayat Perubahan Hutang",
-        `${collectionName.debtChanges}-${supplierId}`,
-        debtChange,
-        "Berhasil Menyimpan Riwayat Perubahan Hutang",
-      );
+      const { docId: newDebtChangeId, createdAtMs: newDebtCreatedTime } =
+        await createDocument(
+          "Menyimpan Riwayat Perubahan Hutang",
+          `${collectionName.debtChanges}-${supplierId}`,
+          debtChange,
+          "Berhasil Menyimpan Riwayat Perubahan Hutang",
+        );
       debtChange.id = newDebtChangeId;
+      debtChange.createdAtMs = newDebtCreatedTime;
 
       // Optimistic Update
       setSupplier((prev) => {
@@ -253,12 +256,13 @@ export function DebtProvider({ children }) {
       hpp: raw(productDebt.hpp),
     };
 
-    const { docId, success, error, message } = await createDocument(
-      "Menambahkan Produk Baru",
-      collectionName.productsDebt,
-      newProduct,
-      "Berhasil Menambahkan Produk",
-    );
+    const { docId, success, error, message, createdAtMs } =
+      await createDocument(
+        "Menambahkan Produk Baru",
+        collectionName.productsDebt,
+        newProduct,
+        "Berhasil Menambahkan Produk",
+      );
 
     if (success) {
       // Optimistic Updates
@@ -267,6 +271,7 @@ export function DebtProvider({ children }) {
           {
             ...newProduct,
             id: docId,
+            createdAtMs,
           },
           ...prev,
         ];

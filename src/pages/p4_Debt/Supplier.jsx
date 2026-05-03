@@ -32,6 +32,7 @@ import { useSecurity } from "@/context/SecurityContext";
 export default function Supplier() {
   const { supplier, setSupplier, checkSupplierIfExist, getSupplierList } =
     useDebt();
+  const { setOpenPin } = useSecurity();
 
   const [supplierName, setSupplierName] = useState("");
   const [dialogAddSupplier, setDialogAddSupplier] = useState(false);
@@ -39,7 +40,10 @@ export default function Supplier() {
   const handleSaveSupplier = async (e) => {
     e.preventDefault();
 
-    if (!supplierName) return;
+    if (!supplierName) {
+      toast.warning("Masukan Nama Supplier");
+      return;
+    }
 
     // Cek jika supplier name supplier ada di firebase
     const checkedSupplierName = checkSupplierIfExist(supplierName);
@@ -58,14 +62,15 @@ export default function Supplier() {
         "Berhasil Menambahkan Supplier",
       );
       setSupplier([
-        ...supplier,
         {
           id: newSupplier.docId,
+          createdAtMs: newSupplier.createdAtMs,
           name: supplierName,
           username: toCamelCase(supplierName),
           productDebt: [],
           debtChanges: [],
         },
+        ...supplier,
       ]);
       setSupplierName("");
       setDialogAddSupplier(false);
@@ -103,20 +108,28 @@ export default function Supplier() {
       {supplier.length === 0 && (
         <div className="text-center flex flex-col justify-center items-center gap-y-3">
           <h3 className="text-lg">Anda Belum Memiliki Supplier</h3>
-          <DialogAddSupplier
-            dialog={dialogAddSupplier}
-            setDialog={setDialogAddSupplier}
-            supplierName={supplierName}
-            setSupplierName={setSupplierName}
-            onSubmit={handleSaveSupplier}
-          />
         </div>
       )}
+
+      <DialogAddSupplier
+        dialog={dialogAddSupplier}
+        setDialog={setDialogAddSupplier}
+        supplierName={supplierName}
+        setSupplierName={setSupplierName}
+        onSubmit={(e) => {
+          setOpenPin({
+            open: true,
+            actionOnMatch: () => {
+              handleSaveSupplier(e);
+            },
+          });
+        }}
+      />
 
       {/* If Supplier Length Greater than Zero */}
       {supplier.length > 0 && (
         <div className="text-center">
-          <div className="flex gap-2 flex-wrap justify-center py-2">
+          <div className="flex gap-2 flex-wrap justify-center">
             {supplier.map((supplier) => (
               <Card key={supplier.id} className="min-w-[380px]">
                 <CardHeader>
@@ -144,13 +157,6 @@ export default function Supplier() {
               </Card>
             ))}
           </div>
-          <DialogAddSupplier
-            dialog={dialogAddSupplier}
-            setDialog={setDialogAddSupplier}
-            supplierName={supplierName}
-            setSupplierName={setSupplierName}
-            onSubmit={handleSaveSupplier}
-          />
         </div>
       )}
     </div>
@@ -164,17 +170,11 @@ const DialogAddSupplier = ({
   dialog,
   setDialog,
 }) => {
-  const { setOpenPin } = useSecurity();
-
   return (
     <>
       <Button
         onClick={() => {
-          setOpenPin({
-            open: true,
-            actionOnMatch: setDialog,
-            parameter: true,
-          });
+          setDialog(true);
         }}
       >
         Tambah Supplier

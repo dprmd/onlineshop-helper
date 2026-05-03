@@ -25,8 +25,6 @@ const link = [
 ];
 
 export default function Income() {
-  const navigate = useNavigate();
-
   return (
     <div className=" flex flex-col justify-center items-center gap-y-4">
       <Breadcrumb>
@@ -45,13 +43,8 @@ export default function Income() {
       <ul className="text-center flex flex-col gap-y-2 justify-center items-center">
         {link.map((url) => (
           <li key={url.destination}>
-            <Button
-              size="lg"
-              onClick={() => {
-                navigate(url.destination);
-              }}
-            >
-              {url.buttonName}
+            <Button asChild>
+              <Link to={url.destination}>{url.buttonName}</Link>
             </Button>
           </li>
         ))}

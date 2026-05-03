@@ -86,7 +86,7 @@ export default function IncomeTotal() {
   const totalShopee = tempCalculateShopee + remainingShopee;
   const totalTiktok = tempCalculateTiktok + remainingTiktok;
 
-  const fixAlltimeData = async () => {
+  const fixAllTimeData = async () => {
     const { data: s } = await getDocuments(
       "Ambil Semua Doc Withdraw Shopee",
       collectionName.withdrawals.shopee,
@@ -185,11 +185,7 @@ export default function IncomeTotal() {
               size={"xs"}
               className="hover:bg-gray-600"
               onClick={() => {
-                setOpenPin({
-                  open: true,
-                  actionOnMatch: setDialogFixData,
-                  parameter: true,
-                });
+                setDialogFixData(true);
               }}
             >
               Fix Data
@@ -205,7 +201,14 @@ export default function IncomeTotal() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={fixAlltimeData}>
+                  <AlertDialogAction
+                    onClick={() => {
+                      setOpenPin({
+                        open: true,
+                        actionOnMatch: fixAllTimeData,
+                      });
+                    }}
+                  >
                     Lanjutkan
                   </AlertDialogAction>
                 </AlertDialogFooter>

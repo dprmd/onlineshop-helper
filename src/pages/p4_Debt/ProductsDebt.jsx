@@ -67,7 +67,7 @@ export default function ProductsDebt() {
         toast.warning("Isi Nama Produk");
         return;
       }
-      if (productDebt.hpp) {
+      if (!productDebt.hpp) {
         toast.warning("Isi HPP Produk");
         return;
       }
@@ -137,7 +137,17 @@ export default function ProductsDebt() {
           }
         }}
       >
-        <form onSubmit={handleChangeProduct} id="changeProduct">
+        <form
+          onSubmit={(e) => {
+            setOpenPin({
+              open: true,
+              actionOnMatch: () => {
+                handleChangeProduct(e);
+              },
+            });
+          }}
+          id="changeProduct"
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{dialog.title}</DialogTitle>
@@ -228,45 +238,24 @@ export default function ProductsDebt() {
       {productsDebt.length === 0 && (
         <div className="text-center">
           <h3 className="my-2">Produk Masih Kosong</h3>
-          <Button
-            onClick={() => {
-              setOpenPin({
-                open: true,
-                actionOnMatch: setDialog,
-                parameter: (prev) => ({
-                  ...prev,
-                  title: "Tambah Produk",
-                  open: true,
-                  dialogMotive: "addProductDebt",
-                }),
-              });
-            }}
-          >
-            Tambah Produk
-          </Button>
         </div>
       )}
 
-      {productsDebt.length > 0 && (
-        // Tombol Tambah Produk
-        <div className="flex flex-col justify-center items-center md:flex-wrap gap-y-2">
-          <Button
-            onClick={() => {
-              setOpenPin({
-                open: true,
-                actionOnMatch: setDialog,
-                parameter: (prev) => ({
-                  ...prev,
-                  title: "Tambah Produk",
-                  open: true,
-                  dialogMotive: "addProductDebt",
-                }),
-              });
-            }}
-          >
-            Tambah Produk
-          </Button>
+      <Button
+        onClick={() => {
+          setDialog((prev) => ({
+            ...prev,
+            title: "Tambah Produk",
+            open: true,
+            dialogMotive: "addProductDebt",
+          }));
+        }}
+      >
+        Tambah Produk
+      </Button>
 
+      {productsDebt.length > 0 && (
+        <div className="flex flex-col justify-center items-center md:flex-wrap gap-y-2">
           {/* List Produk */}
           <div className="flex flex-col md:flex-wrap md:flex-row justify-center items-center gap-2">
             {productsDebt.map((prod) => (

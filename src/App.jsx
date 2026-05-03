@@ -1,4 +1,5 @@
 import { DebtProvider } from "@/context/DebtContext";
+import { SecurityProvider } from "@/context/SecurityContext";
 import { UIProvider } from "@/context/UIContext";
 import { WarehouseProvider } from "@/context/WarehouseContext";
 import RootLayout from "@/layouts/RootLayout";
@@ -6,6 +7,7 @@ import NotFound from "@/pages/NotFound";
 import DebtChanges from "@/pages/p4_Debt/DebtChanges";
 import AddBatchProduction from "@/pages/p5_Warehouse/AddBatchProduction";
 import ProductionHistory from "@/pages/p5_Warehouse/ProductionHistory";
+import Products from "@/pages/p5_Warehouse/Products";
 import Warehouse from "@/pages/p5_Warehouse/Warehouse";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { IncomeAllocationProvider } from "./context/IncomeAllocationContext";
@@ -23,7 +25,6 @@ import StepThree from "./pages/p4_Debt/StepThree";
 import StepTwo from "./pages/p4_Debt/StepTwo";
 import Supplier from "./pages/p4_Debt/Supplier";
 import UpdateProductDebt from "./pages/p4_Debt/UpdateProductDebt";
-import { SecurityProvider } from "@/context/SecurityContext";
 
 const router = createHashRouter([
   {
@@ -74,6 +75,7 @@ const router = createHashRouter([
           { index: true, element: <Warehouse /> },
           { path: "productionHistory", element: <ProductionHistory /> },
           { path: "addBatchProduction", element: <AddBatchProduction /> },
+          { path: "products", element: <Products /> },
         ],
       },
     ],

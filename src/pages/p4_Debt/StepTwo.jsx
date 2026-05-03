@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { useDebt } from "@/context/DebtContext";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { formatNumber } from "../../utils/generalFunction";
@@ -260,26 +260,16 @@ export default function StepTwo() {
               </Field>
             )}
             <Field>
-              <Button
-                type="button"
-                onClick={() => {
-                  navigate("/debt/incomeAllocation");
-                }}
-              >
-                Kembali
+              <Button type="button" asChild>
+                <Link to="/debt/incomeAllocation">Kembali</Link>
               </Button>
               <Button type="button" onClick={handleReset}>
                 Reset All
               </Button>
               <Button type="submit">Hitung</Button>
               {submitOrder === 2 && (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    navigate("/debt/incomeAllocation/summary");
-                  }}
-                >
-                  Selanjutnya
+                <Button type="button" asChild>
+                  <Link to="/debt/incomeAllocation/summary">Selanjutnya</Link>
                 </Button>
               )}
             </Field>

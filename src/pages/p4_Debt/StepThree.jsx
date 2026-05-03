@@ -47,18 +47,18 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useDebt } from "@/context/DebtContext";
+import { useSecurity } from "@/context/SecurityContext";
 import { collectionName } from "@/services/firebase/firebase";
 import { format } from "date-fns";
 import { ChevronDownIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import LoadingOverlay from "../../components/LoadingOverlay";
 import WordInBracket from "../../components/WordInBracket";
 import { useIncomeAllocation } from "../../context/IncomeAllocationContext";
 import { useWithdrawalRecords } from "../../context/WithdrawalRecordsContext";
 import {
-  config,
   day,
   dayName,
   fullDayWage,
@@ -79,8 +79,6 @@ import {
   separateNumber,
   toCamelCase,
 } from "../../utils/generalFunction";
-import { useMemo } from "react";
-import { useSecurity } from "@/context/SecurityContext";
 
 // additional function
 const date = new Date();
@@ -279,11 +277,7 @@ const StepThree = () => {
         );
       } else {
         setLoadingSave(false);
-        setOpenPin({
-          open: true,
-          actionOnMatch: setConfirmSave,
-          parameter: true,
-        });
+        setConfirmSave(true);
       }
     } else {
       // Ambil Data Dari Firebase
@@ -299,11 +293,7 @@ const StepThree = () => {
         );
       } else {
         setLoadingSave(false);
-        setOpenPin({
-          open: true,
-          actionOnMatch: setConfirmSave,
-          parameter: true,
-        });
+        setConfirmSave(true);
       }
     }
   };
@@ -445,6 +435,7 @@ const StepThree = () => {
       const tiktokWithdrawal = {
         totalWithdraw: raw(totalWithdraw),
         supplierId: choosedSupplier.id,
+        supplierName: choosedSupplier.name,
         totalHPP: {
           total: raw(totalHPP),
           soldProducts,
@@ -466,6 +457,7 @@ const StepThree = () => {
       const shopeeWithdrawal = {
         totalWithdraw: raw(totalWithdraw),
         supplierId: choosedSupplier.id,
+        supplierName: choosedSupplier.name,
         totalHPP: {
           total: raw(totalHPP),
           soldProducts,
@@ -563,13 +555,8 @@ const StepThree = () => {
   return (
     <div className="flex justify-center items-center flex-col">
       {/* Navigation */}
-      <Button
-        variant={"outline"}
-        onClick={() => {
-          navigate("/");
-        }}
-      >
-        Home
+      <Button asChild>
+        <Link to="/">Home</Link>
       </Button>
 
       {/* Confirm Save to Firebase */}
@@ -584,7 +571,14 @@ const StepThree = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={saveToFirebase}>
+            <AlertDialogAction
+              onClick={() => {
+                setOpenPin({
+                  open: true,
+                  actionOnMatch: saveToFirebase,
+                });
+              }}
+            >
               Lanjutkan
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -900,13 +894,8 @@ const StepThree = () => {
             {/* Tombol Navigasi */}
             <CardAction>
               {/* Tombol Kembali ke StepTwo */}
-              <Button
-                type="button"
-                onClick={() => {
-                  navigate("/debt/incomeAllocation/calculateHPP");
-                }}
-              >
-                Kembali
+              <Button type="button" asChild>
+                <Link to="/debt/incomeAllocation/calculateHPP">Kembali</Link>
               </Button>
 
               {/* Hitung Sekarang */}

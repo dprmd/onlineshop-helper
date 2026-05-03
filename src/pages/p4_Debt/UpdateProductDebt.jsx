@@ -44,15 +44,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useSecurity } from "@/context/SecurityContext";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useDebt } from "../../context/DebtContext";
 import { formatNumber } from "../../utils/generalFunction";
-import { useSecurity } from "@/context/SecurityContext";
 
 export default function UpdateProductDebt() {
-  const navigate = useNavigate();
   const {
     supplier,
     getSupplierList,
@@ -116,11 +115,7 @@ export default function UpdateProductDebt() {
     }
 
     setProductDebt([...debt]);
-    setOpenPin({
-      open: true,
-      actionOnMatch: setConfirmChangeDialog,
-      parameter: true,
-    });
+    setConfirmChangeDialog(true);
   };
 
   useEffect(() => {
@@ -150,8 +145,8 @@ export default function UpdateProductDebt() {
     return (
       <div className="text-center">
         <p className="text-lg font-bold my-2">Anda Belum Menambahkan Produk</p>
-        <Button onClick={() => navigate("/debt/productsDebt")}>
-          Tambah Sekarang
+        <Button asChild>
+          <Link to="/debt/productsDebt">Tambah Sekarang</Link>
         </Button>
       </div>
     );
@@ -186,13 +181,8 @@ export default function UpdateProductDebt() {
             <p>Anda Belum Menambahkan Supplier</p>
             <p>Tolong Tambahkan Terlebih Dahulu</p>
           </div>
-          <Button
-            size="lg"
-            onClick={() => {
-              navigate("/debt/supplier");
-            }}
-          >
-            Tambah Sekarang
+          <Button asChild>
+            <Link to="/debt/supplier">Tambah Sekarang</Link>
           </Button>
         </div>
       )}
@@ -358,7 +348,7 @@ export default function UpdateProductDebt() {
                       {actionType === "addDebt" && (
                         <DialogDescription className="text-[12px]">
                           Produk Tidak Ada ?{" "}
-                          <Link to={"/debt/productsDebt"}>Tambah Produk</Link>
+                          <Link to="/debt/productsDebt">Tambah Produk</Link>
                         </DialogDescription>
                       )}
                     </DialogHeader>
@@ -473,19 +463,19 @@ export default function UpdateProductDebt() {
                           <AlertDialogCancel>Batal</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => {
-                              updateProductDebt(
-                                whichSupplier,
-                                productDebt,
-                                actionType,
-                              );
-                              setChoosedProduct([]);
-                              setNotChoosedProduct(produk);
-                              setCloneProduk(produk);
-                              toast.success(
-                                actionType === "addDebt"
-                                  ? "Berhasil Menambahkan Hutang Produk"
-                                  : "Berhasil Mengurangi Hutang Produk",
-                              );
+                              setOpenPin({
+                                open: true,
+                                actionOnMatch: async () => {
+                                  await updateProductDebt(
+                                    whichSupplier,
+                                    productDebt,
+                                    actionType,
+                                  );
+                                  setChoosedProduct([]);
+                                  setNotChoosedProduct(produk);
+                                  setCloneProduk(produk);
+                                },
+                              });
                             }}
                           >
                             Lanjutkan

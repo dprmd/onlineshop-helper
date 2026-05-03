@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useDebt } from "@/context/DebtContext";
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const link = [
   {
@@ -35,7 +35,6 @@ const link = [
 ];
 
 export default function Debt() {
-  const navigate = useNavigate();
   const { getSupplierList } = useDebt();
 
   useEffect(() => {
@@ -60,13 +59,8 @@ export default function Debt() {
       <ul className="text-center flex flex-col justify-center gap-y-2">
         {link.map((url) => (
           <li key={url.destination}>
-            <Button
-              size="lg"
-              onClick={() => {
-                navigate(url.destination);
-              }}
-            >
-              {url.buttonName}
+            <Button asChild>
+              <Link to={url.destination}>{url.buttonName}</Link>
             </Button>
           </li>
         ))}

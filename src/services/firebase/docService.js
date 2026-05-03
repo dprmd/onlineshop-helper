@@ -52,18 +52,20 @@ export const createDocument = async (
 ) => {
   try {
     console.log(`Operation : Create , Operation Name : ${operationName}`);
+    const createdAtMs = customTime ? customMS : Date.now();
     const docRef = await addDoc(collection(db, collectionName), {
       ...document,
       createdAt: customTime
         ? Timestamp.fromMillis(customMS)
         : serverTimestamp(),
-      createdAtMs: customTime ? customMS : Date.now(),
+      createdAtMs,
     });
 
     return {
       success: true,
       message: messageOnSucces,
       docId: docRef.id,
+      createdAtMs,
     };
   } catch (error) {
     return {
@@ -107,7 +109,7 @@ export const updateDocument = async (
 ) => {
   try {
     console.log(`Operation : Update , Operation Name : ${operationName}`);
-    await setDoc(doc(db, collectionName, docId), newDocument, { merge: true });
+    await setDoc(doc(db, collectionName, docId), newDocument, { merge: false });
 
     return {
       success: true,

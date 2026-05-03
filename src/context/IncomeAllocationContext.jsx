@@ -1,5 +1,4 @@
 import { useUI } from "@/context/UIContext";
-import { config } from "@/lib/variables";
 import { getDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import { createContext, useContext, useEffect, useState } from "react";

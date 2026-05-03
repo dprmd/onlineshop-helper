@@ -42,14 +42,14 @@ import { useWarehouse } from "@/context/WarehouseContext";
 import { createDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import {
+  formatDate,
   formatNumber,
   formatTanggal,
   separateNumber,
 } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { formatDate } from "@/utils/generalFunction";
 
 export default function ProductionHistory() {
   const {
@@ -60,7 +60,6 @@ export default function ProductionHistory() {
     completePacking,
     addProductionCost,
   } = useWarehouse();
-  const navigate = useNavigate();
   const { setOpenPin } = useSecurity();
   const [alertDialogMissingProduct, setAlertDialogMissingProduct] =
     useState(false);
@@ -80,49 +79,32 @@ export default function ProductionHistory() {
   };
   const [alertDialog, setAlertDialog] = useState(initialAlertDialog);
 
-  const [editedBatch, setEditedBatch] = useState({
+  const initialEditedBatch = {
     openAddCost: false,
     batchId: "",
     workerPayments: [],
-  });
+  };
+  const [editedBatch, setEditedBatch] = useState(initialEditedBatch);
 
   const markAsCompleteCut = (batch) => {
-    setOpenPin({
+    setAlertDialog((prev) => ({
+      ...prev,
       open: true,
-      actionOnMatch: setAlertDialog,
-      parameter: (prev) => ({
-        ...prev,
-        open: true,
-        batch,
-        status: "completeCut",
-      }),
-    });
+      batch,
+      status: "completeCut",
+    }));
   };
 
   const markAsCompleteSewing = (batch) => {
-    setOpenPin({
+    setAlertDialog((prev) => ({
+      ...prev,
       open: true,
-      actionOnMatch: setAlertDialog,
-      parameter: (prev) => ({
-        ...prev,
-        open: true,
-        batch: batch,
-        status: "completeSewing",
-      }),
-    });
+      batch: batch,
+      status: "completeSewing",
+    }));
   };
 
   const markAsCompletePacking = (batch) => {
-    // setOpenPin({
-    //   open: true,
-    //   actionOnMatch: setAlertDialog,
-    //   parameter: (prev) => ({
-    //     ...prev,
-    //     open: true,
-    //     batch: batch,
-    //     status: "completePacking",
-    //   }),
-    // });
     setAlertDialog((prev) => ({
       ...prev,
       open: true,
@@ -136,30 +118,36 @@ export default function ProductionHistory() {
   };
 
   const handleCompleteCut = () => {
-    if (!alertDialog.cutterPayment) {
-      toast.warning("Berapa Bayaran Pemotong ?");
-      return;
-    }
     if (!alertDialog.result) {
       toast.warning("Berapa Potong Yang Didapat ?");
-      return;
+    } else if (!alertDialog.cutterPayment) {
+      toast.warning("Berapa Bayaran Pemotong ?");
+    } else if (!alertDialog.packingCost) {
+      toast.warning("Berapa Biaya Packing ?");
+    } else {
+      setOpenPin({
+        open: true,
+        actionOnMatch: async () => {
+          await completeCut(
+            alertDialog.batch,
+            alertDialog.result,
+            alertDialog.cutterPayment,
+            alertDialog.packingCost,
+          );
+          setAlertDialog(initialAlertDialog);
+        },
+      });
     }
-    completeCut(
-      alertDialog.batch,
-      alertDialog.result,
-      alertDialog.cutterPayment,
-      alertDialog.packingCost,
-    );
-
-    // Reset State
-    setAlertDialog({ ...initialAlertDialog });
   };
 
   const handleCompleteSewing = () => {
-    completeSewing(alertDialog.batch);
-
-    // Reset State
-    setAlertDialog({ ...initialAlertDialog });
+    setOpenPin({
+      open: true,
+      actionOnMatch: async () => {
+        await completeSewing(alertDialog.batch);
+        setAlertDialog(initialAlertDialog);
+      },
+    });
   };
 
   const handleCompletePacking = () => {
@@ -174,56 +162,14 @@ export default function ProductionHistory() {
     } else if (!checkTotal && !missingMarked) {
       setAlertDialogMissingProduct(true);
     } else {
-      completePacking(alertDialog.batch, alertDialog.qc);
-      // Reset State
-      setAlertDialog({ ...initialAlertDialog });
-    }
-  };
-
-  const dummy = async () => {
-    const a = {
-      id: "zmT5BueyH4mY1Hyf9QgV",
-      createdAt: {
-        type: "firestore/timestamp/1.0",
-        seconds: 1777725464,
-        nanoseconds: 179000000,
-      },
-      stock: { onWarehouse: 0, cutResult: 300 },
-      hpp: 11933,
-      time: {
-        endCutting: 1777725513101,
-        startSewing: 1777725573101,
-        startCutting: 1777725462388,
-        startPacking: 1777725680963,
-        endSewing: 1777725620963,
-      },
-      operationalCosts: {
-        total: 8500,
-        packingCost: 1000,
-        worker: [
-          { id: 1777725513101, payment: 1500, role: "Tukang Potong" },
-          { id: 1777725549811, payment: 5000, role: "Jahit" },
-          { role: "QC", payment: 1000, id: 1777725557556 },
-        ],
-      },
-      createdAtMs: 1777725462389,
-      shippingCost: 30000,
-      status: "toPack",
-      totalFabricCost: 1030000,
-      materials: [
-        {
-          id: 1777725435337,
-          price: 10000,
-          materialName: "Test Aja Bahan",
-          type: "yard",
-          qty: 100,
-          total: 1000000,
+      setOpenPin({
+        open: true,
+        actionOnMatch: async () => {
+          await completePacking(alertDialog.batch, alertDialog.qc);
+          setAlertDialog(initialAlertDialog);
         },
-      ],
-      productName: "Test Aja",
-    };
-
-    await createDocument("", collectionName.productionHistory, a, "");
+      });
+    }
   };
 
   useEffect(() => {
@@ -256,12 +202,7 @@ export default function ProductionHistory() {
       <Dialog
         open={editedBatch.openAddCost}
         onOpenChange={(v) => {
-          setEditedBatch((prev) => ({
-            ...prev,
-            openAddCost: v,
-            batchId: "",
-            workerPayments: [],
-          }));
+          setEditedBatch({ ...initialEditedBatch, openAddCost: v });
         }}
       >
         <DialogContent>
@@ -363,6 +304,12 @@ export default function ProductionHistory() {
             </Button>
             <Button
               onClick={() => {
+                if (editedBatch.workerPayments.length === 0) {
+                  toast.warning("Tidak Menambah Biaya Apapun");
+                  setEditedBatch(initialEditedBatch);
+                  return;
+                }
+
                 const validateWorker = editedBatch.workerPayments.map((w) => {
                   if (w.role && w.payment) {
                     return "yes";
@@ -375,13 +322,13 @@ export default function ProductionHistory() {
                   toast.warning("Mohon Masukan Info Biaya Dengan Benar");
                   return;
                 } else {
-                  addProductionCost(editedBatch);
-                  setEditedBatch((prev) => ({
-                    ...prev,
-                    batchId: "",
-                    openAddCost: false,
-                    workerPayments: [],
-                  }));
+                  setOpenPin({
+                    open: true,
+                    actionOnMatch: async () => {
+                      await addProductionCost(editedBatch);
+                      setEditedBatch(initialEditedBatch);
+                    },
+                  });
                 }
               }}
             >
@@ -549,6 +496,7 @@ export default function ProductionHistory() {
                           ...prev.qc,
                           qcPassed: newValue,
                           quota: updatedQuota,
+                          missing: 0,
                         },
                       }));
                     }}
@@ -580,6 +528,7 @@ export default function ProductionHistory() {
                           ...prev.qc,
                           damaged: newValue,
                           quota: updatedQuota,
+                          missing: 0,
                         },
                       }));
                     }}
@@ -620,33 +569,17 @@ export default function ProductionHistory() {
           <p className="text-xl text-gray-600 my-2">
             Tidak Ada Riwayat Produksi
           </p>
-          <Button
-            type="submit"
-            onClick={() => navigate("/warehouse/addBatchProduction")}
-          >
-            Buat Batch Produksi
-          </Button>
-          <Button type="button" onClick={dummy}>
-            Dummy
-          </Button>
         </div>
       )}
+
+      <Button type="submit" asChild>
+        <Link to="/warehouse/addBatchProduction">Buat Batch Produksi</Link>
+      </Button>
 
       {/* List Riwayat Produksi */}
       <div>
         {productionHistory.length > 0 && (
           <div>
-            <div className="text-center my-2">
-              <Button
-                type="submit"
-                onClick={() => navigate("/warehouse/addBatchProduction")}
-              >
-                Buat Batch Produksi
-              </Button>
-              <Button type="button" onClick={dummy}>
-                Dummy
-              </Button>
-            </div>
             <div className="flex flex-wrap gap-4 justify-center">
               {productionHistory.map((batch) => (
                 <BatchProductionCard
@@ -715,7 +648,6 @@ const BatchProductionCard = ({
   markAsCompletePacking,
   openDialogAddCost,
 }) => {
-  const { setOpenPin } = useSecurity();
   return (
     <>
       <Card className="min-w-[380px] max-w-[380px] h-fit">
@@ -831,15 +763,11 @@ const BatchProductionCard = ({
               <Button
                 className="bg-green-700 hover:bg-green-600"
                 onClick={() => {
-                  setOpenPin({
-                    open: true,
-                    actionOnMatch: openDialogAddCost,
-                    parameter: (prev) => ({
-                      ...prev,
-                      openAddCost: true,
-                      batchId: batch.id,
-                    }),
-                  });
+                  openDialogAddCost((prev) => ({
+                    ...prev,
+                    openAddCost: true,
+                    batchId: batch.id,
+                  }));
                 }}
                 key={2}
               >

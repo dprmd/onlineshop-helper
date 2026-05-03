@@ -72,7 +72,7 @@ export function WithdrawalRecordsProvider({ children }) {
       });
       setIsATFetched(true);
     } else {
-      console.log(message);
+      toast.error(message);
       console.log(error);
     }
 

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const link = [
   {
@@ -21,8 +21,6 @@ const link = [
 ];
 
 export default function Home() {
-  const navigate = useNavigate();
-
   return (
     <div>
       <h3 className="text-center text-2xl my-4 font-bold">
@@ -31,13 +29,8 @@ export default function Home() {
       <ul className="text-center flex flex-col gap-y-2 justify-center">
         {link.map((url) => (
           <li key={url.buttonName}>
-            <Button
-              size="lg"
-              onClick={() => {
-                navigate(url.destination);
-              }}
-            >
-              {url.buttonName}
+            <Button asChild>
+              <Link to={url.destination}>{url.buttonName}</Link>
             </Button>
           </li>
         ))}
