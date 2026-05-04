@@ -48,7 +48,7 @@ export const SecurityProvider = ({ children }) => {
         }
       };
 
-      if (isMatch) {
+      if (await isMatch()) {
         setPin("");
         setDisableInputOtp(false);
         setOpenPin(() => ({

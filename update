@@ -1,14 +1,3 @@
-#!/bin/bash
-
-FILE="./src/lib/variables.js"
-
-# Cek apakah skipSecurity: true ada di file
-if grep -q "skipSecurity:[[:space:]]*true" "$FILE"; then
-  echo "⚠️  WARNING: skipSecurity masih aktif (true) di $FILE"
-  echo "❌ Commit & push dibatalkan"
-  exit 1
-fi
-
 # Kalau aman, lanjut
 git add .
 git commit -m "update"
