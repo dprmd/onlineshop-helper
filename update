@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FILE="./lib/variable.js"
+FILE="./src/lib/variable.js"
 
 # Cek apakah skipSecurity: true ada di file
 if grep -q "skipSecurity:[[:space:]]*true" "$FILE"; then
