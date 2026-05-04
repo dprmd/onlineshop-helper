@@ -124,6 +124,36 @@ export const updateDocument = async (
   }
 };
 
+export const getDocument = async (
+  operationName,
+  collectionName,
+  documentId,
+) => {
+  try {
+    console.log(`Operation : Read , Operation Name : ${operationName}`);
+    const docRef = doc(db, collectionName, documentId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return {
+        success: true,
+        data: docSnap.data(),
+      };
+    } else {
+      return {
+        success: false,
+        message: "Dokumen Tidak Ditemukan",
+      };
+    }
+  } catch (error) {
+    return {
+      success: false,
+      message: error.message,
+      error,
+    };
+  }
+};
+
 export const getDocuments = async (operationName, collectionName, order) => {
   const orderChoice = {
     newToOld: "desc",
@@ -295,36 +325,6 @@ export const getWithdrawalList = async (platform, order, limitOffPage) => {
       success: true,
       data: result,
     };
-  } catch (error) {
-    return {
-      success: false,
-      message: error.message,
-      error,
-    };
-  }
-};
-
-export const getDocument = async (
-  operationName,
-  collectionName,
-  documentId,
-) => {
-  try {
-    console.log(`Operation : Read , Operation Name : ${operationName}`);
-    const docRef = doc(db, collectionName, documentId);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return {
-        success: true,
-        data: docSnap.data(),
-      };
-    } else {
-      return {
-        success: false,
-        message: "Dokumen Tidak Ditemukan",
-      };
-    }
   } catch (error) {
     return {
       success: false,

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Spinner } from "@/components/ui/spinner";
+import { config } from "@/lib/variables";
 import { getDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import bcrypt from "bcryptjs";
@@ -32,23 +34,29 @@ export const SecurityProvider = ({ children }) => {
     else {
       setDisableInputOtp(true);
 
-      const { data } = await getDocument(
-        "Security Fetch",
-        collectionName.security,
-        "pin",
-      );
-
-      const isMatch = await bcrypt.compare(thePin, data.hashedPin);
+      const isMatch = async () => {
+        if (config.skipSecurity) {
+          return true;
+        } else {
+          const { data } = await getDocument(
+            "Security Fetch",
+            collectionName.security,
+            "pin",
+          );
+          const letMeCompare = await bcrypt.compare(thePin, data.hashedPin);
+          return letMeCompare;
+        }
+      };
 
       if (isMatch) {
         setPin("");
         setDisableInputOtp(false);
-        await openPin.actionOnMatch();
         setOpenPin(() => ({
           actionOnMatch: async () => {},
           parameter: "",
           open: false,
         }));
+        await openPin.actionOnMatch();
         return;
       } else {
         toast.warning("Pin Salah");
@@ -103,6 +111,17 @@ export const SecurityProvider = ({ children }) => {
               <InputOTPSlot index={9} />
             </InputOTPGroup>
           </InputOTP>
+
+          {config.skipSecurity && (
+            <Button
+              onClick={async () => {
+                setPin("letmegosir");
+                await comparePin("letmegosir");
+              }}
+            >
+              Skip
+            </Button>
+          )}
         </DialogContent>
       </Dialog>
       {children}

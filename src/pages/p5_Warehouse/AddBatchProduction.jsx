@@ -34,6 +34,10 @@ export default function AddBatchProduction() {
   // Batch State
   const [product, setProduct] = useState({
     productName: "",
+    productRelation: {
+      productId: "",
+      productVariationId: "",
+    },
     shippingCost: 0,
     materials: [],
   });

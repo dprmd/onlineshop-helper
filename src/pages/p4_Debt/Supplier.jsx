@@ -1,4 +1,14 @@
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
@@ -7,7 +17,12 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogClose,
@@ -20,62 +35,39 @@ import {
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { collectionName } from "@/services/firebase/firebase";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
 import { useDebt } from "../../context/DebtContext";
-import { createDocument } from "../../services/firebase/docService";
-import { toCamelCase } from "../../utils/generalFunction";
-import { useSecurity } from "@/context/SecurityContext";
 
 export default function Supplier() {
-  const { supplier, setSupplier, checkSupplierIfExist, getSupplierList } =
+  const { supplier, addNewSupplier, deleteSupplier, getSupplierList } =
     useDebt();
-  const { setOpenPin } = useSecurity();
 
-  const [supplierName, setSupplierName] = useState("");
-  const [dialogAddSupplier, setDialogAddSupplier] = useState(false);
+  const [dialogAddSupplier, setDialogAddSupplier] = useState({
+    open: false,
+    supplierName: "",
+  });
+  const [dialogDeleteSupplier, setDialogDeleteSupplier] = useState({
+    open: false,
+    supplierId: "",
+  });
 
   const handleSaveSupplier = async (e) => {
-    e.preventDefault();
+    await addNewSupplier({
+      supplierName: dialogAddSupplier.supplierName,
+      onSuccess: () => {
+        setDialogAddSupplier({ open: false, supplierName: "" });
+      },
+    });
+  };
 
-    if (!supplierName) {
-      toast.warning("Masukan Nama Supplier");
-      return;
-    }
-
-    // Cek jika supplier name supplier ada di firebase
-    const checkedSupplierName = checkSupplierIfExist(supplierName);
-
-    if (checkedSupplierName) {
-      toast.error("Nama Supplier Telah Ada");
-    } else {
-      const newSupplier = await createDocument(
-        "Menambahkan Supplier Baru",
-        collectionName.supplier,
-        {
-          username: toCamelCase(supplierName),
-          name: supplierName,
-          productDebt: [],
-        },
-        "Berhasil Menambahkan Supplier",
-      );
-      setSupplier([
-        {
-          id: newSupplier.docId,
-          createdAtMs: newSupplier.createdAtMs,
-          name: supplierName,
-          username: toCamelCase(supplierName),
-          productDebt: [],
-          debtChanges: [],
-        },
-        ...supplier,
-      ]);
-      setSupplierName("");
-      setDialogAddSupplier(false);
-      toast.success("Berhasil Menyimpan Supplier");
-    }
+  const handleDeleteSupplier = async () => {
+    await deleteSupplier({
+      supplierId: dialogDeleteSupplier.supplierId,
+      onSuccess: () => {
+        setDialogDeleteSupplier({ open: false, supplierId: "" });
+      },
+    });
   };
 
   useEffect(() => {
@@ -114,16 +106,13 @@ export default function Supplier() {
       <DialogAddSupplier
         dialog={dialogAddSupplier}
         setDialog={setDialogAddSupplier}
-        supplierName={supplierName}
-        setSupplierName={setSupplierName}
-        onSubmit={(e) => {
-          setOpenPin({
-            open: true,
-            actionOnMatch: () => {
-              handleSaveSupplier(e);
-            },
-          });
-        }}
+        onSubmit={handleSaveSupplier}
+      />
+
+      <DialogDeleteSupplier
+        dialog={dialogDeleteSupplier}
+        setDialog={setDialogDeleteSupplier}
+        onDelete={handleDeleteSupplier}
       />
 
       {/* If Supplier Length Greater than Zero */}
@@ -133,27 +122,43 @@ export default function Supplier() {
             {supplier.map((supplier) => (
               <Card key={supplier.id} className="min-w-[380px]">
                 <CardHeader>
-                  <p>Nama : {supplier.name}</p>
-                  {supplier.productDebt.length === 0 && (
-                    <p className="text-[12px] text-gray-400">
-                      Anda Belum Mempunyai Hutang Ke Supplier Ini
-                    </p>
-                  )}
-                  {supplier.productDebt.length > 0 && (
-                    <>
-                      <p className="text-gray-500">Daftar Hutang Barang</p>
-                      <i className="bi bi-arrow-down text-[10px]"></i>
-                      {supplier.productDebt.map((barang) => (
-                        <p
-                          className="text-[12px] text-gray-400"
-                          key={barang.identifier}
-                        >
-                          {barang.name} {barang.remaining} Pcs
-                        </p>
-                      ))}
-                    </>
-                  )}
+                  <div>
+                    <p>Nama : {supplier.name}</p>
+                    {supplier.productDebt.length === 0 && (
+                      <p className="text-[12px] text-gray-400">
+                        Anda Belum Mempunyai Hutang Ke Supplier Ini
+                      </p>
+                    )}
+                    {supplier.productDebt.length > 0 && (
+                      <>
+                        <p className="text-gray-500">Daftar Hutang Barang</p>
+                        <i className="bi bi-arrow-down text-[10px]"></i>
+                      </>
+                    )}
+                  </div>
                 </CardHeader>
+                <CardContent>
+                  {supplier.productDebt.map((barang) => (
+                    <p className="text-[12px] text-gray-400" key={barang.id}>
+                      {barang.name} {barang.remaining} Pcs
+                    </p>
+                  ))}
+                </CardContent>
+                <CardFooter className="flex justify-center items-center">
+                  <Button
+                    size={"sm"}
+                    variant={"outline"}
+                    className="bi bi-trash rounded-md"
+                    onClick={() => {
+                      setDialogDeleteSupplier({
+                        open: true,
+                        supplierId: supplier.id,
+                      });
+                    }}
+                  >
+                    Hapus Supplier
+                  </Button>
+                </CardFooter>
               </Card>
             ))}
           </div>
@@ -163,53 +168,75 @@ export default function Supplier() {
   );
 }
 
-const DialogAddSupplier = ({
-  onSubmit,
-  supplierName,
-  setSupplierName,
-  dialog,
-  setDialog,
-}) => {
+const DialogAddSupplier = ({ onSubmit, dialog, setDialog }) => {
   return (
-    <>
-      <Button
-        onClick={() => {
-          setDialog(true);
-        }}
-      >
-        Tambah Supplier
-      </Button>
-      <Dialog open={dialog} onOpenChange={setDialog}>
-        <form id="addSupplier" onSubmit={onSubmit}>
-          <DialogContent className="sm:max-w-sm">
-            <DialogHeader>
-              <DialogTitle>Tambah Supplier</DialogTitle>
-            </DialogHeader>
-            <FieldGroup>
-              <Field>
-                <Label htmlFor="name-1">Nama</Label>
-                <Input
-                  id="name-1"
-                  name="name"
-                  required
-                  value={supplierName}
-                  onChange={(e) => {
-                    setSupplierName(e.target.value);
-                  }}
-                />
-              </Field>
-            </FieldGroup>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Batal</Button>
-              </DialogClose>
-              <Button type="submit" form="addSupplier">
-                Simpan
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </form>
-      </Dialog>
-    </>
+    <Dialog
+      open={dialog.open}
+      onOpenChange={(v) => {
+        setDialog((prev) => ({ ...prev, open: v }));
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button>Tambah Supplier</Button>
+      </DialogTrigger>
+      <form id="addSupplier" onSubmit={onSubmit}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Tambah Supplier</DialogTitle>
+          </DialogHeader>
+          <FieldGroup>
+            <Field>
+              <Label htmlFor="name-1">Nama</Label>
+              <Input
+                id="name-1"
+                name="name"
+                required
+                value={dialog.supplierName}
+                onChange={(e) => {
+                  setDialog((prev) => ({
+                    ...prev,
+                    supplierName: e.target.value,
+                  }));
+                }}
+              />
+            </Field>
+          </FieldGroup>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Batal</Button>
+            </DialogClose>
+            <Button type="submit" form="addSupplier">
+              Simpan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
+  );
+};
+
+const DialogDeleteSupplier = ({ dialog, setDialog, onDelete }) => {
+  return (
+    <AlertDialog
+      open={dialog.open}
+      onOpenChange={(v) => {
+        setDialog((prev) => ({ ...prev, open: v }));
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Hapus Supplier</AlertDialogTitle>
+          <AlertDialogDescription>
+            Menghapus Supplier Akan Menghapus Juga Semua Data Yang Terkait
+            Dengan Supplier Ini
+          </AlertDialogDescription>
+          <AlertDialogDescription>Apakah Anda Yakin ?</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Batal</AlertDialogCancel>
+          <AlertDialogAction onClick={onDelete}>Hapus</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };

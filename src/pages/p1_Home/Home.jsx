@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { config } from "@/lib/variables";
 
 const link = [
   {
@@ -23,6 +24,11 @@ const link = [
 export default function Home() {
   return (
     <div>
+      {config.skipSecurity && (
+        <p className="text-red-500 text-2xl text-center animate-caret-blink">
+          Security PIN Di Nonaktifkan
+        </p>
+      )}
       <h3 className="text-center text-2xl my-4 font-bold">
         Hallo Selamat Datang 😄
       </h3>

@@ -5,6 +5,7 @@ import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
 import {
   createDocument,
+  deleteCollection,
   deleteDocument,
   getDebtChangeBySupplierId,
   getDocument,
@@ -12,11 +13,13 @@ import {
   updateDocument,
 } from "../services/firebase/docService";
 import { raw, toCamelCase } from "../utils/generalFunction";
+import { useSecurity } from "@/context/SecurityContext";
 
 const DebtContext = createContext();
 
 export function DebtProvider({ children }) {
   const { setLoading } = useUI();
+  const { setOpenPin } = useSecurity();
   // Supplier State
   const [supplier, setSupplier] = useState([]);
   const [isFetchingSupplier, setIsFetchingSupplier] = useState(false);
@@ -59,11 +62,87 @@ export function DebtProvider({ children }) {
     setIsFetchingSupplier(false);
   };
 
-  const checkSupplierIfExist = (supplierName) => {
-    const exist = supplier.find(
+  const addNewSupplier = async ({ supplierName, onSuccess = () => {} }) => {
+    const addNow = async () => {
+      const { success, error, message, docId, createdAtMs } =
+        await createDocument(
+          "Menambahkan Supplier Baru",
+          collectionName.supplier,
+          {
+            username: toCamelCase(supplierName),
+            name: supplierName,
+            productDebt: [],
+          },
+          "Berhasil Menambahkan Supplier",
+        );
+
+      if (success) {
+        setSupplier([
+          {
+            id: docId,
+            createdAtMs: createdAtMs,
+            name: supplierName,
+            username: toCamelCase(supplierName),
+            productDebt: [],
+            debtChanges: [],
+          },
+          ...supplier,
+        ]);
+        toast.success(message);
+        onSuccess();
+      } else {
+        toast.error(message);
+        console.log(error);
+      }
+    };
+
+    // Validasi
+    if (!supplierName) {
+      toast.warning("Masukan Nama Supplier");
+      return;
+    }
+
+    const checkedSupplierName = supplier.find(
       (v) => v.username === toCamelCase(supplierName),
     );
-    return exist ? true : false;
+
+    if (checkedSupplierName) {
+      toast.error("Nama Supplier Telah Ada");
+    } else {
+      setOpenPin({
+        open: true,
+        actionOnMatch: addNow,
+      });
+    }
+  };
+
+  const deleteSupplier = async ({ supplierId, onSuccess = () => {} }) => {
+    const deleteNow = async () => {
+      const { success, error, message } = await deleteDocument(
+        "Delete Supplier",
+        collectionName.supplier,
+        supplierId,
+        "Berhasil Menghapus Supplier",
+      );
+
+      await deleteCollection(`${collectionName.debtChanges}-${supplierId}`);
+
+      if (success) {
+        setSupplier((prev) => {
+          return prev.filter((s) => s.id !== supplierId);
+        });
+        toast.success(message);
+        onSuccess();
+      } else {
+        toast.error(message);
+        console.log(error);
+      }
+    };
+
+    setOpenPin({
+      open: true,
+      actionOnMatch: deleteNow,
+    });
   };
 
   const getDebtChanges = async (supplierId) => {
@@ -124,16 +203,13 @@ export function DebtProvider({ children }) {
       const previousDebt = supplierObject.productDebt;
 
       let debtChange = {
-        id: "",
         supplierId,
         changeType: "",
         changes: [],
       };
 
       const merged = productDebt.map((debt) => {
-        const sameDebt = previousDebt.find(
-          (b) => b.identifier === debt.identifier,
-        );
+        const sameDebt = previousDebt.find((b) => b.id === debt.id);
 
         let remaining = 0;
 
@@ -185,7 +261,7 @@ export function DebtProvider({ children }) {
       let unmondifiedDebt = [];
 
       previousDebt.forEach((debt) => {
-        if (!merged.find((d) => d.identifier === debt.identifier)) {
+        if (!merged.find((d) => d.id === debt.id)) {
           unmondifiedDebt.push(debt);
         }
       });
@@ -237,6 +313,12 @@ export function DebtProvider({ children }) {
           }
         });
       });
+
+      if (actionType === "addDebt") {
+        toast.success("Berhasil Menambah Hutang");
+      } else if (actionType === "reduceDebt") {
+        toast.success("Berhasil Mengurangi Hutang");
+      }
     } else {
       toast.error(message);
       console.log(error);
@@ -245,41 +327,51 @@ export function DebtProvider({ children }) {
     setLoading(false);
   };
 
-  // Products Function
-
-  const addProductDebt = async (productDebt) => {
+  const addProductDebt = async ({ productDebt, onSuccess = () => {} }) => {
     setLoading(true);
 
-    const newProduct = {
-      ...productDebt,
-      identifier: toCamelCase(productDebt.name),
-      hpp: raw(productDebt.hpp),
-    };
-
-    const { docId, success, error, message, createdAtMs } =
-      await createDocument(
-        "Menambahkan Produk Baru",
-        collectionName.productsDebt,
-        newProduct,
-        "Berhasil Menambahkan Produk",
-      );
-
-    if (success) {
-      // Optimistic Updates
-      setProductsDebt((prev) => {
-        return [
-          {
-            ...newProduct,
-            id: docId,
-            createdAtMs,
-          },
-          ...prev,
-        ];
-      });
-      toast.success(message);
+    if (!productDebt.name) {
+      toast.warning("Isi Nama Produk");
+    } else if (!productDebt.hpp) {
+      toast.warning("Isi HPP Produk");
     } else {
-      toast.error(message);
-      console.log(error);
+      setOpenPin({
+        open: true,
+        actionOnMatch: async () => {
+          const newProductDebt = {
+            ...productDebt,
+            identifier: toCamelCase(productDebt.name),
+            hpp: raw(productDebt.hpp),
+          };
+
+          const { docId, success, error, message, createdAtMs } =
+            await createDocument(
+              "Menambahkan Produk Baru",
+              collectionName.productsDebt,
+              newProductDebt,
+              "Berhasil Menambahkan Produk",
+            );
+
+          if (success) {
+            // Optimistic Updates
+            setProductsDebt((prev) => {
+              return [
+                {
+                  ...newProductDebt,
+                  id: docId,
+                  createdAtMs,
+                },
+                ...prev,
+              ];
+            });
+            toast.success(message);
+            onSuccess();
+          } else {
+            toast.error(message);
+            console.log(error);
+          }
+        },
+      });
     }
 
     setLoading(false);
@@ -314,7 +406,11 @@ export function DebtProvider({ children }) {
     setIsFetchingProducts(false);
   };
 
-  const editProductDebt = async (productId, productDebt) => {
+  const editProductDebt = async ({
+    productId,
+    productDebt,
+    onSuccess = () => {},
+  }) => {
     setLoading(true);
 
     const productBefore = productsDebt.find((p) => p.id === productId);
@@ -327,33 +423,37 @@ export function DebtProvider({ children }) {
 
     if (isEqual({ ...editedProduct, id: productId }, productBefore)) {
       toast.info("Produk Tidak Di Edit");
-      setLoading(false);
-      return;
-    }
-
-    const { success, error, message } = await updateDocument(
-      "Edit Produk",
-      collectionName.productsDebt,
-      productId,
-      editedProduct,
-      "Berhasil Edit Produk",
-    );
-
-    if (success) {
-      // Optimistic Update
-      setProductsDebt((prev) => {
-        return prev.map((p) => {
-          if (p.id === productId) {
-            return { ...editedProduct, id: productId };
-          } else {
-            return p;
-          }
-        });
-      });
-      toast.success(message);
     } else {
-      toast.error(message);
-      console.log(error);
+      setOpenPin({
+        open: true,
+        actionOnMatch: async () => {
+          const { success, error, message } = await updateDocument(
+            "Edit Produk",
+            collectionName.productsDebt,
+            productId,
+            editedProduct,
+            "Berhasil Edit Produk",
+          );
+
+          if (success) {
+            // Optimistic Update
+            setProductsDebt((prev) => {
+              return prev.map((p) => {
+                if (p.id === productId) {
+                  return { ...editedProduct, id: productId };
+                } else {
+                  return p;
+                }
+              });
+            });
+            toast.success(message);
+            onSuccess();
+          } else {
+            toast.error(message);
+            console.log(error);
+          }
+        },
+      });
     }
 
     setLoading(false);
@@ -387,7 +487,8 @@ export function DebtProvider({ children }) {
       value={{
         supplier,
         setSupplier,
-        checkSupplierIfExist,
+        addNewSupplier,
+        deleteSupplier,
         getSupplierList,
         updateProductDebt,
         productsDebt,

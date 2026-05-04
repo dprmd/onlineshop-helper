@@ -56,7 +56,25 @@ export function WarehouseProvider({ children }) {
   };
 
   const addNewProduct = async (product) => {
-    console.log(product);
+    setLoading(true);
+    const { success, error, message, docId, createdAtMs } =
+      await createDocument(
+        "Tambah Produk Baru",
+        collectionName.myProducts,
+        product,
+        "Berhasil Menambahkan Produk",
+      );
+
+    if (success) {
+      setProducts((prev) => {
+        return [{ id: docId, createdAtMs, ...product }, ...prev];
+      });
+      toast.success(message);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+    setLoading(false);
   };
 
   const addProduction = async (batchProduction) => {
@@ -309,6 +327,7 @@ export function WarehouseProvider({ children }) {
           }
         });
       });
+      toast.success(message);
     } else {
       toast.error(message);
       console.log(error);

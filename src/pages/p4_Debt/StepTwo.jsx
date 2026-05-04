@@ -100,8 +100,8 @@ export default function StepTwo() {
           <FieldDescription>Masukan Barang Yang Akan Di Setor</FieldDescription>
           <FieldGroup>
             {productList?.map((produk, i) => (
-              <Field key={produk.identifier}>
-                <FieldLabel htmlFor={produk.identifier} className="px-12">
+              <Field key={produk.id}>
+                <FieldLabel htmlFor={produk.id} className="px-12">
                   <span>{produk.name}</span>
                   <span className="text-[10px] text-gray-400">
                     Sisa {produk.remaining}
@@ -114,7 +114,7 @@ export default function StepTwo() {
                     onClick={() => {
                       setSetorBarang((barang) => {
                         return barang.map((bar) => {
-                          if (bar.identifier === produk.identifier) {
+                          if (bar.id === produk.id) {
                             return { ...bar, sold: 0 };
                           } else {
                             return bar;
@@ -122,10 +122,11 @@ export default function StepTwo() {
                         });
                       });
                       setShowConclusion(false);
+                      setSubmitOrder(0);
                     }}
                   />
                   <Input
-                    id={produk.identifier}
+                    id={produk.id}
                     autoComplete="off"
                     placeholder="0"
                     value={setorBarang[i].sold}
@@ -134,7 +135,7 @@ export default function StepTwo() {
                       setShowConclusion(false);
                       setSetorBarang((prev) => {
                         return prev.map((prod) => {
-                          if (prod.identifier === produk.identifier) {
+                          if (prod.id === produk.id) {
                             if (Number(e.target.value) > produk.remaining) {
                               return { ...prod, sold: produk.remaining };
                             }
@@ -147,7 +148,7 @@ export default function StepTwo() {
                     }}
                   />
                   <Popover
-                    open={valueOnPopover.popList[produk.identifier]}
+                    open={valueOnPopover.popList[produk.id]}
                     onOpenChange={(v) => {
                       setValueOnPopover((prev) => {
                         return {
@@ -155,7 +156,7 @@ export default function StepTwo() {
                           value: 0,
                           popList: {
                             ...prev.popList,
-                            [produk.identifier]: v,
+                            [produk.id]: v,
                           },
                         };
                       });
@@ -171,7 +172,7 @@ export default function StepTwo() {
                               products: produk,
                               popList: {
                                 ...prev.popList,
-                                [produk.identifier]: true,
+                                [produk.id]: true,
                               },
                             };
                           });
@@ -203,8 +204,7 @@ export default function StepTwo() {
                                     setSetorBarang((prev) => {
                                       return prev.map((prod) => {
                                         if (
-                                          prod.identifier ===
-                                          valueOnPopover.products.identifier
+                                          prod.id === valueOnPopover.products.id
                                         ) {
                                           if (
                                             Number(total) > produk.remaining
@@ -225,7 +225,7 @@ export default function StepTwo() {
                                       ...prev,
                                       popList: {
                                         ...prev.popList,
-                                        [produk.identifier]: false,
+                                        [produk.id]: false,
                                       },
                                       value: 0,
                                     }));
@@ -247,7 +247,7 @@ export default function StepTwo() {
                   {setorBarang.map((barang) => {
                     if (Number(barang.sold > 0)) {
                       return (
-                        <p key={barang.identifier}>
+                        <p key={barang.id}>
                           {barang.name} {barang.sold} x{" "}
                           {formatNumber(barang.hpp)} ={" "}
                           {formatNumber(barang.hpp * barang.sold)}

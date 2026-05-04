@@ -59,42 +59,42 @@ export default function ProductsDebt() {
     confirmRemove: false,
   });
 
-  const handleChangeProduct = async (e) => {
-    e.preventDefault();
-
+  const handleChangeProduct = async () => {
     if (dialog.dialogMotive === "addProductDebt") {
-      if (!productDebt.name) {
-        toast.warning("Isi Nama Produk");
-        return;
-      }
-      if (!productDebt.hpp) {
-        toast.warning("Isi HPP Produk");
-        return;
-      }
-      await addProductDebt(productDebt);
-      // Reset State Produk
-      setProductDebt((prev) => ({
-        ...prev,
-        name: "",
-        hpp: "",
-        stock: 0,
-      }));
+      await addProductDebt({
+        productDebt,
+        onSuccess: () => {
+          // Close Dialog
+          setDialog((prev) => ({ ...prev, open: false }));
+          // Reset State Produk
+          setProductDebt((prev) => ({
+            ...prev,
+            name: "",
+            hpp: "",
+            stock: 0,
+          }));
+        },
+      });
     }
 
     if (dialog.dialogMotive === "editProductDebt") {
-      await editProductDebt(idPToEdit, productDebt);
-      // Reset State Produk
-      setProductDebt((prev) => ({
-        ...prev,
-        name: "",
-        hpp: "",
-        stock: 0,
-      }));
-      setIdPToEdit("");
+      await editProductDebt({
+        productId: idPToEdit,
+        productDebt,
+        onSuccess: () => {
+          // Close Dialog
+          setDialog((prev) => ({ ...prev, open: false }));
+          // Reset State Produk
+          setProductDebt((prev) => ({
+            ...prev,
+            name: "",
+            hpp: "",
+            stock: 0,
+          }));
+          setIdPToEdit("");
+        },
+      });
     }
-
-    // Close Dialog
-    setDialog((prev) => ({ ...prev, open: false }));
   };
 
   useEffect(() => {
@@ -137,70 +137,58 @@ export default function ProductsDebt() {
           }
         }}
       >
-        <form
-          onSubmit={(e) => {
-            setOpenPin({
-              open: true,
-              actionOnMatch: () => {
-                handleChangeProduct(e);
-              },
-            });
-          }}
-          id="changeProduct"
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{dialog.title}</DialogTitle>
-            </DialogHeader>
-            <FieldSet>
-              <FieldGroup>
-                <Field>
-                  <FieldLabel>Nama Produk</FieldLabel>
-                  <Input
-                    value={productDebt.name}
-                    required
-                    onChange={(e) => {
-                      setProductDebt((prev) => ({
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dialog.title}</DialogTitle>
+          </DialogHeader>
+          <FieldSet>
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Nama Produk</FieldLabel>
+                <Input
+                  value={productDebt.name}
+                  required
+                  onChange={(e) => {
+                    setProductDebt((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }));
+                  }}
+                />
+              </Field>
+              <Field>
+                <div className="flex justify-between items-center">
+                  <FieldLabel>HPP</FieldLabel>
+                </div>
+                <Input
+                  value={productDebt.hpp}
+                  required
+                  onChange={(e) => {
+                    setProductDebt((prev) => {
+                      const value = separateNumber(e);
+                      return {
                         ...prev,
-                        name: e.target.value,
-                      }));
-                    }}
-                  />
-                </Field>
-                <Field>
-                  <div className="flex justify-between items-center">
-                    <FieldLabel>HPP</FieldLabel>
-                  </div>
-                  <Input
-                    value={productDebt.hpp}
-                    required
-                    onChange={(e) => {
-                      setProductDebt((prev) => {
-                        const value = separateNumber(e);
-                        return {
-                          ...prev,
-                          hpp: value,
-                        };
-                      });
-                    }}
-                  />
-                </Field>
-              </FieldGroup>
-            </FieldSet>
-            <DialogFooter className="flex flex-row justify-end">
-              <DialogClose asChild>
-                <Button>Batal</Button>
-              </DialogClose>
-              <Button
-                className="bg-green-800"
-                type="submit"
-                form="changeProduct"
-              >
-                Simpan
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </form>
+                        hpp: value,
+                      };
+                    });
+                  }}
+                />
+              </Field>
+            </FieldGroup>
+          </FieldSet>
+          <DialogFooter className="flex flex-row justify-end">
+            <DialogClose asChild>
+              <Button>Batal</Button>
+            </DialogClose>
+            <Button
+              className="bg-green-800"
+              type="button"
+              onClick={handleChangeProduct}
+            >
+              Simpan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
 
       <AlertDialog
@@ -220,12 +208,17 @@ export default function ProductsDebt() {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={async () => {
-                await deleteProductDebt(idPToRemove);
-                setDialog((prev) => ({
-                  ...prev,
-                  confirmRemove: false,
-                }));
-                setIdPToRemove("");
+                setOpenPin({
+                  open: true,
+                  actionOnMatch: async () => {
+                    await deleteProductDebt(idPToRemove);
+                    setDialog((prev) => ({
+                      ...prev,
+                      confirmRemove: false,
+                    }));
+                    setIdPToRemove("");
+                  },
+                });
               }}
             >
               Lanjutkan

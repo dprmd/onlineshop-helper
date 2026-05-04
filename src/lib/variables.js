@@ -1,6 +1,5 @@
 export const config = {
-  syncLastSave: true,
-  updateProductDebt: true,
+  skipSecurity: true,
 };
 
 // Patungan Untuk Uang Harian Ema Iki

@@ -1,4 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogClose,
@@ -12,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useSecurity } from "@/context/SecurityContext";
 import { useWarehouse } from "@/context/WarehouseContext";
+import { formatDate } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -25,6 +32,7 @@ export default function Products() {
     name: "",
     isHaveVariant: false,
     variation: [],
+    batchRelation: [],
   };
   const [product, setProduct] = useState(initialProduct);
   const { setOpenPin } = useSecurity();
@@ -85,9 +93,9 @@ export default function Products() {
             Belum Menambahkan Produk Apapun
           </p>
         )}
-        <Link asChild to={"/warehouse"}>
-          <Button>Kembali</Button>
-        </Link>
+        <Button type="button" asChild>
+          <Link to={"/warehouse"}>Kembali</Link>
+        </Button>
         <Button
           onClick={() => {
             setProduct((prev) => ({
@@ -102,6 +110,8 @@ export default function Products() {
         >
           Tambah Produk
         </Button>
+
+        {/* Dialog Add Product */}
         <div>
           <Dialog
             open={product.dialogOpen}
@@ -218,6 +228,46 @@ export default function Products() {
             </DialogContent>
           </Dialog>
         </div>
+
+        {/* List Produk */}
+        {products.length > 0 && (
+          <ul>
+            {products.map((prod) => (
+              <li className="min-w-[380px] max-w-[380px]" key={prod.id}>
+                <Card>
+                  <CardContent>
+                    <CardHeader>
+                      <CardTitle>{prod.name}</CardTitle>
+                      <div>
+                        <p>ID Produk : {prod.id}</p>
+                        <p>Dibuat Pada : {formatDate(prod.createdAtMs)}</p>
+                        <p>
+                          Per Variasi : {prod.isHaveVariant ? "Ya" : "Tidak"}
+                        </p>
+                        {prod.isHaveVariant && (
+                          <Collapsible>
+                            <CollapsibleTrigger asChild>
+                              <p className="border px-2 py-1 my-1 rounded-xl max-w-fit hover:bg-gray-200 cursor-pointer">
+                                Banyak Variasi : {prod.variation.length} Variasi
+                              </p>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <ul className="px-2 py-1 border border-gray-200 rounded-xl">
+                                {prod.variation.map((variant) => (
+                                  <li key={variant.id}>- {variant.name}</li>
+                                ))}
+                              </ul>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        )}
+                      </div>
+                    </CardHeader>
+                  </CardContent>
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

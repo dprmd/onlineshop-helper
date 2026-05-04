@@ -387,7 +387,7 @@ const StepThree = () => {
       const payDebt = productDebt.map((debt) => {
         let tempDebt = debt;
         soldProducts.forEach((sold) => {
-          if (sold.identifier === debt.identifier) {
+          if (sold.id === debt.id) {
             tempDebt = {
               ...debt,
               remaining: debt.remaining - sold.sold,

@@ -82,9 +82,7 @@ export default function UpdateProductDebt() {
 
     setChoosedProduct((prev) => {
       return choosed.map((p) => {
-        const hasAddedBefore = prev.find(
-          (pc) => pc.identifier === p.identifier,
-        );
+        const hasAddedBefore = prev.find((pc) => pc.id === p.id);
         if (hasAddedBefore) {
           return hasAddedBefore;
         } else {
@@ -100,21 +98,28 @@ export default function UpdateProductDebt() {
     e.preventDefault();
 
     // sort terlebih dahulu
-    const debt = choosedProduct
-      .map((produk) => ({
-        identifier: produk.identifier,
-        name: produk.name,
-        hpp: produk.hpp,
-        remaining: Number(produk.remaining),
-      }))
-      .filter((produk) => produk.remaining > 0);
+    const debt = choosedProduct.map((produk) => ({
+      id: produk.id,
+      identifier: produk.identifier,
+      name: produk.name,
+      hpp: produk.hpp,
+      remaining: Number(produk.remaining),
+    }));
+    const removedZeroDebt = debt.filter((produk) => produk.remaining > 0);
+    const findZeroDebt = debt.map((d) => {
+      if (d.remaining === 0) {
+        return "yes";
+      } else {
+        return "no";
+      }
+    });
 
-    if (debt.length === 0) {
+    if (removedZeroDebt.length === 0 || findZeroDebt.includes("yes")) {
       toast.info("Mohon Masukan Jumlah Produk");
       return;
     }
 
-    setProductDebt([...debt]);
+    setProductDebt([...removedZeroDebt]);
     setConfirmChangeDialog(true);
   };
 
@@ -247,15 +252,15 @@ export default function UpdateProductDebt() {
                     {choosedProduct.map((produk) => (
                       <div
                         className="border px-2 py-3 flex gap-x-2 justify-between"
-                        key={produk.identifier}
+                        key={produk.id}
                       >
-                        <FieldLabel htmlFor={produk.identifier}>
+                        <FieldLabel htmlFor={produk.id}>
                           {produk.name}{" "}
                           <span className="text-[10px] text-gray-400">
                             <span>
                               {
                                 choosedSupplier?.productDebt.find(
-                                  (p) => p.identifier === produk.identifier,
+                                  (p) => p.id === produk.id,
                                 )?.remaining
                               }
                             </span>
@@ -269,7 +274,7 @@ export default function UpdateProductDebt() {
                             onChange={(e) => {
                               setChoosedProduct((prev) => {
                                 return prev.map((p) => {
-                                  if (p.identifier === produk.identifier) {
+                                  if (p.id === produk.id) {
                                     return {
                                       ...produk,
                                       remaining: e.target.value,
@@ -288,7 +293,7 @@ export default function UpdateProductDebt() {
                             onClick={() => {
                               setCloneProduk((prev) => {
                                 const notChoosed = prev.map((p) => {
-                                  if (p.identifier === produk.identifier) {
+                                  if (p.id === produk.id) {
                                     return {
                                       ...produk,
                                       checked: false,
@@ -306,9 +311,7 @@ export default function UpdateProductDebt() {
                                 return notChoosed;
                               });
                               setChoosedProduct((prev) => {
-                                return prev.filter(
-                                  (p) => p.identifier !== produk.identifier,
-                                );
+                                return prev.filter((p) => p.id !== produk.id);
                               });
                             }}
                           >
@@ -356,18 +359,18 @@ export default function UpdateProductDebt() {
                       <FieldGroup className="flex gap-y-1">
                         {notChoosedProduct.map((produk) => (
                           <Field
-                            key={produk.identifier}
+                            key={produk.id}
                             orientation="horizontal"
                             className="border py-3 px-2 rounded-md"
                           >
                             <Checkbox
-                              id={produk.identifier}
-                              name={produk.identifier}
+                              id={produk.id}
+                              name={produk.id}
                               checked={produk.checked}
                               onCheckedChange={(e) => {
                                 setCloneProduk((prev) => {
                                   return prev.map((p) => {
-                                    if (p.identifier === produk.identifier) {
+                                    if (p.id === produk.id) {
                                       return { ...p, checked: e };
                                     }
 
@@ -376,7 +379,7 @@ export default function UpdateProductDebt() {
                                 });
                                 setNotChoosedProduct((prev) => {
                                   return prev.map((p) => {
-                                    if (p.identifier === produk.identifier) {
+                                    if (p.id === produk.id) {
                                       return { ...p, checked: e };
                                     }
 
@@ -385,7 +388,7 @@ export default function UpdateProductDebt() {
                                 });
                               }}
                             />
-                            <FieldLabel htmlFor={produk.identifier}>
+                            <FieldLabel htmlFor={produk.id}>
                               {produk.name}
                               <span className="text-[10px] text-gray-400">
                                 {formatNumber(produk.hpp)}
@@ -451,7 +454,7 @@ export default function UpdateProductDebt() {
                                 {choosedProduct
                                   .filter((p) => p.remaining > 0)
                                   .map((p) => (
-                                    <span key={p.identifier} className="block">
+                                    <span key={p.id} className="block">
                                       {p.name} x {p.remaining}
                                     </span>
                                   ))}
