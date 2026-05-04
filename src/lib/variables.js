@@ -1,5 +1,5 @@
 export const config = {
-  skipSecurity: true,
+  skipSecurity: false,
 };
 
 // Patungan Untuk Uang Harian Ema Iki
