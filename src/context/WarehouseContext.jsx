@@ -145,11 +145,11 @@ export function WarehouseProvider({ children }) {
         cutResult: Number(result),
         onWarehouse: 0,
       },
-      time: {
+      time: [
         ...batch.time,
-        endCutting: now,
-        startSewing: now + 60 * 1000,
-      },
+        { name: "Selesai Di Potong", time: now },
+        { name: "Mulai Di Jahit", time: now + 60 * 1000 },
+      ],
       operationalCosts: {
         worker: [
           {
@@ -205,19 +205,19 @@ export function WarehouseProvider({ children }) {
     const updatedBatch = {
       ...batch,
       status: "toPack",
-      time: {
+      time: [
         ...batch.time,
-        endSewing: now,
-        startPacking: now + 60 * 1000,
-      },
+        { name: "Selesai Jahit", time: now },
+        { name: "Mulai Packing", time: now + 60 * 1000 },
+      ],
     };
 
     const { success, error, message } = await updateDocument(
-      `Menandai ${batch.productName}-${batch.id} Selesai Dijahit`,
+      `Menandai ${batch.productRelation.name}-${batch.id} Selesai Dijahit`,
       collectionName.productionHistory,
       batch.id,
       updatedBatch,
-      `Berhasil Menandai ${batch.productName}-${batch.id} Selesai Dijahit`,
+      `Berhasil Menandai ${batch.productRelation.name}-${batch.id} Selesai Dijahit`,
     );
 
     if (success) {
@@ -249,10 +249,10 @@ export function WarehouseProvider({ children }) {
         damaged: Number(qc.damaged),
         missing: Number(qc.missing),
       },
-      time: {
+      time: [
         ...batch.time,
-        endPacking: new Date().getTime(),
-      },
+        { name: "Selesai Packing", time: new Date().getTime() },
+      ],
     };
 
     const product = {

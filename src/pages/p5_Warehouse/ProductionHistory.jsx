@@ -345,12 +345,14 @@ export default function ProductionHistory() {
           <AlertDialogHeader>
             <AlertDialogTitle>Quantitas Produk Tidak Sama</AlertDialogTitle>
             <AlertDialogDescription>
-              <p>Jumlah Produk Yang Kamu Masukan Tidak Sama</p>
-              <p>
+              <span className="inline-block">
+                Jumlah Produk Yang Kamu Masukan Tidak Sama
+              </span>
+              <span className="inline-block">
                 Harus Ada Total{" "}
                 {formatNumber(alertDialog.batch?.stock?.cutResult)} Pcs
-              </p>
-              <p>Apa Mungkin Produk Hilang ?</p>
+              </span>
+              <span className="inline-block">Apa Mungkin Produk Hilang ?</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -403,7 +405,9 @@ export default function ProductionHistory() {
               {alertDialog.status === "completeCut" && "Di Potong"}{" "}
               {alertDialog.status === "completeSewing" && "Di Jahit"}
               {alertDialog.status === "completeSewing" && (
-                <p>Cek Juga Apakah Biaya Pembuatan Sudah Fix</p>
+                <span className="inline-block">
+                  Cek Juga Apakah Biaya Pembuatan Sudah Fix
+                </span>
               )}
               {alertDialog.status === "completePacking" && "Di Packing"}
             </AlertDialogDescription>
@@ -456,17 +460,17 @@ export default function ProductionHistory() {
           )}
           {alertDialog.status === "completePacking" && (
             <FieldSet>
-              <p className="text-sm text-gray-500">
+              <span className="inline-block text-sm text-gray-500">
                 Total Harus Ada{" "}
                 {formatNumber(alertDialog.batch?.stock?.cutResult)} Pcs
                 <br />
                 {alertDialog.qc.missing > 0 && (
-                  <p className="text-sm text-gray-500">
+                  <span className="inline-block text-sm text-gray-500">
                     Di Tandai Hilang {formatNumber(alertDialog.qc.missing)} Pcs
                     <i className="mx-1 bi bi-check-circle" />
-                  </p>
+                  </span>
                 )}
-              </p>
+              </span>
               <FieldGroup>
                 <Field>
                   <FieldLabel>Produk Lolos Quality Control</FieldLabel>
@@ -600,12 +604,12 @@ const getStatus = (batch) => {
     case "cutting":
       return {
         status: "Di Potong",
-        description: `Di Potong Pada ${formatTanggal(batch.time.startCutting)}`,
+        description: `Di Potong Pada ${formatTanggal(batch.time[0].startCutting)}`,
       };
     case "sewing":
       return {
         status: "Di Jahit",
-        description: `Di Jahit Pada ${formatTanggal(batch.time.startSewing)}`,
+        description: `Di Jahit Pada ${formatTanggal(batch.time[2].startSewing)}`,
       };
     case "toPack":
       return {
@@ -617,23 +621,6 @@ const getStatus = (batch) => {
         status: "Tidak Ada Informasi",
         description: "Tidak Ada Informasi",
       };
-  }
-};
-
-const getTimeKey = (key) => {
-  switch (key) {
-    case "startCutting":
-      return "Di Potong Pada";
-    case "endCutting":
-      return "Selesai Di Potong";
-    case "startSewing":
-      return "Mulai Jahit";
-    case "endSewing":
-      return "Selesai Jahit";
-    case "startPacking":
-      return "Mulai Packing";
-    case "endPacking":
-      return "Selesai Packing";
   }
 };
 
@@ -735,18 +722,16 @@ const BatchProductionCard = ({
               </div>
             </CollapsibleTrigger>
             <CollapsibleContent>
-              <ul>
-                {Object.entries(batch?.time)
-                  .sort((a, b) => a[1] - b[1])
-                  .map((time, i) => (
-                    <li
-                      key={i}
-                      className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500 flex justify-between items-center"
-                    >
-                      <p>{getTimeKey(time[0])}</p>
-                      <p>{formatDate(time[1])}</p>
-                    </li>
-                  ))}
+              <ul className="flex flex-col gap-y-2 py-1 text-gray-500">
+                {batch.time.map((time, i) => (
+                  <li
+                    className="flex items-center justify-between border px-2 py-1 rounded-lg"
+                    key={i}
+                  >
+                    <span>{time.name} :</span>{" "}
+                    <span>{formatDate(time.time)}</span>
+                  </li>
+                ))}
               </ul>
             </CollapsibleContent>
           </Collapsible>

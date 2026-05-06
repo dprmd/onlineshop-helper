@@ -68,9 +68,7 @@ export default function AddBatchProduction() {
         product.materials.reduce((acc, cur) => {
           return acc + raw(cur.price) * Number(cur.qty);
         }, 0) + shippingCost,
-      time: {
-        startCutting: new Date().getTime(),
-      },
+      time: [{ name: "Di Potong Pada", time: Date.now() }],
     };
 
     setOpenPin({
