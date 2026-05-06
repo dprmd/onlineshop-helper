@@ -53,6 +53,8 @@ export default function Supplier() {
   });
 
   const handleSaveSupplier = async (e) => {
+    e.preventDefault();
+
     await addNewSupplier({
       supplierName: dialogAddSupplier.supplierName,
       onSuccess: () => {

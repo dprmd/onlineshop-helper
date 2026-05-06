@@ -14,6 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDate } from "@/utils/generalFunction";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function DebtChanges() {
   const { debtChanges, getDebtChanges, getSupplierList } = useDebt();
@@ -37,8 +45,26 @@ export default function DebtChanges() {
   }, [whichSupplier]);
 
   return (
-    <div className="text-center flex flex-col gap-y-4">
-      <h3 className="font-bold text-xl">Daftar Perubahan Hutang Barang</h3>
+    <div className="text-center flex flex-col gap-y-4 justify-center items-center">
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Home</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/debt">Hutang Barang</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Riwayat Perubahan</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <div className="flex justify-center items-center">
         <Select
@@ -66,12 +92,6 @@ export default function DebtChanges() {
           <p className="my-2">Kosong</p>
         </div>
       ) : null}
-
-      <div>
-        <Button asChild>
-          <Link to="/debt">Kembali</Link>
-        </Button>
-      </div>
 
       <div className="flex flex-wrap justify-center items-center gap-4">
         {debtChangesList.map((debt, i) => (

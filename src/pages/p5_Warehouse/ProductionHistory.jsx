@@ -39,8 +39,6 @@ import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { useSecurity } from "@/context/SecurityContext";
 import { useWarehouse } from "@/context/WarehouseContext";
-import { createDocument } from "@/services/firebase/docService";
-import { collectionName } from "@/services/firebase/firebase";
 import {
   formatDate,
   formatNumber,
@@ -579,19 +577,17 @@ export default function ProductionHistory() {
       {/* List Riwayat Produksi */}
       <div>
         {productionHistory.length > 0 && (
-          <div>
-            <div className="flex flex-wrap gap-4 justify-center">
-              {productionHistory.map((batch) => (
-                <BatchProductionCard
-                  batch={batch}
-                  key={batch.id}
-                  markAsCompleteCut={markAsCompleteCut}
-                  markAsCompleteSewing={markAsCompleteSewing}
-                  markAsCompletePacking={markAsCompletePacking}
-                  openDialogAddCost={setEditedBatch}
-                />
-              ))}
-            </div>
+          <div className="flex flex-wrap gap-4 justify-center">
+            {productionHistory.map((batch) => (
+              <BatchProductionCard
+                batch={batch}
+                key={batch.id}
+                markAsCompleteCut={markAsCompleteCut}
+                markAsCompleteSewing={markAsCompleteSewing}
+                markAsCompletePacking={markAsCompletePacking}
+                openDialogAddCost={setEditedBatch}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -648,154 +644,161 @@ const BatchProductionCard = ({
   markAsCompletePacking,
   openDialogAddCost,
 }) => {
+  const getProductVariant = () => {
+    if (batch.productRelation.isHaveVariant) {
+      return batch.productRelation.variation.find(
+        (v) => v.id === batch.productVariantId,
+      ).name;
+    } else {
+      return null;
+    }
+  };
+
   return (
-    <>
-      <Card className="min-w-[380px] max-w-[380px] h-fit">
-        <CardHeader>
-          <CardTitle>
-            {batch.productName} - {batch.id}
-          </CardTitle>
-          <CardDescription>
-            <p>Status : {getStatus(batch).status}</p>
-            {batch.status !== "cutting" && (
-              <div>
-                <p>Hasil Potong : {batch.stock.cutResult} Pcs</p>
-                <p>HPP : Rp {formatNumber(batch.hpp)}</p>
-              </div>
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-y-2">
-            <Collapsible>
-              <CollapsibleTrigger>
-                <div className="border px-2 py-1 rounded-lg border-gray-300 cursor-pointer hover:bg-gray-100">
-                  Total Belanja Bahan : Rp {formatNumber(batch.totalFabricCost)}
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <ul>
-                  {batch.shippingCost !== 0 && (
-                    <li className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500">
-                      <p>
-                        Ongkos Kirim : Rp {formatNumber(batch.shippingCost)}
-                      </p>
-                    </li>
-                  )}
-                  {batch?.materials.map((material) => (
-                    <li
-                      key={material.id}
-                      className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500"
-                    >
-                      <p>Nama : {material.materialName}</p>
-                      <p>
-                        Qty : {material.qty} {material.type}
-                      </p>
-                      <p>
-                        Harga Per {material.type} : Rp{" "}
-                        {formatNumber(material.price)}
-                      </p>
-                      <p>Total : Rp {formatNumber(material.total)}</p>
-                    </li>
-                  ))}
-                </ul>
-              </CollapsibleContent>
-            </Collapsible>
-            {batch.status !== "cutting" && (
-              <Collapsible>
-                <CollapsibleTrigger>
-                  <div className="border px-2 py-1 rounded-lg border-gray-300 cursor-pointer hover:bg-gray-100">
-                    Biaya Pembuatan : Rp{" "}
-                    {formatNumber(batch.operationalCosts.total)}
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <ul className="px-2 py-1 rounded-xl border my-1">
-                    {batch.operationalCosts.worker.map((w, i) => (
-                      <li key={i}>
-                        - {w.role} : Rp {formatNumber(w.payment)}
-                      </li>
-                    ))}
-                    <li>
-                      - Packing : Rp{" "}
-                      {formatNumber(batch.operationalCosts.packingCost)}
-                    </li>
-                  </ul>
-                </CollapsibleContent>
-              </Collapsible>
-            )}
-            <Collapsible>
-              <CollapsibleTrigger>
-                <div className="border px-2 py-1 rounded-lg border-gray-300 cursor-pointer hover:bg-gray-100">
-                  Informasi Waktu
-                </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <ul>
-                  {Object.entries(batch?.time)
-                    .sort((a, b) => a[1] - b[1])
-                    .map((time, i) => (
-                      <li
-                        key={i}
-                        className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500 flex justify-between items-center"
-                      >
-                        <p>{getTimeKey(time[0])}</p>
-                        <p>{formatDate(time[1])}</p>
-                      </li>
-                    ))}
-                </ul>
-              </CollapsibleContent>
-            </Collapsible>
-          </div>
-        </CardContent>
-        <CardFooter>
-          {batch.status === "cutting" && (
-            <Button
-              className="bg-green-700 hover:bg-green-600"
-              onClick={() => markAsCompleteCut(batch)}
-              key={1}
-            >
-              Tandai Selesai Di Potong <i className="bi bi-check-circle" />{" "}
-            </Button>
-          )}
-          {batch.status === "sewing" && (
+    <Card className="min-w-[380px] max-w-[380px] h-fit">
+      <CardHeader>
+        <CardTitle>
+          {batch.productRelation.id}{" "}
+          {getProductVariant() && `- ${getProductVariant()}`}
+        </CardTitle>
+        <CardDescription>
+          <p>Status : {getStatus(batch).status}</p>
+          {batch.status !== "cutting" && (
             <div>
-              <Button
-                className="bg-green-700 hover:bg-green-600"
-                onClick={() => {
-                  openDialogAddCost((prev) => ({
-                    ...prev,
-                    openAddCost: true,
-                    batchId: batch.id,
-                  }));
-                }}
-                key={2}
-              >
-                <i className="bi bi-plus-circle" />
-                Biaya Pembuatan
-              </Button>
-              <Button
-                className="bg-orange-700 hover:bg-orange-600"
-                onClick={() => markAsCompleteSewing(batch)}
-                key={3}
-              >
-                <i className="bi bi-check-circle" />
-                Selesai Di Jahit{" "}
-              </Button>
+              <p>Hasil Potong : {batch.stock.cutResult} Pcs</p>
+              <p>HPP : Rp {formatNumber(batch.hpp)}</p>
             </div>
           )}
-          {batch.status === "toPack" && (
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-y-2">
+          <Collapsible>
+            <CollapsibleTrigger>
+              <div className="border px-2 py-1 rounded-lg border-gray-300 cursor-pointer hover:bg-gray-100">
+                Total Belanja Bahan : Rp {formatNumber(batch.totalFabricCost)}
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <ul>
+                {batch.shippingCost !== 0 && (
+                  <li className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500">
+                    <p>Ongkos Kirim : Rp {formatNumber(batch.shippingCost)}</p>
+                  </li>
+                )}
+                {batch?.materials.map((material) => (
+                  <li
+                    key={material.id}
+                    className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500"
+                  >
+                    <p>Nama : {material.materialName}</p>
+                    <p>
+                      Qty : {material.qty} {material.type}
+                    </p>
+                    <p>
+                      Harga Per {material.type} : Rp{" "}
+                      {formatNumber(material.price)}
+                    </p>
+                    <p>Total : Rp {formatNumber(material.total)}</p>
+                  </li>
+                ))}
+              </ul>
+            </CollapsibleContent>
+          </Collapsible>
+          {batch.status !== "cutting" && (
+            <Collapsible>
+              <CollapsibleTrigger>
+                <div className="border px-2 py-1 rounded-lg border-gray-300 cursor-pointer hover:bg-gray-100">
+                  Biaya Pembuatan : Rp{" "}
+                  {formatNumber(batch.operationalCosts.total)}
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <ul className="px-2 py-1 rounded-xl border my-1">
+                  {batch.operationalCosts.worker.map((w, i) => (
+                    <li key={i}>
+                      - {w.role} : Rp {formatNumber(w.payment)}
+                    </li>
+                  ))}
+                  <li>
+                    - Packing : Rp{" "}
+                    {formatNumber(batch.operationalCosts.packingCost)}
+                  </li>
+                </ul>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+          <Collapsible>
+            <CollapsibleTrigger>
+              <div className="border px-2 py-1 rounded-lg border-gray-300 cursor-pointer hover:bg-gray-100">
+                Informasi Waktu
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <ul>
+                {Object.entries(batch?.time)
+                  .sort((a, b) => a[1] - b[1])
+                  .map((time, i) => (
+                    <li
+                      key={i}
+                      className="px-2 py-1 my-1 border-1 border-gray-200 rounded-lg text-gray-500 flex justify-between items-center"
+                    >
+                      <p>{getTimeKey(time[0])}</p>
+                      <p>{formatDate(time[1])}</p>
+                    </li>
+                  ))}
+              </ul>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </CardContent>
+      <CardFooter>
+        {batch.status === "cutting" && (
+          <Button
+            className="bg-green-700 hover:bg-green-600"
+            onClick={() => markAsCompleteCut(batch)}
+            key={1}
+          >
+            Tandai Selesai Di Potong <i className="bi bi-check-circle" />{" "}
+          </Button>
+        )}
+        {batch.status === "sewing" && (
+          <div>
             <Button
-              className="bg-cyan-600"
-              key={4}
-              onClick={() => markAsCompletePacking(batch)}
+              className="bg-green-700 hover:bg-green-600"
+              onClick={() => {
+                openDialogAddCost((prev) => ({
+                  ...prev,
+                  openAddCost: true,
+                  batchId: batch.id,
+                }));
+              }}
+              key={2}
+            >
+              <i className="bi bi-plus-circle" />
+              Biaya Pembuatan
+            </Button>
+            <Button
+              className="bg-orange-700 hover:bg-orange-600"
+              onClick={() => markAsCompleteSewing(batch)}
+              key={3}
             >
               <i className="bi bi-check-circle" />
-              Tandai Selesai Di Packing
+              Selesai Di Jahit{" "}
             </Button>
-          )}
-        </CardFooter>
-      </Card>
-    </>
+          </div>
+        )}
+        {batch.status === "toPack" && (
+          <Button
+            className="bg-cyan-600"
+            key={4}
+            onClick={() => markAsCompletePacking(batch)}
+          >
+            <i className="bi bi-check-circle" />
+            Tandai Selesai Di Packing
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 };

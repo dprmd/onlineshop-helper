@@ -33,7 +33,6 @@ import { useSecurity } from "@/context/SecurityContext";
 import { formatNumber, separateNumber } from "@/utils/generalFunction";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { toast } from "sonner";
 
 export default function ProductsDebt() {
   const {
@@ -102,7 +101,7 @@ export default function ProductsDebt() {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center items-center gap-y-2">
+    <div className="flex flex-col justify-center items-center gap-y-4">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>

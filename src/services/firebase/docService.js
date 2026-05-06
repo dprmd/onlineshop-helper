@@ -8,6 +8,7 @@ import {
   limit,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   Timestamp,
@@ -21,17 +22,34 @@ export const createDocumentById = async (
   docId,
   document,
   messageOnSucces,
+  customTime = false,
+  customMS = Date.now(),
 ) => {
+  const createdAtMs = customTime ? customMS : Date.now();
   try {
-    console.log(
-      `Dev Only | Operation : Create To Replace , Operation Name : ${operationName}`,
-    );
+    console.log(`Operation : Create , Operation Name : ${operationName}`);
 
-    await setDoc(doc(db, collectionName, docId), { ...document });
+    await runTransaction(db, async (transaction) => {
+      const ref = doc(db, collectionName, docId);
+      const snap = await transaction.get(ref);
+
+      if (snap.exists()) {
+        throw "SKU Sudah Ada!";
+      }
+
+      transaction.set(ref, {
+        ...document,
+        createdAt: customTime
+          ? Timestamp.fromMillis(customMS)
+          : serverTimestamp(),
+        createdAtMs,
+      });
+    });
 
     return {
       success: true,
       message: messageOnSucces,
+      createdAtMs,
     };
   } catch (error) {
     return {
@@ -109,7 +127,7 @@ export const updateDocument = async (
 ) => {
   try {
     console.log(`Operation : Update , Operation Name : ${operationName}`);
-    await setDoc(doc(db, collectionName, docId), newDocument, { merge: false });
+    await setDoc(doc(db, collectionName, docId), newDocument, { merge: true });
 
     return {
       success: true,

@@ -1,3 +1,4 @@
+import { useSecurity } from "@/context/SecurityContext";
 import { useUI } from "@/context/UIContext";
 import { collectionName } from "@/services/firebase/firebase";
 import { isEqual } from "lodash";
@@ -13,7 +14,6 @@ import {
   updateDocument,
 } from "../services/firebase/docService";
 import { raw, toCamelCase } from "../utils/generalFunction";
-import { useSecurity } from "@/context/SecurityContext";
 
 const DebtContext = createContext();
 
@@ -330,20 +330,26 @@ export function DebtProvider({ children }) {
   const addProductDebt = async ({ productDebt, onSuccess = () => {} }) => {
     setLoading(true);
 
+    const newProductDebt = {
+      ...productDebt,
+      identifier: toCamelCase(productDebt.name),
+      hpp: raw(productDebt.hpp),
+    };
+
+    const isProductNameExist = productsDebt.find(
+      (p) => p.identifier === newProductDebt.identifier,
+    );
+
     if (!productDebt.name) {
       toast.warning("Isi Nama Produk");
     } else if (!productDebt.hpp) {
       toast.warning("Isi HPP Produk");
+    } else if (isProductNameExist) {
+      toast.warning("Nama Produk Sudah Ada, Gunakan Nama Lain");
     } else {
       setOpenPin({
         open: true,
         actionOnMatch: async () => {
-          const newProductDebt = {
-            ...productDebt,
-            identifier: toCamelCase(productDebt.name),
-            hpp: raw(productDebt.hpp),
-          };
-
           const { docId, success, error, message, createdAtMs } =
             await createDocument(
               "Menambahkan Produk Baru",

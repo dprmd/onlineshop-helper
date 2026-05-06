@@ -1,6 +1,7 @@
 import { useUI } from "@/context/UIContext";
 import {
   createDocument,
+  createDocumentById,
   getDocuments,
   updateDocument,
 } from "@/services/firebase/docService";
@@ -58,9 +59,10 @@ export function WarehouseProvider({ children }) {
   const addNewProduct = async (product) => {
     setLoading(true);
     const { success, error, message, docId, createdAtMs } =
-      await createDocument(
+      await createDocumentById(
         "Tambah Produk Baru",
         collectionName.myProducts,
+        product.baseSKU,
         product,
         "Berhasil Menambahkan Produk",
       );
@@ -255,7 +257,7 @@ export function WarehouseProvider({ children }) {
 
     const product = {
       id: updatedBatch.id,
-      productName: updatedBatch.productName,
+      productName: updatedBatch.productRelation.name,
       hpp: updatedBatch.hpp,
       stockInfo: {
         total: updatedBatch.stock.cutResult,
