@@ -38,6 +38,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useDebt } from "../../context/DebtContext";
+import { formatNumber } from "@/utils/generalFunction";
 
 export default function Supplier() {
   const { supplier, addNewSupplier, deleteSupplier, getSupplierList } =
@@ -121,17 +122,17 @@ export default function Supplier() {
       {supplier.length > 0 && (
         <div className="text-center">
           <div className="flex gap-2 flex-wrap justify-center">
-            {supplier.map((supplier) => (
-              <Card key={supplier.id} className="min-w-[380px]">
+            {supplier.map((supp) => (
+              <Card key={supp.id} className="min-w-[380px]">
                 <CardHeader>
                   <div>
-                    <p>Nama : {supplier.name}</p>
-                    {supplier.productDebt.length === 0 && (
+                    <p>Nama : {supp.name}</p>
+                    {supp.productDebt.length === 0 && (
                       <p className="text-[12px] text-gray-400">
                         Anda Belum Mempunyai Hutang Ke Supplier Ini
                       </p>
                     )}
-                    {supplier.productDebt.length > 0 && (
+                    {supp.productDebt.length > 0 && (
                       <>
                         <p className="text-gray-500">Daftar Hutang Barang</p>
                         <i className="bi bi-arrow-down text-[10px]"></i>
@@ -140,11 +141,21 @@ export default function Supplier() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {supplier.productDebt.map((barang) => (
-                    <p className="text-[12px] text-gray-400" key={barang.id}>
-                      {barang.name} {barang.remaining} Pcs
-                    </p>
-                  ))}
+                  <div>
+                    {supp.productDebt.map((barang) => (
+                      <p className="text-[12px] text-gray-400" key={barang.id}>
+                        {barang.name} {barang.remaining} Pcs
+                      </p>
+                    ))}
+                  </div>
+                  <p className="my-2 text-[13px] text-gray-600">
+                    Total Hutang Barang : Rp{" "}
+                    {formatNumber(
+                      supp.productDebt.reduce((acc, cur) => {
+                        return acc + cur.remaining * cur.hpp;
+                      }, 0),
+                    )}
+                  </p>
                 </CardContent>
                 <CardFooter className="flex justify-center items-center">
                   <Button
@@ -154,7 +165,7 @@ export default function Supplier() {
                     onClick={() => {
                       setDialogDeleteSupplier({
                         open: true,
-                        supplierId: supplier.id,
+                        supplierId: supp.id,
                       });
                     }}
                   >

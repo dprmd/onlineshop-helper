@@ -255,20 +255,8 @@ export function WarehouseProvider({ children }) {
       ],
     };
 
-    const product = {
-      id: updatedBatch.id,
-      productName: updatedBatch.productRelation.name,
-      hpp: updatedBatch.hpp,
-      stockInfo: {
-        total: updatedBatch.stock.cutResult,
-        ready: updatedBatch.stock.onWarehouse,
-        damaged: updatedBatch.stock.damaged,
-        missing: updatedBatch.stock.missing,
-      },
-      time: { ...updatedBatch.time },
-    };
-
-    console.log(product);
+    // Update Batch
+    // Update Stock Produk
   };
 
   const addProductionCost = async (batch) => {
