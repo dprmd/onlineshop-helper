@@ -8,6 +8,7 @@ import DebtChanges from "@/pages/p4_Debt/DebtChanges";
 import AddBatchProduction from "@/pages/p5_Warehouse/AddBatchProduction";
 import ProductionHistory from "@/pages/p5_Warehouse/ProductionHistory";
 import Products from "@/pages/p5_Warehouse/Products";
+import StockChanges from "@/pages/p5_Warehouse/StockChanges";
 import Warehouse from "@/pages/p5_Warehouse/Warehouse";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { IncomeAllocationProvider } from "./context/IncomeAllocationContext";
@@ -76,6 +77,7 @@ const router = createHashRouter([
           { path: "productionHistory", element: <ProductionHistory /> },
           { path: "addBatchProduction", element: <AddBatchProduction /> },
           { path: "products", element: <Products /> },
+          { path: "stockChanges", element: <StockChanges /> },
         ],
       },
     ],

@@ -27,49 +27,89 @@ export function WarehouseProvider({ children }) {
   const [isFetchingProductionHistory, setIsFetchingProductionHistory] =
     useState(false);
 
-  const getProductList = async () => {
-    if (isFetchingProducts || isProductsFetched) return;
+  // Stock Changes State
+  const [stockChanges, setStockChanges] = useState([]);
+  const [isStockChangesFetched, setIsStockChangesFetched] = useState(false);
+  const [isFetchingStockChanges, setIsFetchingStockChanges] = useState(false);
 
-    setIsFetchingProducts(true);
+  const getStockChanges = async () => {
+    if (isStockChangesFetched || isFetchingStockChanges) return;
+
     setLoading(true);
+    setIsFetchingStockChanges(true);
 
-    const {
-      data: productList,
-      success,
-      error,
-      message,
-    } = await getDocuments(
-      "Ambil List Produk Saya",
-      collectionName.myProducts,
+    const { success, error, message, data } = await getDocuments(
+      "Mengambil Riwayat Perubahan Stok",
+      collectionName.stockChanges,
       "newToOld",
+      { limit: true, howMuch: 30 },
     );
 
     if (success) {
-      setProducts([...productList]);
-      setIsProductsFetched(true);
+      setStockChanges([...data]);
+      console.log(data);
     } else {
       toast.error(message);
       console.log(error);
     }
 
+    setIsFetchingStockChanges(false);
     setLoading(false);
-    setIsFetchingProducts(false);
+  };
+
+  const getProductList = async (force = false) => {
+    const getNow = async () => {
+      setIsFetchingProducts(true);
+      setLoading(true);
+
+      const {
+        data: productList,
+        success,
+        error,
+        message,
+      } = await getDocuments(
+        "Ambil List Produk Saya",
+        collectionName.myProducts,
+        "newToOld",
+      );
+
+      if (success) {
+        setProducts([...productList]);
+        setIsProductsFetched(true);
+      } else {
+        toast.error(message);
+        console.log(error);
+      }
+
+      setLoading(false);
+      setIsFetchingProducts(false);
+    };
+
+    if (force) {
+      getNow();
+    } else {
+      if (isFetchingProducts || isProductsFetched) return;
+      else {
+        getNow();
+      }
+    }
   };
 
   const addNewProduct = async (product) => {
+    const productId = product.baseSKU;
+
     setLoading(true);
-    const { success, error, message, docId, createdAtMs } =
-      await createDocumentById(
-        "Tambah Produk Baru",
-        collectionName.myProducts,
-        product.baseSKU,
-        product,
-        "Berhasil Menambahkan Produk",
-      );
+    const { success, error, message, createdAtMs } = await createDocumentById(
+      "Tambah Produk Baru",
+      collectionName.myProducts,
+      productId,
+      product,
+      "Berhasil Menambahkan Produk",
+    );
 
     if (success) {
       setProducts((prev) => {
-        return [{ id: docId, createdAtMs, ...product }, ...prev];
+        return [{ id: productId, createdAtMs, ...product }, ...prev];
       });
       toast.success(message);
     } else {
@@ -200,6 +240,10 @@ export function WarehouseProvider({ children }) {
   const completeSewing = async (batch) => {
     setLoading(true);
 
+    const productRelation = products.find(
+      (p) => p.id === batch.productRelationId,
+    );
+
     const now = new Date().getTime();
 
     const updatedBatch = {
@@ -213,11 +257,11 @@ export function WarehouseProvider({ children }) {
     };
 
     const { success, error, message } = await updateDocument(
-      `Menandai ${batch.productRelation.name}-${batch.id} Selesai Dijahit`,
+      `Menandai ${productRelation.id}-${batch.id} Selesai Dijahit`,
       collectionName.productionHistory,
       batch.id,
       updatedBatch,
-      `Berhasil Menandai ${batch.productRelation.name}-${batch.id} Selesai Dijahit`,
+      `Berhasil Menandai ${productRelation.id}-${batch.id} Selesai Dijahit`,
     );
 
     if (success) {
@@ -240,6 +284,12 @@ export function WarehouseProvider({ children }) {
   };
 
   const completePacking = async (batch, qc) => {
+    const batchId = batch.id;
+    const skuId = batch.productRelationId;
+    const variantId = batch.productVariantId;
+
+    const productRelation = products.find((p) => p.id === skuId);
+
     const updatedBatch = {
       ...batch,
       status: "ready",
@@ -256,7 +306,65 @@ export function WarehouseProvider({ children }) {
     };
 
     // Update Batch
+    const { success, error, message } = await updateDocument(
+      `Menandai ${skuId}-${batch.id} Selesai Di Packing`,
+      collectionName.productionHistory,
+      updatedBatch.id,
+      updatedBatch,
+      `Berhasil Menandai ${skuId}-${batch.id} Selesai Di Packing`,
+    );
+
+    if (success) {
+      setProductionHistory((prev) => {
+        return prev.map((b) => {
+          if (b.id === updatedBatch.id) {
+            return updatedBatch;
+          } else {
+            return b;
+          }
+        });
+      });
+      toast.success(message);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
     // Update Stock Produk
+    const getNewStock = () => {
+      if (productRelation.isHaveVariant) {
+        return {
+          ...productRelation,
+          variation: productRelation.variation.map((p) => {
+            if (p.id === variantId) {
+              console.log(p.stock.ready + updatedBatch.stock.onWarehouse);
+              return {
+                ...p,
+                stock: {
+                  ready: p.stock.ready + updatedBatch.stock.onWarehouse,
+                  damaged: p.stock.damaged + updatedBatch.stock.damaged,
+                  missing: p.stock.missing + updatedBatch.stock.missing,
+                },
+              };
+            } else {
+              return p;
+            }
+          }),
+        };
+      } else {
+        console.log("Produk Ini Tidak Punya Variant");
+      }
+    };
+
+    const {} = await updateDocument(
+      `Menambahkan Stok Ke Produk ${skuId}, Ready: ${updatedBatch.stock.onWarehouse}, Cacat: ${updatedBatch.stock.damaged}, Hilang: ${updatedBatch.stock.missing}`,
+      collectionName.myProducts,
+      skuId,
+      getNewStock(),
+      `Berhasil Menambahkan Stok Ke Produk ${skuId}, Ready: ${updatedBatch.stock.onWarehouse}, Cacat: ${updatedBatch.stock.damaged}, Hilang: ${updatedBatch.stock.missing}`,
+    );
+
+    getProductList(true);
   };
 
   const addProductionCost = async (batch) => {
@@ -339,6 +447,8 @@ export function WarehouseProvider({ children }) {
         products,
         getProductList,
         addNewProduct,
+        stockChanges,
+        getStockChanges,
       }}
     >
       {children}

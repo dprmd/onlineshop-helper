@@ -11,12 +11,16 @@ import { Link } from "react-router-dom";
 
 const link = [
   {
+    buttonName: "List Produk",
+    destination: "/warehouse/products",
+  },
+  {
     buttonName: "Riwayat Produksi",
     destination: "/warehouse/productionHistory",
   },
   {
-    buttonName: "List Produk",
-    destination: "/warehouse/products",
+    buttonName: "Riwayat Perubahan Stok",
+    destination: "/warehouse/stockChanges",
   },
 ];
 

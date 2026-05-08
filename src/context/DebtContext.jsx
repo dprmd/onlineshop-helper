@@ -145,7 +145,10 @@ export function DebtProvider({ children }) {
     });
   };
 
-  const getDebtChanges = async (supplierId) => {
+  const getDebtChanges = async (
+    supplierId,
+    limitOffPage = { limit: false, howMuch: 7 },
+  ) => {
     if (!supplierId) return;
 
     const getNow = async () => {
@@ -156,7 +159,7 @@ export function DebtProvider({ children }) {
         data: debtChanges,
         error,
         message,
-      } = await getDebtChangeBySupplierId(supplierId, "newToOld");
+      } = await getDebtChangeBySupplierId(supplierId, "newToOld", limitOffPage);
 
       if (success) {
         setDebtChanges((prev) => {

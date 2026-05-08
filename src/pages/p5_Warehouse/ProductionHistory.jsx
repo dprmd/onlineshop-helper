@@ -45,6 +45,7 @@ import {
   formatTanggal,
   separateNumber,
 } from "@/utils/generalFunction";
+import { useMemo } from "react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -57,6 +58,8 @@ export default function ProductionHistory() {
     completeSewing,
     completePacking,
     addProductionCost,
+    products,
+    getProductList,
   } = useWarehouse();
   const { setOpenPin } = useSecurity();
   const [alertDialogMissingProduct, setAlertDialogMissingProduct] =
@@ -172,6 +175,7 @@ export default function ProductionHistory() {
 
   useEffect(() => {
     getProductionHistory();
+    getProductList();
   }, []);
 
   return (
@@ -394,7 +398,11 @@ export default function ProductionHistory() {
       <AlertDialog
         open={alertDialog.open}
         onOpenChange={(v) => {
-          setAlertDialog((prev) => ({ ...prev, open: v }));
+          if (!v) {
+            setAlertDialog({ ...initialAlertDialog });
+          } else {
+            setAlertDialog((prev) => ({ ...prev, open: v }));
+          }
         }}
       >
         <AlertDialogContent>
@@ -590,6 +598,7 @@ export default function ProductionHistory() {
                 markAsCompleteSewing={markAsCompleteSewing}
                 markAsCompletePacking={markAsCompletePacking}
                 openDialogAddCost={setEditedBatch}
+                products={products}
               />
             ))}
           </div>
@@ -630,10 +639,15 @@ const BatchProductionCard = ({
   markAsCompleteSewing,
   markAsCompletePacking,
   openDialogAddCost,
+  products,
 }) => {
+  const productRelation = useMemo(() => {
+    return products.find((p) => p.id === batch.productRelationId);
+  }, []);
+
   const getProductVariant = () => {
-    if (batch.productRelation.isHaveVariant) {
-      return batch.productRelation.variation.find(
+    if (productRelation.isHaveVariant) {
+      return productRelation.variation.find(
         (v) => v.id === batch.productVariantId,
       ).name;
     } else {
@@ -645,7 +659,7 @@ const BatchProductionCard = ({
     <Card className="min-w-[380px] max-w-[380px] h-fit">
       <CardHeader>
         <CardTitle>
-          {batch.productRelation.id}{" "}
+          {productRelation.id}{" "}
           {getProductVariant() && `- ${getProductVariant()}`}
         </CardTitle>
         <CardDescription>

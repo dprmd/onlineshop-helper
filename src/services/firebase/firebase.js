@@ -25,6 +25,7 @@ export const collectionName = {
   allTimeDocId: "CatatanPenghasilanAllTime",
   productsDebt: "produkHutang",
   myProducts: "produkSaya",
+  stockChanges: "riwayatPerubahanStok",
   productionHistory: "riwayatProduksi",
   supplier: "supplier",
   debtChanges: "riwayatPerubahanHutang",

@@ -55,8 +55,8 @@ export default function AddBatchProduction() {
     const shippingCost = product.shippingCost ? raw(product.shippingCost) : 0;
     const batch = {
       status: "cutting",
-      productRelation: whichProduct,
       productVariantId: product.productVariantId,
+      productRelationId: product.productRelationId,
       shippingCost,
       materials: product.materials.map((m) => ({
         ...m,

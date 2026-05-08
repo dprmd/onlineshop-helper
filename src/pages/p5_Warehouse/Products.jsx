@@ -280,7 +280,11 @@ export default function Products() {
                           ...prev,
                           variation: [
                             ...prev.variation,
-                            { id: uuidv7(), name: "" },
+                            {
+                              id: uuidv7(),
+                              name: "",
+                              stock: { ready: 0, damaged: 0, missing: 0 },
+                            },
                           ],
                         }));
                       }}
@@ -322,9 +326,22 @@ export default function Products() {
                             </p>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
-                            <ul className="px-2 py-1 border border-gray-200 rounded-xl">
+                            <ul className="px-2 py-2 border border-gray-200 rounded-md flex flex-col gap-y-2">
                               {prod.variation.map((variant) => (
-                                <li key={variant.id}>- {variant.name}</li>
+                                <li
+                                  key={variant.id}
+                                  className="border rounded-md px-2 py-1 flex flex-col text-gray-500"
+                                >
+                                  <span>Nama Variasi : {variant.name}</span>
+                                  <span>Informasi Stock</span>
+                                  <span>- Ready {variant.stock.ready} Pcs</span>
+                                  <span>
+                                    - Cacat {variant.stock.damaged} Pcs
+                                  </span>
+                                  <span>
+                                    - Hilang {variant.stock.missing} Pcs
+                                  </span>
+                                </li>
                               ))}
                             </ul>
                           </CollapsibleContent>

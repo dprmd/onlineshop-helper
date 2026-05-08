@@ -172,7 +172,15 @@ export const getDocument = async (
   }
 };
 
-export const getDocuments = async (operationName, collectionName, order) => {
+export const getDocuments = async (
+  operationName,
+  collectionName,
+  order,
+  limitOffPage = {
+    limit: false,
+    howMuch: 7,
+  },
+) => {
   const orderChoice = {
     newToOld: "desc",
     oldToNew: "asc",
@@ -180,12 +188,22 @@ export const getDocuments = async (operationName, collectionName, order) => {
 
   try {
     console.log(`Operation : Read , Operation Name : ${operationName}`);
-    const q = query(
-      collection(db, collectionName),
-      orderBy("createdAtMs", orderChoice[order]),
-    );
+    const getQuery = () => {
+      if (limitOffPage.limit) {
+        return query(
+          collection(db, collectionName),
+          orderBy("createdAtMs", orderChoice[order]),
+          limit(limitOffPage.howMuch),
+        );
+      } else {
+        return query(
+          collection(db, collectionName),
+          orderBy("createdAtMs", orderChoice[order]),
+        );
+      }
+    };
 
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(getQuery());
 
     const result = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -364,7 +382,14 @@ export const deleteCollection = async (collectionName) => {
   console.log("Collection berhasil dihapus");
 };
 
-export const getDebtChangeBySupplierId = async (supplierId, order) => {
+export const getDebtChangeBySupplierId = async (
+  supplierId,
+  order,
+  limitOffPage = {
+    limit: false,
+    howMuch: 7,
+  },
+) => {
   const orderChoice = {
     newToOld: "desc",
     oldToNew: "asc",
@@ -374,12 +399,22 @@ export const getDebtChangeBySupplierId = async (supplierId, order) => {
     console.log(
       `Operation : Read , Operation Name : Get Daftar Perubahan Hutang Dari Supplier ${supplierId}`,
     );
-    const q = query(
-      collection(db, `${collectionName.debtChanges}-${supplierId}`),
-      orderBy("createdAtMs", orderChoice[order]),
-    );
+    const getQuery = () => {
+      if (limitOffPage.limit) {
+        return query(
+          collection(db, `${collectionName.debtChanges}-${supplierId}`),
+          orderBy("createdAtMs", orderChoice[order]),
+          limit(limitOffPage.howMuch),
+        );
+      } else {
+        return query(
+          collection(db, `${collectionName.debtChanges}-${supplierId}`),
+          orderBy("createdAtMs", orderChoice[order]),
+        );
+      }
+    };
 
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocs(getQuery());
 
     const result = snapshot.docs.map((doc) => ({
       id: doc.id,
