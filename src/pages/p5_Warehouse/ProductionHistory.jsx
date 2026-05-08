@@ -74,8 +74,8 @@ export default function ProductionHistory() {
     qc: {
       quota: 0,
       qcPassed: 0,
-      damaged: 0,
-      missing: 0,
+      defect: 0,
+      lost: 0,
     },
   };
   const [alertDialog, setAlertDialog] = useState(initialAlertDialog);
@@ -154,13 +154,13 @@ export default function ProductionHistory() {
   const handleCompletePacking = () => {
     const totalMustBe = alertDialog.batch.stock.cutResult;
     const qcPassed = Number(alertDialog.qc.qcPassed);
-    const damaged = Number(alertDialog.qc.damaged);
-    const checkTotal = qcPassed + damaged === totalMustBe;
-    const missingMarked = Number(alertDialog.qc.missing) > 0;
+    const defect = Number(alertDialog.qc.defect);
+    const checkTotal = qcPassed + defect === totalMustBe;
+    const markAsLost = Number(alertDialog.qc.lost) > 0;
 
     if (qcPassed === 0) {
       toast.warning("Mohon Masukan Jumlah Produk Yang Lolos Quality Control");
-    } else if (!checkTotal && !missingMarked) {
+    } else if (!checkTotal && !markAsLost) {
       setAlertDialogMissingProduct(true);
     } else {
       setOpenPin({
@@ -374,14 +374,14 @@ export default function ProductionHistory() {
               onClick={() => {
                 const totalMustBe = alertDialog.batch.stock.cutResult;
                 const qcPassed = Number(alertDialog.qc.qcPassed);
-                const damaged = Number(alertDialog.qc.damaged);
-                const merged = qcPassed + damaged;
+                const defect = Number(alertDialog.qc.defect);
+                const merged = qcPassed + defect;
 
                 setAlertDialog((prev) => ({
                   ...prev,
                   qc: {
                     ...prev.qc,
-                    missing: totalMustBe - merged,
+                    lost: totalMustBe - merged,
                   },
                 }));
 
@@ -472,9 +472,9 @@ export default function ProductionHistory() {
                 Total Harus Ada{" "}
                 {formatNumber(alertDialog.batch?.stock?.cutResult)} Pcs
                 <br />
-                {alertDialog.qc.missing > 0 && (
+                {alertDialog.qc.lost > 0 && (
                   <span className="inline-block text-sm text-gray-500">
-                    Di Tandai Hilang {formatNumber(alertDialog.qc.missing)} Pcs
+                    Di Tandai Hilang {formatNumber(alertDialog.qc.lost)} Pcs
                     <i className="mx-1 bi bi-check-circle" />
                   </span>
                 )}
@@ -490,8 +490,8 @@ export default function ProductionHistory() {
                       let updatedQuota = 0;
                       const realQuota = alertDialog.batch.stock.cutResult;
                       const value = Number(e.target.value);
-                      const damaged = Number(alertDialog.qc.damaged);
-                      const alocatedQuota = realQuota - damaged;
+                      const defect = Number(alertDialog.qc.defect);
+                      const alocatedQuota = realQuota - defect;
 
                       if (value > alocatedQuota) {
                         newValue = alocatedQuota;
@@ -506,7 +506,7 @@ export default function ProductionHistory() {
                           ...prev.qc,
                           qcPassed: newValue,
                           quota: updatedQuota,
-                          missing: 0,
+                          lost: 0,
                         },
                       }));
                     }}
@@ -515,7 +515,7 @@ export default function ProductionHistory() {
                 <Field>
                   <FieldLabel>Produk Rusak / Cacat</FieldLabel>
                   <Input
-                    value={alertDialog.qc.damaged}
+                    value={alertDialog.qc.defect}
                     type="number"
                     onChange={(e) => {
                       let newValue = 0;
@@ -536,9 +536,9 @@ export default function ProductionHistory() {
                         ...prev,
                         qc: {
                           ...prev.qc,
-                          damaged: newValue,
+                          defect: newValue,
                           quota: updatedQuota,
-                          missing: 0,
+                          lost: 0,
                         },
                       }));
                     }}
@@ -609,26 +609,38 @@ export default function ProductionHistory() {
 }
 
 const getStatus = (batch) => {
+  console.log(batch);
   switch (batch.status) {
     case "cutting":
       return {
         status: "Di Potong",
-        description: `Di Potong Pada ${formatTanggal(batch.time[0].startCutting)}`,
+        description: `Di Potong Pada ${formatTanggal(batch.time[0].time)}`,
+        bg: "bg-gray-100",
       };
     case "sewing":
       return {
         status: "Di Jahit",
-        description: `Di Jahit Pada ${formatTanggal(batch.time[2].startSewing)}`,
+        description: `Di Jahit Pada ${formatTanggal(batch.time[2].time)}`,
+        bg: "bg-green-700 text-white",
       };
     case "toPack":
       return {
-        status: "Sedang Di Packing",
-        description: "Packing, Hitung Produk Cacat + Input Stock Ke Gudang",
+        status: "Packing",
+        description: "Kontrol Kualitas Sebelum Di Tambahkan Ke Stock",
+        bg: "bg-orange-700 text-white",
+      };
+    case "ready":
+      return {
+        status: "Produksi Selesai",
+        description:
+          "Produksi Telah Selesai, dan Hasil Sudah Di Tambahkan Ke Gudang",
+        bg: "bg-cyan-700 text-white",
       };
     default:
       return {
         status: "Tidak Ada Informasi",
         description: "Tidak Ada Informasi",
+        bg: "bg-gray-100",
       };
   }
 };
@@ -658,14 +670,20 @@ const BatchProductionCard = ({
   return (
     <Card className="min-w-[380px] max-w-[380px] h-fit">
       <CardHeader>
-        <CardTitle>
-          {productRelation.id}{" "}
-          {getProductVariant() && `- ${getProductVariant()}`}
+        <CardTitle className="text-center">
+          <p>
+            {productRelation.name}{" "}
+            {getProductVariant() && `- ${getProductVariant()}`}
+          </p>
+          <p className="text-center text-[12px]">{batch.id}</p>
         </CardTitle>
         <CardDescription>
-          <p>Status : {getStatus(batch).status}</p>
+          <div className={`px-3 py-2 text-center ${getStatus(batch).bg}`}>
+            <p className="text-md font-bold">{getStatus(batch).status}</p>
+            <p>{getStatus(batch).description}</p>
+          </div>
           {batch.status !== "cutting" && (
-            <div>
+            <div className="px-3 py-2 bg-gray-100">
               <p>Hasil Potong : {batch.stock.cutResult} Pcs</p>
               <p>HPP : Rp {formatNumber(batch.hpp)}</p>
             </div>
@@ -789,7 +807,7 @@ const BatchProductionCard = ({
         )}
         {batch.status === "toPack" && (
           <Button
-            className="bg-cyan-600"
+            className="bg-cyan-700"
             key={4}
             onClick={() => markAsCompletePacking(batch)}
           >

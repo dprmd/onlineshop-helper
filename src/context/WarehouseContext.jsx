@@ -32,6 +32,98 @@ export function WarehouseProvider({ children }) {
   const [isStockChangesFetched, setIsStockChangesFetched] = useState(false);
   const [isFetchingStockChanges, setIsFetchingStockChanges] = useState(false);
 
+  const writeStockChanges = async (
+    productId,
+    variantId,
+    stockChanges = { qcPassed: 0, defect: 0, lost: 0 },
+    reference = { type: "", id: "" },
+  ) => {
+    // Update Stock Produk
+    const theProduct = products.find((p) => p.id === productId);
+    const theVariant = theProduct.variation.find((v) => v.id === variantId);
+    const stockBefore = theVariant.stock;
+    const stockAfter = {
+      ...stockBefore,
+      qcPassed: stockBefore.qcPassed + stockChanges.qcPassed,
+      defect: stockBefore.defect + stockChanges.defect,
+      lost: stockBefore.lost + stockChanges.lost,
+    };
+
+    const getModifiedStock = () => {
+      if (theProduct.isHaveVariant) {
+        return {
+          ...theProduct,
+          variation: theProduct.variation.map((p) => {
+            if (p.id === variantId) return { ...p, stock: stockAfter };
+            else return p;
+          }),
+        };
+      } else {
+        toast.error("Produk Ini Tidak Punya Variant");
+      }
+    };
+
+    const modifiedStock = getModifiedStock();
+    const updateProductStock = await updateDocument(
+      `Menambahkan Stok Ke Produk ${productId}, Ready: ${stockChanges.qcPassed}, Cacat: ${stockChanges.defect}, Hilang: ${stockChanges.lost}`,
+      collectionName.myProducts,
+      productId,
+      modifiedStock,
+      `Berhasil Menambahkan Stok Ke Produk ${productId}, Ready: ${stockChanges.qcPassed}, Cacat: ${stockChanges.defect}, Hilang: ${stockChanges.lost}`,
+    );
+
+    if (updateProductStock.success) {
+      setProducts((prev) => {
+        return prev.map((p) => {
+          if (p.id === productId) {
+            return modifiedStock;
+          } else {
+            return p;
+          }
+        });
+      });
+      toast.success(updateProductStock.message);
+    } else {
+      toast.error(updateProductStock.message);
+      console.log(updateProductStock.error);
+    }
+
+    // Tambah Ke Riwayat Perubahan Stock
+    const newStockChanges = {
+      productId: productId,
+      productName: theProduct.name,
+      variantId: variantId,
+      type: "PRODUCTION",
+      stockBefore: stockBefore,
+      stockChanges: stockChanges,
+      stockAfter: stockAfter,
+      reference,
+    };
+
+    const addNewStockChanges = await createDocument(
+      "Tambah Riwayat Perubahan Stock",
+      collectionName.stockChanges,
+      newStockChanges,
+      "Berhasil Menambahkan Perubahan Stock",
+    );
+
+    if (addNewStockChanges.success) {
+      setStockChanges((prev) => {
+        return [
+          {
+            id: addNewStockChanges.docId,
+            createdAtMs: addNewStockChanges.createdAtMs,
+          },
+          ...prev,
+        ];
+      });
+      toast.success(addNewStockChanges.message);
+    } else {
+      toast.error(addNewStockChanges.message);
+      console.log(addNewStockChanges.error);
+    }
+  };
+
   const getStockChanges = async () => {
     if (isStockChangesFetched || isFetchingStockChanges) return;
 
@@ -183,7 +275,6 @@ export function WarehouseProvider({ children }) {
       status: "sewing",
       stock: {
         cutResult: Number(result),
-        onWarehouse: 0,
       },
       time: [
         ...batch.time,
@@ -288,16 +379,14 @@ export function WarehouseProvider({ children }) {
     const skuId = batch.productRelationId;
     const variantId = batch.productVariantId;
 
-    const productRelation = products.find((p) => p.id === skuId);
-
     const updatedBatch = {
       ...batch,
       status: "ready",
       stock: {
         ...batch.stock,
-        onWarehouse: Number(qc.qcPassed),
-        damaged: Number(qc.damaged),
-        missing: Number(qc.missing),
+        qcPassed: Number(qc.qcPassed),
+        defect: Number(qc.defect),
+        lost: Number(qc.lost),
       },
       time: [
         ...batch.time,
@@ -309,7 +398,7 @@ export function WarehouseProvider({ children }) {
     const { success, error, message } = await updateDocument(
       `Menandai ${skuId}-${batch.id} Selesai Di Packing`,
       collectionName.productionHistory,
-      updatedBatch.id,
+      batchId,
       updatedBatch,
       `Berhasil Menandai ${skuId}-${batch.id} Selesai Di Packing`,
     );
@@ -330,41 +419,17 @@ export function WarehouseProvider({ children }) {
       console.log(error);
     }
 
-    // Update Stock Produk
-    const getNewStock = () => {
-      if (productRelation.isHaveVariant) {
-        return {
-          ...productRelation,
-          variation: productRelation.variation.map((p) => {
-            if (p.id === variantId) {
-              console.log(p.stock.ready + updatedBatch.stock.onWarehouse);
-              return {
-                ...p,
-                stock: {
-                  ready: p.stock.ready + updatedBatch.stock.onWarehouse,
-                  damaged: p.stock.damaged + updatedBatch.stock.damaged,
-                  missing: p.stock.missing + updatedBatch.stock.missing,
-                },
-              };
-            } else {
-              return p;
-            }
-          }),
-        };
-      } else {
-        console.log("Produk Ini Tidak Punya Variant");
-      }
-    };
-
-    const {} = await updateDocument(
-      `Menambahkan Stok Ke Produk ${skuId}, Ready: ${updatedBatch.stock.onWarehouse}, Cacat: ${updatedBatch.stock.damaged}, Hilang: ${updatedBatch.stock.missing}`,
-      collectionName.myProducts,
+    // update stock product dan riwayat stok
+    await writeStockChanges(
       skuId,
-      getNewStock(),
-      `Berhasil Menambahkan Stok Ke Produk ${skuId}, Ready: ${updatedBatch.stock.onWarehouse}, Cacat: ${updatedBatch.stock.damaged}, Hilang: ${updatedBatch.stock.missing}`,
+      variantId,
+      {
+        qcPassed: updatedBatch.stock.qcPassed,
+        defect: updatedBatch.stock.defect,
+        lost: updatedBatch.stock.lost,
+      },
+      { type: "PRODUCTION", id: batchId },
     );
-
-    getProductList(true);
   };
 
   const addProductionCost = async (batch) => {

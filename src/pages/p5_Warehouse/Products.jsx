@@ -283,7 +283,7 @@ export default function Products() {
                             {
                               id: uuidv7(),
                               name: "",
-                              stock: { ready: 0, damaged: 0, missing: 0 },
+                              stock: { qcPassed: 0, defect: 0, lost: 0 },
                             },
                           ],
                         }));
@@ -334,13 +334,13 @@ export default function Products() {
                                 >
                                   <span>Nama Variasi : {variant.name}</span>
                                   <span>Informasi Stock</span>
-                                  <span>- Ready {variant.stock.ready} Pcs</span>
                                   <span>
-                                    - Cacat {variant.stock.damaged} Pcs
+                                    - Ready {variant.stock.qcPassed} Pcs
                                   </span>
                                   <span>
-                                    - Hilang {variant.stock.missing} Pcs
+                                    - Cacat {variant.stock.defect} Pcs
                                   </span>
+                                  <span>- Hilang {variant.stock.lost} Pcs</span>
                                 </li>
                               ))}
                             </ul>
