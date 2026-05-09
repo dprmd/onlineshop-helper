@@ -177,13 +177,9 @@ export default function ProductsDebt() {
           </FieldSet>
           <DialogFooter className="flex flex-row justify-end">
             <DialogClose asChild>
-              <Button>Batal</Button>
+              <Button variant={"outline"}>Batal</Button>
             </DialogClose>
-            <Button
-              className="bg-green-800"
-              type="button"
-              onClick={handleChangeProduct}
-            >
+            <Button type="button" onClick={handleChangeProduct}>
               Simpan
             </Button>
           </DialogFooter>
@@ -259,6 +255,7 @@ export default function ProductsDebt() {
                 <CardFooter className="flex gap-x-1">
                   <Button
                     size={"xs"}
+                    variant={"outline"}
                     onClick={() => {
                       setProductDebt((prev) => ({
                         ...prev,

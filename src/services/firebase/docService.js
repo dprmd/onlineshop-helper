@@ -26,6 +26,7 @@ export const createDocumentById = async (
   customMS = Date.now(),
 ) => {
   const createdAtMs = customTime ? customMS : Date.now();
+  console.log(createdAtMs);
   try {
     console.log(`Operation : Create , Operation Name : ${operationName}`);
 
@@ -34,7 +35,7 @@ export const createDocumentById = async (
       const snap = await transaction.get(ref);
 
       if (snap.exists()) {
-        throw "SKU Sudah Ada!";
+        throw "Dokumen Sudah Ada!";
       }
 
       transaction.set(ref, {

@@ -2,11 +2,13 @@ import { useUI } from "@/context/UIContext";
 import {
   createDocument,
   createDocumentById,
+  deleteDocument,
   getDocuments,
   updateDocument,
 } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import { raw } from "@/utils/generalFunction";
+import { isEqual } from "lodash";
 import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
 
@@ -187,6 +189,38 @@ export function WarehouseProvider({ children }) {
     }
   };
 
+  const editProduct = async (editedProduct) => {
+    setLoading(true);
+
+    const productId = editedProduct.baseSKU;
+
+    const { success, error, message } = await updateDocument(
+      `Mengedit Produk ${productId}`,
+      collectionName.myProducts,
+      productId,
+      editedProduct,
+      `Berhasil Mengedit Produk ${productId}`,
+    );
+
+    if (success) {
+      setProducts((prev) => {
+        return prev.map((p) => {
+          if (p.id === productId) {
+            return editedProduct;
+          } else {
+            return p;
+          }
+        });
+      });
+      toast.success(message);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
   const addNewProduct = async (product) => {
     const productId = product.baseSKU;
 
@@ -199,6 +233,8 @@ export function WarehouseProvider({ children }) {
       "Berhasil Menambahkan Produk",
     );
 
+    console.log(createdAtMs);
+
     if (success) {
       setProducts((prev) => {
         return [{ id: productId, createdAtMs, ...product }, ...prev];
@@ -208,6 +244,36 @@ export function WarehouseProvider({ children }) {
       toast.error(message);
       console.log(error);
     }
+    setLoading(false);
+  };
+
+  const archiveProduct = async (productId) => {
+    setLoading(true);
+
+    const { success, error, message } = await updateDocument(
+      `Mengarsipkan Produk ${productId}`,
+      collectionName.myProducts,
+      productId,
+      { archived: true },
+      `Berhasil Mengarsipkan Produk ${productId}`,
+    );
+
+    if (success) {
+      setProducts((prev) => {
+        return prev.map((p) => {
+          if (p.id === productId) {
+            return { ...p, archived: true };
+          } else {
+            return p;
+          }
+        });
+      });
+      toast.success(message);
+    } else {
+      toast.error(message);
+      console.log(error);
+    }
+
     setLoading(false);
   };
 
@@ -512,6 +578,8 @@ export function WarehouseProvider({ children }) {
         products,
         getProductList,
         addNewProduct,
+        editProduct,
+        archiveProduct,
         stockChanges,
         getStockChanges,
       }}
