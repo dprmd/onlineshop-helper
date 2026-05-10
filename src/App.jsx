@@ -90,8 +90,8 @@ const router = createHashRouter([
 
 export default function App() {
   return (
-    <SecurityProvider>
-      <UIProvider>
+    <UIProvider>
+      <SecurityProvider>
         <WarehouseProvider>
           <DebtProvider>
             <WithdrawalRecordsProvider>
@@ -101,7 +101,7 @@ export default function App() {
             </WithdrawalRecordsProvider>
           </DebtProvider>
         </WarehouseProvider>
-      </UIProvider>
-    </SecurityProvider>
+      </SecurityProvider>
+    </UIProvider>
   );
 }

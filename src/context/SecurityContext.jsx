@@ -11,23 +11,50 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Spinner } from "@/components/ui/spinner";
+import { useUI } from "@/context/UIContext";
 import { config } from "@/lib/variables";
 import { getDocument } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import bcrypt from "bcryptjs";
-import { createContext, useContext, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const SecurityContext = createContext();
 
 export const SecurityProvider = ({ children }) => {
   const otpRef = useRef(null);
+  const { setLoading } = useUI();
+  const [hashedPin, setHashedPin] = useState("");
+  const [isFetchingHashedPin, setIsFetchingHashedPin] = useState(false);
+  const [isHashedPinFetched, setIsHashedPinFetched] = useState(false);
   const [pin, setPin] = useState("");
   const [openPin, setOpenPin] = useState({
     open: false,
     actionOnMatch: async () => {},
   });
   const [disableInputOtp, setDisableInputOtp] = useState(false);
+
+  const getHashedPin = async () => {
+    if (isFetchingHashedPin || isHashedPinFetched) return;
+    setIsFetchingHashedPin(true);
+    setLoading(true);
+
+    const { success, error, data } = await getDocument(
+      "Initial Setup",
+      collectionName.security,
+      "pin",
+    );
+
+    if (success) {
+      setHashedPin(data.hashedPin);
+      setIsHashedPinFetched(true);
+    } else {
+      console.log(error);
+    }
+
+    setLoading(false);
+    setIsFetchingHashedPin(false);
+  };
 
   const comparePin = async (thePin) => {
     if (thePin.length < 10) return;
@@ -38,12 +65,7 @@ export const SecurityProvider = ({ children }) => {
         if (config.skipSecurity) {
           return true;
         } else {
-          const { data } = await getDocument(
-            "Security Fetch",
-            collectionName.security,
-            "pin",
-          );
-          const letMeCompare = await bcrypt.compare(thePin, data.hashedPin);
+          const letMeCompare = await bcrypt.compare(thePin, hashedPin);
           return letMeCompare;
         }
       };
@@ -69,6 +91,10 @@ export const SecurityProvider = ({ children }) => {
       }
     }
   };
+
+  useEffect(() => {
+    getHashedPin();
+  });
 
   return (
     <SecurityContext.Provider value={{ setOpenPin }}>
