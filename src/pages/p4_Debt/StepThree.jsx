@@ -1017,13 +1017,13 @@ const StepThree = () => {
                   {simpleMode ? (
                     // Simple Mode
                     <div>
-                      Transfer Ke <b>SeaBank Ade Siska</b>{" "}
+                      Transfer Ke <b>SeaBank Riko Mashar</b>{" "}
                       <b>{formatNumber(uangAdeSiska)}</b>
                     </div>
                   ) : (
                     // Ribet Mode
                     <div>
-                      Transfer Uang Ke <b>SeaBank Ade Siska</b> Sebesar{" "}
+                      Transfer Uang Ke <b>SeaBank Riko Mashar</b> Sebesar{" "}
                       <b>{formatNumber(uangAdeSiska)}</b>
                     </div>
                   )}
@@ -1039,7 +1039,7 @@ const StepThree = () => {
                       }`}
                     />
                   )}{" "}
-                  Ke <b>SeaBank Adi Permadi</b> Sebesar{" "}
+                  Ke <b>SeaBank Haerudin</b> Sebesar{" "}
                   <b>
                     {formatNumber(
                       uangSaya +
@@ -1305,13 +1305,13 @@ const StepThree = () => {
                   {simpleMode ? (
                     // Simple Mode
                     <div>
-                      Transfer Ke <b>SeaBank Ade Siska</b>{" "}
+                      Transfer Ke <b>SeaBank Riko Mashar</b>{" "}
                       <b>{formatNumber(raw(totalHPP) - totalBill)}</b>
                     </div>
                   ) : (
                     // Ribet Mode
                     <div>
-                      Transfer Uang Ke <b>SeaBank Ade Siska</b> Sebesar{" "}
+                      Transfer Uang Ke <b>SeaBank Riko Mashar</b> Sebesar{" "}
                       <b>{formatNumber(raw(totalHPP) - totalBill)}</b>
                     </div>
                   )}
@@ -1320,7 +1320,7 @@ const StepThree = () => {
                 {/* Transfer Uang Ke Seabank Adi Permadi*/}
                 <li>
                   {simpleMode ? "Transfer" : "Transfer Uang"} Ke{" "}
-                  <b>SeaBank Adi Permadi</b> Sebesar{" "}
+                  <b>SeaBank Haerudin</b> Sebesar{" "}
                   <b>{formatNumber(grossProfit)}</b>
                 </li>
 
