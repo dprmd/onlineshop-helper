@@ -274,7 +274,7 @@ function SalesPieChart({
     <Card className="flex flex-col relative">
       <CardHeader className="items-center pb-0">
         <CardTitle>Kontribusi Marketplace</CardTitle>
-        <CardDescription>Dulu - Sekarang</CardDescription>
+        <CardDescription>6 Maret - Sekarang</CardDescription>
         <Button
           variant="outline"
           onClick={() => {
