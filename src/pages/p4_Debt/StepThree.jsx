@@ -1129,6 +1129,12 @@ const StepThree = () => {
                           )}
                         </b>
                       </li>
+                      <li>
+                        <span>
+                          Jangan Lupa Edit Informasi Pembayaran Produk Di Wps
+                          Office
+                        </span>
+                      </li>
                       {totalBill > 0 && (
                         <li>
                           Ada Uang Tagihan Lainnya Sebesar{" "}
@@ -1189,6 +1195,12 @@ const StepThree = () => {
                               splitBillEmaIki.uko + splitBillEmaIki.adi,
                             )}
                           </b>
+                        </li>
+                        <li>
+                          <span>
+                            Jangan Lupa Edit Informasi Pembayaran Produk Di Wps
+                            Office
+                          </span>
                         </li>
                         {totalBill > 0 && (
                           <li>

@@ -94,6 +94,7 @@ export function WarehouseProvider({ children }) {
     const newStockChanges = {
       productId: productId,
       productName: theProduct.name,
+      variantName: theVariant.name,
       variantId: variantId,
       type: "PRODUCTION",
       stockBefore: stockBefore,
@@ -141,7 +142,6 @@ export function WarehouseProvider({ children }) {
 
     if (success) {
       setStockChanges([...data]);
-      console.log(data);
     } else {
       toast.error(message);
       console.log(error);
@@ -232,8 +232,6 @@ export function WarehouseProvider({ children }) {
       product,
       "Berhasil Menambahkan Produk",
     );
-
-    console.log(createdAtMs);
 
     if (success) {
       setProducts((prev) => {

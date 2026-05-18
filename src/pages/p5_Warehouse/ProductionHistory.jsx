@@ -609,7 +609,6 @@ export default function ProductionHistory() {
 }
 
 const getStatus = (batch) => {
-  console.log(batch);
   switch (batch.status) {
     case "cutting":
       return {
