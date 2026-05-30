@@ -1017,13 +1017,13 @@ const StepThree = () => {
                   {simpleMode ? (
                     // Simple Mode
                     <div>
-                      Transfer Ke <b>SeaBank Riko Mashar</b>{" "}
+                      Transfer Ke <b>SeaBank Ade Siska</b>{" "}
                       <b>{formatNumber(uangAdeSiska)}</b>
                     </div>
                   ) : (
                     // Ribet Mode
                     <div>
-                      Transfer Uang Ke <b>SeaBank Riko Mashar</b> Sebesar{" "}
+                      Transfer Uang Ke <b>SeaBank Ade Siska</b> Sebesar{" "}
                       <b>{formatNumber(uangAdeSiska)}</b>
                     </div>
                   )}
@@ -1317,13 +1317,13 @@ const StepThree = () => {
                   {simpleMode ? (
                     // Simple Mode
                     <div>
-                      Transfer Ke <b>SeaBank Riko Mashar</b>{" "}
+                      Transfer Ke <b>SeaBank Ade Siska</b>{" "}
                       <b>{formatNumber(raw(totalHPP) - totalBill)}</b>
                     </div>
                   ) : (
                     // Ribet Mode
                     <div>
-                      Transfer Uang Ke <b>SeaBank Riko Mashar</b> Sebesar{" "}
+                      Transfer Uang Ke <b>SeaBank Ade Siska</b> Sebesar{" "}
                       <b>{formatNumber(raw(totalHPP) - totalBill)}</b>
                     </div>
                   )}

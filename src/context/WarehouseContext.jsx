@@ -2,13 +2,11 @@ import { useUI } from "@/context/UIContext";
 import {
   createDocument,
   createDocumentById,
-  deleteDocument,
   getDocuments,
   updateDocument,
 } from "@/services/firebase/docService";
 import { collectionName } from "@/services/firebase/firebase";
 import { raw } from "@/utils/generalFunction";
-import { isEqual } from "lodash";
 import { createContext, useContext, useState } from "react";
 import { toast } from "sonner";
 
@@ -96,7 +94,7 @@ export function WarehouseProvider({ children }) {
       productName: theProduct.name,
       variantName: theVariant.name,
       variantId: variantId,
-      type: "PRODUCTION",
+      type: reference.type,
       stockBefore: stockBefore,
       stockChanges: stockChanges,
       stockAfter: stockAfter,
@@ -142,6 +140,7 @@ export function WarehouseProvider({ children }) {
 
     if (success) {
       setStockChanges([...data]);
+      setIsStockChangesFetched(true);
     } else {
       toast.error(message);
       console.log(error);

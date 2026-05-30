@@ -22,6 +22,14 @@ const link = [
     buttonName: "Riwayat Perubahan Stok",
     destination: "/warehouse/stockChanges",
   },
+  {
+    buttonName: "Buat Perubahan Stok",
+    destination: "/warehouse/makeStockChanges",
+  },
+  {
+    buttonName: "Alokasi Penarikan",
+    destination: "/warehouse/withdrawCalculation",
+  },
 ];
 
 export default function Warehouse() {

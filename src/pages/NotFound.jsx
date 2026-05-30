@@ -19,12 +19,20 @@ export default function NotFound() {
         </p>
 
         {/* Button */}
-        <Link
-          to="/"
-          className="mt-6 inline-block px-6 py-3 rounded-xl bg-sky-400 text-slate-900 font-semibold shadow-lg shadow-sky-400/20 hover:bg-sky-300 transition-all duration-300"
-        >
-          ← Kembali ke Home
-        </Link>
+        <div className="flex flex-col my-2 gap-y-2">
+          <Link
+            to={-1}
+            className="inline-block px-6 py-3 rounded-xl bg-green-400 text-slate-900 font-semibold shadow-lg shadow-sky-400/20 hover:bg-green-300 transition-all duration-300"
+          >
+            <span className="bi bi-arrow-left" /> Kembali
+          </Link>
+          <Link
+            to="/"
+            className="inline-block px-6 py-3 rounded-xl bg-sky-400 text-slate-900 font-semibold shadow-lg shadow-sky-400/20 hover:bg-sky-300 transition-all duration-300"
+          >
+            <span className="bi bi-house-fill" /> Kembali ke Home
+          </Link>
+        </div>
 
         {/* Decorative Glow */}
         <div className="absolute inset-0 -z-10 flex justify-center items-center">

@@ -656,6 +656,23 @@ const BatchProductionCard = ({
     return products.find((p) => p.id === batch.productRelationId);
   }, []);
 
+  const getModalBarang = () => {
+    let result = {
+      capital: 0,
+      loss: 0,
+      remaining: 0,
+    };
+
+    // hitung modal
+    const capital = batch.stock.qcPassed * batch.hpp;
+    const loss = (batch.stock.lost + batch.stock.defect) * batch.hpp;
+    result.remaining = capital - loss;
+    result.capital = capital;
+    result.loss = loss;
+
+    return result;
+  };
+
   const getProductVariant = () => {
     if (productRelation.isHaveVariant) {
       return productRelation.variation.find(
@@ -813,6 +830,43 @@ const BatchProductionCard = ({
             <i className="bi bi-check-circle" />
             Tandai Selesai Di Packing
           </Button>
+        )}
+        {batch.status === "ready" && (
+          <div>
+            {batch.stock.defect > 0 || batch.stock.lost > 0 ? (
+              <div>
+                <Collapsible>
+                  <CollapsibleTrigger>
+                    <p className="bg-orange-700 text-white border p-2 rounded-xl cursor-pointer">
+                      <span>Sisa Uang Dalam Barang</span> : Rp{" "}
+                      {formatNumber(getModalBarang().remaining)}
+                    </p>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="border p-2 rounded-xl cursor-pointer my-2">
+                      <p>
+                        <span className="font-bold">Modal Barang</span> : Rp{" "}
+                        {formatNumber(getModalBarang().capital)}
+                      </p>
+                      <p>
+                        <span className="font-bold">Est Kerugian</span> : Rp{" "}
+                        {formatNumber(getModalBarang().loss)}
+                      </p>
+                      <div className="px-2">
+                        {batch.stock.defect > 0 && (
+                          <p>- Cacat {batch.stock.defect} Pcs</p>
+                        )}
+                        {batch.stock.lost > 0 && (
+                          <p>- Hilang {batch.stock.lost} Pcs</p>
+                        )}
+                        <p></p>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            ) : null}
+          </div>
         )}
       </CardFooter>
     </Card>

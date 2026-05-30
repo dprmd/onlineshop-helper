@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { formatNumber, raw, separateNumber } from "../../utils/generalFunction";
+import { formatNumber, raw, separateNumber } from "@/utils/generalFunction";
 
 // Helper Function
 const percentFrom = (percent, total) => {
@@ -309,7 +309,7 @@ export default function ProfitCalculation() {
         {/* Button */}
         <div className="px-3 flex gap-x-2 mt-4">
           <Button type="button" asChild>
-            <Link to="/">Kembali</Link>
+            <Link to="/tools">Kembali</Link>
           </Button>
           <Button
             type="submit"

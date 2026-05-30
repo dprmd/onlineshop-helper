@@ -4,8 +4,8 @@ import { config } from "@/lib/variables";
 
 const link = [
   {
-    buttonName: "Perhitungan Profit",
-    destination: "/profitCalculation",
+    buttonName: "Alat",
+    destination: "/tools",
   },
   {
     buttonName: "Penghasilan",

@@ -1,0 +1,6 @@
+allowBuilds:
+  '@firebase/util': true
+  '@tailwindcss/oxide': true
+  esbuild: true
+  msw: true
+  protobufjs: true
